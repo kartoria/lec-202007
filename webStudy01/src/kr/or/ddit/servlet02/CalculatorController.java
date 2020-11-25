@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import kr.or.ddit.enumpkg.CalculatorSign;
 
-@WebServlet("/Calculator.do")
+@WebServlet("/Calculator")
 public class CalculatorController extends HttpServlet{
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

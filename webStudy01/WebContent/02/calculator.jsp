@@ -50,8 +50,8 @@
 	$("button").on("click", function(){
 		console.log("클릭");
 		$.ajax({
-			  url : "<%=request.getContextPath() %>/Calculator.do"
-			, method : "post" 
+			  url : "<%=request.getContextPath() %>/Calculator"
+			, method : "post"
 			, data : $("#calFm").serialize()
 			, dataType: "text"
 			, success:function(data){
