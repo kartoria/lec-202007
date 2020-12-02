@@ -1,29 +1,39 @@
 package kr.or.ddit.enumpkg;
 
+
 public enum CalculatorSign {
-	PLUS("+"), MINUS("-"), MULTIPLE("*"), DIVISION("/");
-	private String calSign;
+	PLUS('+', (num1, num2)->{return num1+num2;}), 
+	MINUS('-', (num1, num2)->{return num1-num2;}), 
+	MULTIPLE('*', (num1, num2)->{return num1*num2;}), 
+	DIVISION('/', new RealOperator() {
+		public float operate(float num1, float num2) {
+			System.out.println("계산했음");
+			return num1/num2;
+		}
+	});
+	
+	@FunctionalInterface
+	private static interface RealOperator{
+		public float operate(float num1, float num2);
+	}
+	
+	private RealOperator realoperator;
+	private char calSign;
 	
 	// enum 객체를 생성할때 문자열을 같이 넣어줌
-	CalculatorSign(String calSign){ 
+	private CalculatorSign(char calSign, RealOperator realoperator){ 
 		this.calSign = calSign;
+		this.realoperator = realoperator;
 	}
 	
 	// 객체 생성할때 넣어준 문자열을 가져옴
-	public String getCalSign(){ 
+	public char getCalSign(){ 
 		return calSign;
 	}
 	
-	// 파라미터로 넘어온 값과 enum객체들을 비교해서 맞는걸로 넘겨줌
-	public static String getCal(String cal){ 
-		CalculatorSign[] calSign = values();
-		CalculatorSign finded = PLUS;
-		for(CalculatorSign temp : calSign){
-			if(temp.name().equals(cal.toUpperCase())){
-				finded = temp;
-				break;
-			}
-		}
-		return finded.getCalSign();
+	public float calculation(float num1, float num2) {
+		return realoperator.operate(num1, num2);
 	}
+	
+	
 }

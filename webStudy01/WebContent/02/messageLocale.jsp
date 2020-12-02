@@ -30,18 +30,22 @@
 </pre>
 
 <script type="text/javascript">
+	let resultArea = $("resultArea");
 	$(".flag").on("click", function(event){
 		let language = $(this).prop("id");
 <%-- 		location.href="<%=request.getContextPath()%>/02/getMessage.jsp?lang=" + language; --%>
 		$.ajax({
-			url:"<%=request.getContextPath() %>/02/getMessage.jsp",
+			url:"<%=request.getContextPath() %>/02/getMessage.do",
 			data:{
 				"lang" : language
 			},
 			method:"get",
-			dataType:"text", // Accept : application/json | Content-Type
+			dataType:"xml", // Accept : application/json | Content-Type
 			success:function(data){
-				$("#resultArea").text(data);
+				let xml = $(data);
+				let message = xml.find("message");
+				console.log(message.html());
+				resultArea.html(message.html());
 			},
 			error:function(xhr){
 				console.log(xhr.status);

@@ -1,6 +1,11 @@
 package kr.or.ddit.servlet02;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -9,18 +14,25 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import kr.or.ddit.enumpkg.CalculatorSign;
+import com.sun.javafx.binding.StringFormatter;
 
-@WebServlet("/Calculator")
+import kr.or.ddit.enumpkg.CalculatorSign;
+import kr.or.ddit.enumpkg.MimeType;
+import kr.or.ddit.utils.JsonResponseUtils;
+
+@WebServlet("/Calculator.do")
 public class CalculatorController extends HttpServlet{
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		MimeType contentType = MimeType.parseAcceptToMimeType(req);
+		resp.setContentType(contentType.toString());
 		String numStr1 = (String)req.getParameter("num1");
 		String numStr2 = (String)req.getParameter("num2");
 		String sign = (String)req.getParameter("sign");
-	
-		if(numStr1.isEmpty() || numStr1 == null 
-				|| numStr2.isEmpty() || numStr2 == null
+		
+		String ptr = "^[+-]?\\d*(\\.?\\d*)$";
+		if(!numStr1.matches(ptr) || numStr1 == null 
+				|| !numStr2.matches(ptr) || numStr2 == null
 				|| sign.isEmpty()    || sign    == null ) {
 			resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			return;
@@ -28,49 +40,28 @@ public class CalculatorController extends HttpServlet{
 		
 		float num1 = Float.parseFloat(numStr1);
 		float num2 = Float.parseFloat(numStr2);
+		CalculatorSign cs = null;
 		
-		// 받아온 파라미터로 연산기호 얻어오기
-		String calSign = CalculatorSign.getCal(sign);
+		cs = CalculatorSign.valueOf(sign);
 		
-		// 계산해서 문자열로 받기 
-		String result = calculation(num1, num2, calSign);
+		float resultNum = cs.calculation(num1, num2);
+		String result = fmt(resultNum);
 		
-		
-		req.setAttribute("result", result);
-		RequestDispatcher dis = req.getRequestDispatcher("/02/calResult.jsp");
-		dis.forward(req, resp);
-	}
-	
-	
-	
-	
-	private String calculation(float num1, float num2, String sign) {
-		float resultNum = 0;
-		if("+".equals(sign)) {
-			resultNum = add(num1, num2);
-		}else if("-".equals(sign)) {
-			resultNum = sub(num1, num2);
-		}else if("*".equals(sign)) {
-			resultNum = mul(num1, num2);
-		}else if("/".equals(sign)) {
-			resultNum = div(num1, num2);
+		if(MimeType.PLAIN.equals(contentType)) {
+			try ( PrintWriter out = resp.getWriter();){
+				out.println(result);
+			}
+		}else if(MimeType.JSON == contentType){ // equals도 가능
+			req.setAttribute("result", result);
+			JsonResponseUtils.toJsonResponse(req, resp);
+		}else {
+			req.setAttribute("result", result);
+			RequestDispatcher dis = req.getRequestDispatcher("/WEB-INF/views/calResult.jsp");
+			dis.forward(req, resp);
 		}
-		return fmt(resultNum);
+		
 	}
 	
-	// 사칙연산
-	private float add(float a, float b){
-		return a+b;
-	}
-	private float sub(float a, float b){
-		return a-b;
-	}
-	private float mul(float a, float b){
-		return a*b;
-	}
-	private float div(float a, float b){
-		return (float)a/b;
-	}
 	
 	// float 문자열 처리
 	private String fmt(float num)
@@ -78,7 +69,7 @@ public class CalculatorController extends HttpServlet{
 	    if(num == (long) num)
 	        return String.format("%d",(long)num);
 	    else {
-	    	return Float.toString(num);
+	    	return Float.toString((int)(num*100+0.5)/100f);
 	    }
 	}
 }
