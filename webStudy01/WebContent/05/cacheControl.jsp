@@ -5,13 +5,30 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
-<script type="text/javascript" src="<%=request.getContextPath()%>/js/sample.jsp?time=<%= (new Date()).getTime()%>"></script>
+<title>05/cacheControl.jsp</title>
+<script type="text/javascript" src="<%=request.getContextPath() %>/js/sample.jsp"></script>
 </head>
 <body>
 <h4>Cache 제어</h4>
 <pre>
-Cache-Control(HTTP/1.1), progma(Http.1.0), Rcpirers(만료시간)
+Cache-Control(HTTP/1.1), Pragma(HTTP/1.0), Expires(만료시간)
+<%
+	response.setHeader("Pragma", "no-cache");
+	response.addHeader("Pragma", "no-store");
+	response.setHeader("Cache-Control", "no-cache");
+	response.addHeader("Cache-Control", "no-store");
+	response.setDateHeader("Expires", 0);
+%>	
 </pre>
+<%-- <img src="<%=request.getContextPath() %>/images/cat1.jpg" /> --%>
 </body>
 </html>
+
+
+
+
+
+
+
+
+

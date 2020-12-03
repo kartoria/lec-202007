@@ -20,6 +20,7 @@
 	}
 	DateFormatSymbols dfs = DateFormatSymbols.getInstance(clientLocale);
 	
+	// 클라이언트의 국가를 찾아줌
 	TimeZone zone = TimeZone.getDefault();
 	if(timezone!=null){
 		zone = TimeZone.getTimeZone(timezone);
@@ -32,7 +33,7 @@
 	boolean currentFlag = true;
 	int currentYear = cal.get(YEAR);
 	int currentMonth = cal.get(MONTH);
-							    //숫자 최대 4개 (XXXX년)
+    //숫자 최대 4개 (XXXX년)
 	int current = cal.get(DAY_OF_MONTH);
 	cal.set(DAY_OF_MONTH, 1);
 	if(yearStr != null && yearStr.matches("\\d{4}")){
@@ -102,7 +103,7 @@
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 </head>
 <body>
-			<!-- jquery의 data function -->
+<!-- jquery의 data function -->
 <a href="#" data-year="<%=beforeYear %>" data-month="<%=beforeMonth %>" class="controlA">이전달</a>
 <!-- 클릭 시 링크 이동이 아닌 form을 통한 이동을 하겠다는 의미 -->
 <h4><%=String.format("%tc", cal) %></h4>
@@ -179,10 +180,12 @@
 </table>
 <script type="text/javascript">
 	let calendarForm = $("#calendarForm");
-					/* 모든 입력 태그 중 input[name]인 것 */
+	
+	/* 모든 입력 태그 중 input[name]인 것 */
 	calendarForm.find(':input[name]').on("change",function(){
 		calendarForm.submit();
 	});
+	
 	$(".controlA").on("click", function(event){
 		event.preventDefault();
 		let year = $(this).data("year");		
