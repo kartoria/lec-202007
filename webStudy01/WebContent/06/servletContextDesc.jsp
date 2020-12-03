@@ -1,3 +1,4 @@
+<%@page import="org.apache.commons.io.IOUtils"%>
 <%@page import="java.io.FileOutputStream"%>
 <%@page import="java.io.BufferedOutputStream"%>
 <%@page import="java.io.FileInputStream"%>
@@ -20,35 +21,29 @@
 	1. dynamic web module version 확인
 		<%=application.getMajorVersion() %>.<%=application.getMinorVersion() %>
 	2. 파일의 mime type 확인
-	3. logging : <%application.log("의도적으로 기록한 로그 메시지"); %> 
+	3. logging : <%application.log("의도적으로 기록한 로그 메시지"); %> (클라이언트 상에선 출력되지 않음) 
 	4. 컨텍스트 파라미터 확보: <%=application.getInitParameter("contentFolder") %>
-	5. web resource 확보
+	5. web resource 확보 : getRealPath, getResource, getResourceAsStream
 <%
-	String url = "/images/boris2.jpg";						// 원래 파일경로 (가상 경로)
-	String targetUrl = "/06"; 								// 복사할 경로
-	String path = application.getRealPath(url); 			// 원래 파일이 들어있는 진짜 경로
-	String targetPath = application.getRealPath(targetUrl); // 위와 동일
-	File file = new File(path);
-	File targetFile = new File(targetPath, file.getName());
+		String url = "/images/boris2.jpg";						// 원래 파일경로 (가상 경로)
+		String targetUrl = "/06"; 								// 복사할 경로
+		String path = application.getRealPath(url); 			// 원래 파일이 들어있는 진짜 경로
+		String targetPath = application.getRealPath(targetUrl); // 위와 동일
+		File file = new File(path);
+		File targetFile = new File(targetPath, file.getName());
 	
-	out.println("\t\t path : " + path);
-	out.println("\t\t targetFilePath : " + targetFile.getAbsolutePath());
-	
-	BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
-	BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile));
-	
-	int data;
-	while((data=bis.read()) != -1){
-		bos.write(data);
-	}
-	bis.close();
-	bos.close();
-	
-	
-	
+		out.println("\t\t path : " + path);
+		out.println("\t\t targetFilePath : " + targetFile.getAbsolutePath());
+		
+		try(FileInputStream input = new FileInputStream(file);
+				FileOutputStream output = new FileOutputStream(targetFile);){
+			IOUtils.copy(input, output);
+		}
+		out.println(targetFile.exists());
+		
 %>
-	<img src="<%=request.getContextPath() %>/images/boris2.jpg"/>	
 </pre>
+<img src="<%=request.getContextPath() + targetUrl + "/" + targetFile.getName() %>"/>
 </body>
 </html>
 
