@@ -26,6 +26,7 @@
 	<a href=# onclick="clickHandler(event);" data-href="<%=request.getContextPath()%>/login/logout.do">로그아웃</a>
 <%}else{ %>
 	<h4><a href="<%=request.getContextPath() %>/login/loginForm.jsp">로그인 하러가기</a></h4>
+	<h4><a href="<%=request.getContextPath() %>/login/loginForm.jsp">회원가입</a></h4> <!-- 이메일 이름 비밀번호 -->
 <%} %>
 </body>
 </html>
