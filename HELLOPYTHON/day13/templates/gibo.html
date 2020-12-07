@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Hello</title>
+<script type="text/javascript">
+ function myopen(pan){
+	 var win = window.open("/gibodetail?pan="+pan, "판뷰", "width=500,height=500");
+
+ }
+</script>
+</head>
+<body>
+기보<br/>
+
+{% for i in my_list%}
+<a href="javascript:myopen('{{i}}')">{{i}}판 보기</a>
+<img src="/static/qr{{i}}.png"/>
+<br/>
+{%endfor%}
+
+</body>
+</html>

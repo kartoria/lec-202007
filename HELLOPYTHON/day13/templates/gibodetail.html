@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Hello</title>
+<script type="text/javascript">
+	var win = "{{win}}";
+	var my_list = []; 
+	var timerId = null;
+	function init(){
+		
+		{% for n in my_list%}
+		my_list.push("{{n}}");
+		{%endfor%}
+		
+		timerId = setInterval(myrender,500);
+		
+	}
+	
+	var seq_my_list = 0;
+	function myrender(){
+		var imgs = document.getElementsByTagName("img");
+		for(var i=0; i < imgs.length; i++){
+			var temp = my_list[seq_my_list].substr(i,1);
+			imgs[i].src = "/static/"+temp+".png";
+		}
+		
+		seq_my_list++;
+
+		if(my_list.length == seq_my_list){
+			clearInterval(timerId);
+		}
+	}
+	
+</script>
+<style type="text/css">
+table,td,tr{
+   margin: 0px;
+   padding: 0px;
+   border-collapse: collapse;
+}
+img {
+   display: block;
+}
+</style>
+</head>
+<body onload="init()">
+기보 detail
+
+<table>
+	<tr>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+	</tr>
+	<tr>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+	</tr>
+	<tr>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+	</tr>
+	<tr>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+	</tr>
+	<tr>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+	</tr>
+	<tr>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+	</tr>
+	<tr>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+	</tr>
+	<tr>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+	</tr>
+	<tr>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+	</tr>
+	<tr>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+		<td><img src="/static/0.png"></td>
+	</tr>
+</table>
+</body>
+</html>

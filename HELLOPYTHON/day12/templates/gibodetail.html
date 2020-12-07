@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<style>
+	table,tr,td{
+		margin:0px;
+		padding:0px;
+		border-collapse: collapse;
+	}
+	img{
+		display: block;
+	}
+</style>
+</head>
+<body>
+<table>
+</table>
+
+<script type="text/javascript">
+	$(document).ready(function(){
+		var html = "";
+		for(var i = 0; i<10; i++){
+			html += "<tr>";
+			for(var j = 0; j<10; j++){
+				html += "<td><img src='/static/0.png'/></td>";
+			}
+			html += "</tr>";
+		}
+		$("table").html(html);
+		
+		var giboArr = {{giboList|safe}}
+		for(var k=0; k<{{giboList|length}}; k++){
+			var seq = giboArr[k][0] + "";
+			var gibo = giboArr[k][1] + "";
+			for(var i=0; i<10; i++){
+				for(var j=0; j<10; j++){
+					var dol = gibo.charAt(i*10+j);
+					if(dol == 0)
+						$("tr:nth-child("+i+") td:nth-child("+j+")").html("<td><img src='/static/0.png'/></td>");
+					else if(dol == 1)
+						$("tr:nth-child("+i+") td:nth-child("+j+")").html("<td><img src='/static/1.png'/></td>");
+					else if(dol == 2)
+						$("tr:nth-child("+i+") td:nth-child("+j+")").html("<td><img src='/static/2.png'/></td>");
+				}
+			}
+		}
+	});
+	
+</script>
+</body>
+</html>

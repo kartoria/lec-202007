@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<ol>
+{% for i in pan%}
+	<li><a href="/gibodetail?pan={{i}}" onclick="window.open(this.href,'{{i}}번째판의 기보','width=600, height=600');return false;"> {{i}}판 경기보기 </a></li>
+{% endfor %}
+</ol>
+
+</body>
+</html>

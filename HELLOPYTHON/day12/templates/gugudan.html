@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<form method="post" action="/gugudan">
+	<input type="number" name="num">
+	<input type="submit">
+</form>
+
+{% for dan in gugu %}
+	<p>{{dan}} </p>
+{% endfor %}
+</body>
+</html>
