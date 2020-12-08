@@ -1,4 +1,4 @@
-package kr.or.ddit.servlet03;
+package kr.or.ddit.servlet04;
 
 import java.io.IOException;
 
@@ -36,7 +36,7 @@ public class LoginProcessServlet extends HttpServlet {
 
 		if (authenticate(mem_id, mem_pass)) {
 			session.setAttribute("authMember", mem_id);
-			resp.sendRedirect(req.getContextPath()+"/login/loginSuccess.jsp");
+			resp.sendRedirect(req.getContextPath()+"/login/index.jsp");
 			
 		} else {
 			session.setAttribute("mem_id", mem_id);

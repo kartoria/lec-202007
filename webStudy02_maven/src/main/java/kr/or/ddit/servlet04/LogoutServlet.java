@@ -1,4 +1,4 @@
-package kr.or.ddit.servlet03;
+package kr.or.ddit.servlet04;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -26,6 +26,6 @@ public class LogoutServlet extends HttpServlet {
 		//결국 파라미터로 보내야 한다.
 		
 		String encoded = URLEncoder.encode("로그아웃성공","UTF-8");
-		resp.sendRedirect(req.getContextPath()+"/login/loginSuccess.jsp?message="+encoded);
+		resp.sendRedirect(req.getContextPath()+"/login/index.jsp?message="+encoded);
 	}
 }

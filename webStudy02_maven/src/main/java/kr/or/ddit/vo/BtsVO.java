@@ -42,6 +42,7 @@ public class BtsVO implements Serializable{
 	public void setUrl(String url) {
 		this.url = url;
 	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -49,6 +50,7 @@ public class BtsVO implements Serializable{
 		result = prime * result + ((code == null) ? 0 : code.hashCode());
 		return result;
 	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

@@ -6,14 +6,16 @@ public class MenuVO implements Serializable{
 	public MenuVO() {
 		super();
 	}
-	private MenuVO(String menuText, String menuPath, String menuName) {
+	private MenuVO(String menuText, String menuPath, String menuURI, String menuName) {
 		super();
 		this.menuText = menuText;
 		this.menuPath = menuPath;
+		this.menuURI = menuURI;
 		this.menuName = menuName;
 	}
 	private String menuText;
-	private String menuPath;
+	private String menuPath; // jsp path
+	private String menuURI; // model2 servlet mapping uri
 	private String menuName;
 	public String getMenuText() {
 		return menuText;
@@ -26,6 +28,13 @@ public class MenuVO implements Serializable{
 	}
 	public void setMenuPath(String menuPath) {
 		this.menuPath = menuPath;
+	}
+	
+	public String getMenuURI() {
+		return menuURI;
+	}
+	public void setMenuURI(String menuURI) {
+		this.menuURI = menuURI;
 	}
 	public String getMenuName() {
 		return menuName;
@@ -58,8 +67,10 @@ public class MenuVO implements Serializable{
 	}
 	@Override
 	public String toString() {
-		return "MenuVO [menuText=" + menuText + ", menuPath=" + menuPath + ", menuName=" + menuName + "]";
+		return "MenuVO [menuText=" + menuText + ", menuPath=" + menuPath + ", menuURI=" + menuURI + ", menuName="
+				+ menuName + "]";
 	}
+	
 	
 	public static MenuVOBuilder getBuilder(){
 		return new MenuVOBuilder();
@@ -67,6 +78,7 @@ public class MenuVO implements Serializable{
 	public static class MenuVOBuilder{
 		private String menuText;
 		private String menuPath;
+		private String menuURI;
 		private String menuName;
 		public MenuVOBuilder menuText(String menuText){
 			this.menuText = menuText;
@@ -76,12 +88,16 @@ public class MenuVO implements Serializable{
 			this.menuPath = menuPath;
 			return this;
 		}
+		public MenuVOBuilder menuURI(String menuURI){
+			this.menuURI = menuURI;
+			return this;
+		}
 		public MenuVOBuilder menuName(String menuName){
 			this.menuName = menuName;
 			return this;
 		}
 		public MenuVO build() {
-			return new MenuVO(menuText, menuPath, menuName);
+			return new MenuVO(menuText, menuPath, menuURI, menuName);
 		}
 		
 	}
