@@ -14,6 +14,7 @@
 // 		$("#stopBtn").on("click", function(){
 // 			es.close();
 // 		});
+
 // 		let es = new EventSource("getServerTime_SSE.jsp");
 // 		es.onopen=function(event){
 // 			console.log(event);
@@ -26,27 +27,27 @@
 // 			console.log(event);
 // 			timeArea.text(event.data);
 // 		});
-		es.onerror=function(event){
-			if(event.target.readyState!=EventSource.CLOSED){
-				es.close();
-			}
-			console.log(event);
-		}
+// 		es.onerror=function(event){
+// 			if(event.target.readyState!=EventSource.CLOSED){
+// 				es.close();
+// 			}
+// 			console.log(event);
+// 		}
 // 		setTimeout(() => {
 // 			location.reload();
 // 		}, 1000);
 		let timeArea = $("#timeArea");
-// 		setInterval(() => {
-// 			fetch("getServerTime.jsp").then(function(response){
-// 				if(response.ok){
-// 					console.log(response);
-// 					return response.text();
-// 				}else{
-// 					console.log(response.status);
-// 				}
-// 			}).then(function(text){
-// 				timeArea.text(text);
-// 			});
+		setInterval(() => {
+			fetch("getServerTime.jsp").then(function(response){
+				if(response.ok){
+					console.log(response);
+					return response.text();
+				}else{
+					console.log(response.status);
+				}
+			}).then(function(text){
+				timeArea.text(text);
+			});
 			$.ajax({
 				url : "getServerTime.jsp",
 				method : "get",
@@ -54,7 +55,7 @@
 			}).done(function(){
 				timeArea.text(resp)
 			});		
-// 		}, 1000);
+		}, 1000);
 	}
 </script>
 </head>
