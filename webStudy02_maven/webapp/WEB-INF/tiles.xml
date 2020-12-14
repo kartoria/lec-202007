@@ -19,7 +19,10 @@
   <definition name="bts/*" extends="parent">
   	<put-attribute name="contents" value="/WEB-INF/views/bts/{1}.jsp"/>
   </definition>
-  <definition name="sessionTimer" extends="parent">
-  	<put-attribute name="contents" value="/WEB-INF/views/others/sessionTimer.jsp"/>
+  <definition name="others/*" extends="parent">
+  	<put-attribute name="contents" value="/WEB-INF/views/others/{1}.jsp"/>
+  </definition>
+  <definition name="model1/**" extends="parent">
+  	<put-attribute name="contents" value="/{1}"/>
   </definition>
 </tiles-definitions>

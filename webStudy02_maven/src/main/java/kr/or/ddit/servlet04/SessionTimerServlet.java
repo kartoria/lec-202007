@@ -17,9 +17,8 @@ public class SessionTimerServlet extends HttpServlet{
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String timer = req.getParameter("timer");
-		
 		HttpSession session = req.getSession(true);
 		session.setMaxInactiveInterval(120);
-		req.getRequestDispatcher("sessionTimer.tiles").forward(req, resp);
+		req.getRequestDispatcher("/others/sessionTimer.tiles").forward(req, resp);
 	}
 }

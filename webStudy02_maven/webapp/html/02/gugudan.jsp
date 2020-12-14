@@ -20,17 +20,13 @@ for(int dan=minDan; dan<=maxDan; dan++) {
 }
 gugudanTrTags.append("</tr>");
 %>
-<html>
-	<body>
-		<h4>구구단</h4>
-		<form>
-			min : <input type="number" name ="minDan" value="<%=minDan %>" />
-			max : <input type="number" name ="maxDan" value="<%=maxDan %>" />
-			<input type="submit" value="전송" />
-		</form>
-		<table>
-			<%=gugudanTrTags %>
-		</table>
-	</body>
-</html>
+<h4>구구단</h4>
+<form>
+	min : <input type="number" name ="minDan" value="<%=minDan %>" />
+	max : <input type="number" name ="maxDan" value="<%=maxDan %>" />
+	<input type="submit" value="전송" />
+</form>
+<table>
+	<%=gugudanTrTags %>
+</table>
 

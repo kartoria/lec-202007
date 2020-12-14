@@ -21,6 +21,11 @@ import kr.or.ddit.enumpkg.MimeType;
 public class GetMessageServlet extends HttpServlet{
 	
 	@Override
+	protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.getOutputStream().close();
+	}
+	
+	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		MimeType contentType = MimeType.parseAcceptToMimeType(req);
 		resp.setContentType(contentType.toString());

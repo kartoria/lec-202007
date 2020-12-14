@@ -1,7 +1,7 @@
+<%@page import="kr.or.ddit.vo.MemberVO"%>
 <%@page import="org.apache.commons.lang3.StringUtils"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<%String mem_id = (String) session.getAttribute("authMember"); %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,14 +19,15 @@
 </script>
 </head>
 <body>
-<%if(StringUtils.isNotBlank(mem_id)){ %>
+<%MemberVO authMember = (MemberVO) session.getAttribute("authMember"); %>
+<%if(authMember != null){ %>
 	<form name="logoutForm" method="post"></form>
 	<h1>로그인에 성공하셨습니다</h4>
-	<h4>아이디 : <%=mem_id %></h4>
+	<h4>아이디 : <%=authMember.getMem_name() %></h4>
 	<a href=# onclick="clickHandler(event);" data-href="<%=request.getContextPath()%>/login/logout.do">로그아웃</a>
 <%}else{ %>
-	<h4><a href="<%=request.getContextPath() %>/login/loginForm.jsp">로그인 하러가기</a></h4>
-	<h4><a href="<%=request.getContextPath() %>/login/loginForm.jsp">회원가입</a></h4> <!-- 이메일 이름 비밀번호 -->
+	<h4><a href="<%=request.getContextPath() %>/login/loginForm.do">로그인 하러가기</a></h4>
+	<h4><a href="<%=request.getContextPath() %>/Web-INF/views/login/loginForm.jsp">회원가입</a></h4> <!-- 이메일 이름 비밀번호 -->
 <%} %>
 </body>
 </html>

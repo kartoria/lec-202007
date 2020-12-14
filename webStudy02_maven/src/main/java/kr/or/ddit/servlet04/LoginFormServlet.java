@@ -12,6 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 public class LoginFormServlet extends HttpServlet{
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.getRequestDispatcher("login/loginForm.titles").forward(req, resp);
+		req.getRequestDispatcher("/login/loginForm.tiles").forward(req, resp);
 	}
 }

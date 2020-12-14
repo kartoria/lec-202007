@@ -1,3 +1,4 @@
+<%@page import="java.util.Date"%>
 <%@page import="kr.or.ddit.enumpkg.*"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
@@ -15,6 +16,7 @@
 <%
   String agent = request.getHeader("User-Agent");
   String name = Browser.getBrowserName(agent);
+  Date now = null;
 %>
 
 <h1>이 브라우저는 <%=name %>입니다.</h1>

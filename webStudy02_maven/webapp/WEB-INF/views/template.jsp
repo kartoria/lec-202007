@@ -7,56 +7,40 @@
 <head>
 <meta charset="UTF-8">
 <title>layout</title>
-<style type="text/css">
-   #topMenu{
-      width: 100%;
-      height: 50px;
-   }
-   #topMenu li {
-      float : left;
-      list-style: none;
-      padding-right: 50px
-   }
-   #leftMenu{
-      float:left;
-      width: 15%;
-      height: 500px;
-   }
-   #leftMenu a{
-      background-color : red;
-      cursor: pointer;
-   }
-   
-   #contents{
-      float:right;
-      width: 84%;
-      height: 500px;
-   }
-   
-   #footer{
-      float : left;
-      width: 100%;
-      height: 50px;
-   }
-   div{
-      border: 1px solid black;
-   }
-</style>
 
 <tiles:insertAttribute name="preScript"/>
 </head>
 <body>
-<div id="topMenu">
-	<tiles:insertAttribute name="topMenu"/>
-</div>
-<div id="leftMenu">
-	<tiles:insertAttribute name="leftMenu"/>
-</div>
-<div id="contents">
-	<tiles:insertAttribute name="contents"/>
-</div>
-<div id="footer">
-	<tiles:insertAttribute name="footer"/>
-</div>
+
+	<header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+	<div id="topMenu">
+		<tiles:insertAttribute name="topMenu"/>
+	</div>
+	</header>
+	
+	<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+		<div id="leftMenu">
+			<tiles:insertAttribute name="leftMenu"/>
+		</div>
+	</nav>
+	
+	<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+		<div>
+			<tiles:insertAttribute name="contents"/>
+		</div>
+	</main>
+	<div id="footer">
+		<tiles:insertAttribute name="footer"/>
+<%  String msg = (String)request.getAttribute("msg");
+	if(StringUtils.isBlank(msg)){
+		msg = (String)session.getAttribute("msg");
+		session.removeAttribute("msg"); //flash attribute
+	}
+	if(StringUtils.isNotBlank(msg)){ %>
+		<script type="text/javascript">
+			alert("<%=msg%>");
+		</script>
+<%	} %>
+	</div>
 </body>
 </html>

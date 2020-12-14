@@ -2,33 +2,56 @@
 <%@page import="kr.or.ddit.enumpkg.ServiceKind"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<form id="menuForm" data-action="<%=request.getContextPath() %>/module.do">
-	<input type="hidden" name="service">
-	
-</form>    
-<ul class="menuUl">
+<form id="menuForm" action="<%=request.getContextPath()%>/module.do">
+	<input type="hidden" name="service"/>
+</form>
+
+
+      <div class="position-sticky pt-3">
+        <ul class="nav flex-column menuUl">
 <%
-	ServiceKind[] kinds = ServiceKind.values();
+		ServiceKind[] kinds = ServiceKind.values();
 	for(ServiceKind service : kinds){
-	boolean model2 = StringUtils.isNotBlank(service.getMenu().getMenuURI());
-%>	
-	<li>
-	<% if(model2){ %>
-		<a href="<%=request.getContextPath() %><%=service.getMenu().getMenuURI() %>"><%=service.getMenu().getMenuText() %></a>
-	<%}else{%>
-		<a class="model1" data-service="<%=service.name() %>"><%=service.getMenu().getMenuText() %></a>
-	<%}%>
-	</li>
-<%
-	}
+		boolean model2 = StringUtils.isNotBlank(service.getMenu().getMenuURI());
 %>
-</ul>
+          <li class="nav-item">
+<%		if(model2) {%>
+            <a class="nav-link" aria-current="page" 
+            	href="<%=request.getContextPath()%><%=service.getMenu().getMenuURI()%>">
+            	<%=service.getMenu().getMenuText() %>
+            </a>
+<%		}else{ %>
+			<a class="nav-link model1" aria-current="page" data-service="<%=service.name()%>">
+				<%=service.getMenu().getMenuText() %>
+			</a>
+<%			} %>
+          </li>
+<%		} %>
+        </ul>
+
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+          <span>Saved reports</span>
+          <a class="link-secondary" href="#" aria-label="Add a new report">
+            <span data-feather="plus-circle"></span>
+          </a>
+        </h6>
+        <ul class="nav flex-column mb-2">
+          <li class="nav-item">
+            <a class="nav-link" href="#">
+              <span data-feather="file-text"></span>
+              Current month
+            </a>
+          </li>
+        </ul>
+      </div>
+
+
 <script type="text/javascript">
 	let menuForm = $("#menuForm");
- 	$(".menuUl").on("click","a.model1",function(event){
- 		event.preventDefault();
- 		menuForm.find("[name='service']").val($(this).data("service"));
- 		menuForm.submit();
- 		return false;
- 	});
+	$(".menuUl").on("click", "a.model1", function(event){
+		event.preventDefault();
+		menuForm.find("[name='service']").val($(this).data("service"));
+		menuForm.submit();
+		return false;
+	});
 </script>

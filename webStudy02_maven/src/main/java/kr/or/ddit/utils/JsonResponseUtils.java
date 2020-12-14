@@ -27,8 +27,6 @@ public class JsonResponseUtils {
 		
 		//마샬링 대상
 		Map<String, Object> dataMap = new HashMap<>();
-		
-		
 		while (names.hasMoreElements()) {
 			//key
 			String name = (String) names.nextElement();
@@ -38,7 +36,6 @@ public class JsonResponseUtils {
 			//request가 가지고 있는 모든 속성이 dataMap으로 들어간다.
 			dataMap.put(name, value);
 		}
-		
 		//maven databind 사용 방법
 		ObjectMapper mapper = new ObjectMapper();
 		

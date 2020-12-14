@@ -35,4 +35,12 @@
   <session-config>
     <session-timeout>2</session-timeout>
   </session-config>
+  
+  
+<!--   <jsp-config> -->
+<!--   	<jsp-property-group> -->
+<!--   		<url-pattern>/html/07/*</url-pattern> -->
+<!--   		<include-prelude>/html/02/userAgent.jsp</include-prelude> -->
+<!--   	</jsp-property-group> -->
+<!--   </jsp-config> -->
 </web-app>

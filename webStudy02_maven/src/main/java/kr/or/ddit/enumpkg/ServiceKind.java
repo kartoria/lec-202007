@@ -8,7 +8,8 @@ public enum ServiceKind {
 	CALCULATOR(MenuVO.getBuilder().menuText("계산기").menuPath("/html/02/calculator.jsp").build()),
 	CALENDAR(MenuVO.getBuilder().menuText("달력").menuPath("/html/04/calender.jsp").build()),
 	IMPLICITOBJECT(MenuVO.getBuilder().menuText("오브젝트").menuPath("/html/06/implicitObject.jsp").build()),
-	BTS(MenuVO.getBuilder().menuText("BTS").menuURI("/bts").build());
+	BTS(MenuVO.getBuilder().menuText("BTS").menuURI("/bts").build()),
+	SESSIONTIMER(MenuVO.getBuilder().menuText("세션타이머").menuURI("/sessionTimer.do").build());
 	
 	private MenuVO menu;
 	private ServiceKind(MenuVO menu) {

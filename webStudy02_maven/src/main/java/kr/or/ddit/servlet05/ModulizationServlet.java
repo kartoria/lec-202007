@@ -19,17 +19,18 @@ public class ModulizationServlet extends HttpServlet{
    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 	   String service = req.getParameter("service");
 	   int status = HttpServletResponse.SC_OK;
+	   String includePath = null;
 	   if(StringUtils.isNotBlank(service)) {
 		   try {
 			   ServiceKind serviceKind = ServiceKind.valueOf(service);
-			   String includePath = serviceKind.getMenu().getMenuPath();
+			   includePath = serviceKind.getMenu().getMenuPath();
 			   req.setAttribute("includePath", includePath);
 		   }catch(Exception e) {
 			   status = HttpServletResponse.SC_NOT_FOUND;
 		   }
 	   }
 	   if(status==HttpServletResponse.SC_OK) {
-		   req.getRequestDispatcher("/WEB-INF/views/layout.jsp").forward(req, resp);
+		   req.getRequestDispatcher("/model1"+ includePath +".tiles").forward(req, resp);
 	   }else {
 		   resp.sendError(status);
 	   }
