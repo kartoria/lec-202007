@@ -11,56 +11,32 @@
 		const NODEURL = "<%=request.getContextPath()%>/server/explorer.do";
 		const COMMANDURL = "<%=request.getContextPath()%>/server/fileCommand.do";
 		function commandProcess(param){
-			if(param.destNode != null){
-				$.ajax({
-					url : COMMANDURL,
-					data : {
-						command : param.command,
-						srcFile : param.srcNode.getKeyPath(),
-						destFolder : param.destNode.getKeyPath()
-					},
-					method: "post",
-					dataType : "text",
-					success:function(resp){
-						if("SUCCESS" != resp) return;
-						switch(param.command){
-						case "COPY":
-							param.srcNode.copyTo(param.destNode, "child");
-							break;
-						case "MOVE":
-							param.srcNode.moveTo(param.destNode, "child");
-							break;
-						case "DELETE":
-							param.srcNode.remove();
-						}
+			let destFolder = param.destNode ? param.destNode.getKeyPath() : "";
+			$.ajax({
+				url : COMMANDURL,
+				data : {
+					command : param.command,
+					srcFile : param.srcNode.getKeyPath(),
+					destFolder : destFolder
+				},
+				method: "post",
+				dataType : "text",
+				success:function(resp){
+					if("SUCCESS" != resp) return;
+					switch(param.command){
+					case "COPY":
+						param.srcNode.copyTo(param.destNode, "child");
+						break;
+					case "MOVE":
+						param.srcNode.moveTo(param.destNode, "child");
+						break;
+					case "DELETE":
+						param.srcNode.remove();
 					}
-				});
-			}else{
-				$.ajax({
-					url : COMMANDURL,
-					data : {
-						command : param.command,
-						srcFile : param.srcNode.getKeyPath(),
-					},
-					method: "post",
-					dataType : "text",
-					success:function(resp){
-						if("SUCCESS" != resp) return;
-						switch(param.command){
-						case "COPY":
-							param.srcNode.copyTo(param.destNode, "child");
-							break;
-						case "MOVE":
-							param.srcNode.moveTo(param.destNode, "child");
-							break;
-						case "DELETE":
-							param.srcNode.remove();
-						}
-					}
-				});
-			}
+				}
+			});
 		}
-		$("#tree").fancytree({
+		let tree1 = $("#tree").fancytree({
 			extensions : [ "filter", "dnd"],
 			 dnd: {
 				autoExpandMS: 400,
@@ -109,22 +85,24 @@
 				};
 			}
 		});
-
+		
+		let tree = $.ui.fancytree.getTree(tree1);
 		$("#search").on("change", function() {
-			let tree = $.ui.fancytree.getTree("#tree");
 			console.log(tree);
 			let keyword = $(this).val();
 			tree.filterNodes(keyword);
 		});
-		$("#removeBtn").on("click", function(){
-			let node = $.ui.fancytree.getTree("#tree").getActiveNode();
-			let param = {
-	        		srcNode    : node
-	        		, destNode : null
-	        		, command  : "DELETE"
-	        		
-	        	}
-	        commandProcess(param);
+		
+		$(window).on("keyup", function(event){
+			let node = tree.getActiveNode();
+			if(node && node.folder) return false;
+			if(event.keyCode == 46 && confirm("정말 지우고 싶나?")){
+				let param = {
+					command : "DELETE"
+					, srcNode: node
+				}
+				commandProcess(param);
+			}
 		});
 	});
 	
@@ -133,4 +111,3 @@
 <input type="text" id="search" class="form-control"/>
 <div id="tree">
 </div>
-<button id="removeBtn" type="button">삭제</button>
