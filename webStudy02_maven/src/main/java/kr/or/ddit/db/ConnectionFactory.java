@@ -1,7 +1,6 @@
 package kr.or.ddit.db;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
 
@@ -9,7 +8,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 
-import oracle.jdbc.pool.OracleDataSource;
 
 /**
  * Factory Object[Method] Pattern 

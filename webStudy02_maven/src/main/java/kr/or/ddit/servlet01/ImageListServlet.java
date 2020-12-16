@@ -1,17 +1,10 @@
 package kr.or.ddit.servlet01;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.Map;
 
-import javax.imageio.ImageIO;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 
 //@WebServlet("/01/imageList.tmpl")

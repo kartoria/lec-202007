@@ -1,13 +1,9 @@
 package kr.or.ddit.servlet01;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/01/gugudan1.tmpl")
 public class GugudanTemplateUseServlet2 extends UseTemplateServlet{

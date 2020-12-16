@@ -2,7 +2,6 @@ package kr.or.ddit.servlet04;
 
 import java.io.IOException;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -13,17 +12,24 @@ import javax.servlet.http.HttpSession;
 import kr.or.ddit.enumpkg.ServiceResult;
 import kr.or.ddit.member.service.AuthenticateServiceImpl;
 import kr.or.ddit.member.service.IAuthenticateService;
-import kr.or.ddit.servlet04.dao.LoginTestDao;
 import kr.or.ddit.vo.MemberVO;
 
 @WebServlet("/login/loginProcess.do")
 public class LoginProcessServlet extends HttpServlet {
 	IAuthenticateService service = new AuthenticateServiceImpl();
+	
+	private boolean validate(String mem_id, String mem_pass) {
+		return true;
+	}
+	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String mem_id = req.getParameter("mem_id");
 		String mem_pass = req.getParameter("mem_pass");
-
+		if(validate(mem_id, mem_pass)) {
+			
+		}
+		
 		HttpSession session = req.getSession();
 		Object result = service.authenticate(MemberVO.builder().mem_id(mem_id).mem_pass(mem_pass).build());
 		if (result instanceof MemberVO) {
@@ -39,6 +45,7 @@ public class LoginProcessServlet extends HttpServlet {
 				session.setAttribute("mem_id", mem_id);
 			}
 			session.setAttribute("message", message);
+			System.out.println(message);
 			resp.sendRedirect(req.getContextPath() + "/login/loginForm.do");
 		}
 	}

@@ -14,7 +14,7 @@ if($ && !$.fn.sessionTimer){
       const TIMEOUT = param.timeout;
       const SESSIONURL = param.sessionURL;
       let timeoutId = null;
-      const TIMEUNIT = 100;
+      const TIMEUNIT = 1000;
       let time = TIMEOUT;
       let timeArea = this;
       let jobId = null;

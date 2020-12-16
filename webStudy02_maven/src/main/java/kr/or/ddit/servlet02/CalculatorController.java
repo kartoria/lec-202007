@@ -2,10 +2,6 @@ package kr.or.ddit.servlet02;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -14,7 +10,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.sun.javafx.binding.StringFormatter;
 
 import kr.or.ddit.enumpkg.CalculatorSign;
 import kr.or.ddit.enumpkg.MimeType;

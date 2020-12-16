@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -31,7 +30,7 @@ public class GetMessageServlet extends HttpServlet{
 		resp.setContentType(contentType.toString());
 		
 		String lang = req.getParameter("lang");
-		String acceptLanguage = req.getHeader("accept-language");
+//		String acceptLanguage = req.getHeader("accept-language");
 		Locale locale = req.getLocale();
 		if(lang!=null && !lang.isEmpty()){
 			locale = Locale.forLanguageTag(lang.toLowerCase());

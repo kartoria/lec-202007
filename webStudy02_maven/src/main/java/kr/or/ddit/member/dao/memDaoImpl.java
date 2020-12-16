@@ -49,6 +49,7 @@ public class memDaoImpl implements IMemDao{
 						.mem_delete(rs.getString("MEM_DELETE"))
 						.build();
 			}
+			System.out.println(member.toString());
 			return member;
 		}catch (SQLException e) {
 			throw new RuntimeException(e);

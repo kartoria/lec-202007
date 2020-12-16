@@ -7,9 +7,7 @@ import java.util.Properties;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
 
-import com.sun.glass.ui.Application;
 
 public class CompositeConfigInitializer implements ServletContextListener {
 
