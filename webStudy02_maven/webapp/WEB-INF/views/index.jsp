@@ -22,8 +22,8 @@
 <%MemberVO authMember = (MemberVO) session.getAttribute("authMember"); %>
 <%if(authMember != null){ %>
 	<form name="logoutForm" method="post"></form>
-	<h1>로그인에 성공하셨습니다</h4>
-	<h4>아이디 : <%=authMember.getMem_name() %></h4>
+	<h1>로그인에 성공하셨습니다</h1>
+	<h4><a href="<%=request.getContextPath()%>/mypage.do"> 아이디 : <%=authMember.getMem_name() %></a></h4>
 	<a href=# onclick="clickHandler(event);" data-href="<%=request.getContextPath()%>/login/logout.do">로그아웃</a>
 <%}else{ %>
 	<h4><a href="<%=request.getContextPath() %>/login/loginForm.do">로그인 하러가기</a></h4>

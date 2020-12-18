@@ -11,6 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class MemberVO implements Serializable{
+	
 	private String mem_id;
 	private transient String mem_pass;
 	private String mem_name;

@@ -16,7 +16,7 @@ import kr.or.ddit.vo.MemberVO;
 
 @WebServlet("/login/loginProcess.do")
 public class LoginProcessServlet extends HttpServlet {
-	IAuthenticateService service = new AuthenticateServiceImpl();
+	IAuthenticateService service = AuthenticateServiceImpl.getInstance();
 	
 	private boolean validate(String mem_id, String mem_pass) {
 		return true;
@@ -45,7 +45,6 @@ public class LoginProcessServlet extends HttpServlet {
 				session.setAttribute("mem_id", mem_id);
 			}
 			session.setAttribute("message", message);
-			System.out.println(message);
 			resp.sendRedirect(req.getContextPath() + "/login/loginForm.do");
 		}
 	}

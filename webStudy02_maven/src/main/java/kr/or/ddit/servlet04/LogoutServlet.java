@@ -21,11 +21,7 @@ public class LogoutServlet extends HttpServlet {
 		HttpSession session = req.getSession();
 		session.invalidate();//세션값 다지우고 세션 만료까지 시킴
 		
-		//세션이 만료되서 다시 내보낼때 세션을 사용 못함
-		//어플리케이션은 모든 사람이 같이 사용해서 개인 한명한명 사용불가
-		//결국 파라미터로 보내야 한다.
-		
 		String encoded = URLEncoder.encode("로그아웃성공","UTF-8");
-		resp.sendRedirect(req.getContextPath()+"/login/index.jsp?message="+encoded);
+		resp.sendRedirect(req.getContextPath()+"?message="+encoded);
 	}
 }
