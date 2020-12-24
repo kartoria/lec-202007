@@ -12,61 +12,64 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
 
 import kr.or.ddit.enumpkg.ServiceResult;
-import kr.or.ddit.member.UserNotFoundException;
-import kr.or.ddit.member.service.AuthenticateServiceImpl;
-import kr.or.ddit.member.service.IAuthenticateService;
-import kr.or.ddit.member.service.IMemService;
-import kr.or.ddit.member.service.MemServiceImpl;
+import kr.or.ddit.member.service.IMemberService;
+import kr.or.ddit.member.service.MemberServiceImpl;
 import kr.or.ddit.vo.MemberVO;
-
+import kr.or.ddit.vo.NotyMessageVO;
 
 @WebServlet("/member/removeMember.do")
 public class MemberDeleteController extends HttpServlet{
-	IMemService memService = MemServiceImpl.getInstance();
-	
+	private IMemberService service = MemberServiceImpl.getInstance();
+			
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String mem_pass = req.getParameter("mem_pass");
-		if (StringUtils.isBlank(mem_pass)) {
+		if(StringUtils.isBlank(mem_pass)) {
 			resp.sendError(400);
 			return;
 		}
-
 		HttpSession session = req.getSession(false);
-		if (session == null || session.isNew()) {
+		if(session == null || session.isNew()) {
 			resp.sendError(400);
 			return;
 		}
+		
 		MemberVO authMember = (MemberVO) session.getAttribute("authMember");
 		String mem_id = authMember.getMem_id();
-
-		ServiceResult result = memService.removeMember(MemberVO.builder().mem_id(mem_id).mem_pass(mem_pass).build());
-
+		ServiceResult result = service.removeMember(MemberVO.builder().mem_id(mem_id)
+													.mem_pass(mem_pass)
+													.build());
+		
 		String goPage = null;
 		switch (result) {
 		case INVALIDPASSWORD:
-			session.setAttribute("msg", "비번 오류");
+			session.setAttribute("message", NotyMessageVO.builder("비번 오류:").build());
 			goPage = "redirect:/mypage.do";
 			break;
-		case FAILED: // 서버오류
-			session.setAttribute("msg", "서버 오류");
+		case FAILED:
+			session.setAttribute("message", NotyMessageVO.builder("서버 오류:").build());
 			goPage = "redirect:/mypage.do";
 			break;
-		case OK:
-			session.setAttribute("msg", "탈퇴 완료되었습니다.");
+		default:
 			goPage = "forward:/login/logout.do";
 			break;
 		}
-
+		
+		
 		boolean redirect = goPage.startsWith("redirect:");
 		boolean forward = goPage.startsWith("forward:");
-		if (redirect) {
+		if(redirect) {
 			resp.sendRedirect(req.getContextPath() + goPage.substring("redirect:".length()));
-		} else if (forward) {
-			req.getRequestDispatcher("/" + goPage.substring("forward:".length())).forward(req, resp);
-
-		} else {
-			req.getRequestDispatcher("/" + goPage + ".tiles").forward(req, resp);
+		}else if(forward){
+			req.getRequestDispatcher(goPage.substring("forward:".length())).forward(req, resp);
+		}else{	
+			req.getRequestDispatcher("/"+goPage+".tiles").forward(req, resp);
 		}
-   }
+		
+	}
 }
+
+
+
+
+
