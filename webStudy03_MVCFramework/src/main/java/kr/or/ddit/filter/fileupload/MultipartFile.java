@@ -15,10 +15,10 @@ import org.apache.commons.io.IOUtils;
  * Part wrapper로 사용할 adapter 
  *
  */
-public class MultiPartFile implements Part{
+public class MultipartFile implements Part{
 	private Part adaptee;
 	private String savename;
-	public MultiPartFile(Part adaptee) {
+	public MultipartFile(Part adaptee) {
 		this.adaptee = adaptee;
 		this.savename = UUID.randomUUID().toString();
 	}

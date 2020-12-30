@@ -4,9 +4,9 @@
  
 <link rel="stylesheet" href="${pageContext.request.contextPath }/js/DataTables/datatables.min.css"> 
 <script src="${pageContext.request.contextPath }/js/DataTables/datatables.min.js"></script>
-<script src="${pageContext.request.contextPath }/js/commons/searchZip.js"></script>
 
-<form method="post" id="memberForm">
+
+<form method="post" id="memberForm" enctype="multipart/form-data">
 	<table class="table table-responsive">
 		<tr class="mb-1">
 			<th class="text-center">아이디</th>
@@ -156,7 +156,7 @@
 		</tr>
 	</table>
 </form>
-
+<script src="${pageContext.request.contextPath }/js/commons/searchZip.js"></script>
 <script type="text/javascript">
 	$(function(){
 		const validateOptions = {
@@ -168,7 +168,7 @@
 				error.appendTo( $(element).parents("td:first") );
 		  	}
 		}
-		const EDITABLE = "${command}" == "MODIFY" ? true : false;
+		const EDITABLE = ${"MODIFY" eq command};
 		if(EDITABLE){
 //========입력제한 UI 설정==============================================================
 			$("#memberForm input:not(.editable)").prop("readonly", true);

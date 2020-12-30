@@ -1,3 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="kr.or.ddit.board.dao.IAttachDAO"></mapper>
+<mapper namespace="kr.or.ddit.board.dao.IAttachDAO">
+	<insert id="insertAttaches" parameterType="BoardVO">
+		<selectKey order="BEFORE" keyProperty="startAttNo" resultType="int">
+			SELECT NVL(MAX(ATT_NO), 0)+1
+			FROM ATTACH
+		</selectKey>
+		INSERT ALL 
+		<foreach collection="attachList" item="attach" index="idx">
+			INTO attach (
+			     ATT_NO  , ATT_SAVENAME, ATT_FILENAME
+			   , ATT_MIME, BO_NO       , ATT_FILESIZE, ATT_FANCY
+			) VALUES (
+				#{startAttNo, jdbcType=NUMERIC}+#{idx},    #{attatch.att_savename,jdbcType=VARCHAR},
+			    #{attatch.att_filename,jdbcType=VARCHAR},    #{attatch.att_mime,jdbcType=VARCHAR},
+			    #{bo_no,jdbcType=NUMERIC},    #{attatch.att_filesize,jdbcType=NUMERIC},
+			    #{attatch.att_fancy,jdbcType=VARCHAR}
+			)
+		</foreach>
+		SELECT * FROM DUAL
+	</insert>
+</mapper>

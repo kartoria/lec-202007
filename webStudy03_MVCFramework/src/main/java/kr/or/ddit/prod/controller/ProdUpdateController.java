@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import kr.or.ddit.enumpkg.ServiceResult;
 import kr.or.ddit.filter.fileupload.FileUploadRequestWrapper;
-import kr.or.ddit.filter.fileupload.MultiPartFile;
+import kr.or.ddit.filter.fileupload.MultipartFile;
 import kr.or.ddit.mvc.annotation.RequestMethod;
 import kr.or.ddit.mvc.annotation.resolvers.ModelAttribute;
 import kr.or.ddit.mvc.annotation.resolvers.RequestParam;

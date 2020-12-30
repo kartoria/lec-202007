@@ -22,7 +22,10 @@ public class BoardDAOImpl implements IBoardDAO{
 
 	@Override
 	public int insertBoard(BoardVO board) {
-		return 0;
+		try (SqlSession sqlSession = sqlSessionFactory.openSession(true)) {
+			IBoardDAO mapper = sqlSession.getMapper(IBoardDAO.class);
+			return mapper.insertBoard(board);
+		}
 	}
 
 	@Override

@@ -63,7 +63,9 @@
 		     , MEM_MEMORIAL, TO_CHAR(MEM_MEMORIALDAY, 'YYYY-MM-DD') MEM_MEMORIALDAY
 		     , MEM_MILEAGE , MEM_DELETE, MEM_ROLE 
 		     , PROD_ID     , PROD_NAME , PROD_PRICE
-		     , PROD_COST   , PROD_LGU 										
+		     , PROD_COST   , PROD_LGU  , MEM_IMG
+		     , MEM_ROLE
+		     , PROD_ID     , PROD_NAME , PROD_COST, PROD_LGU									
 		  FROM MEMBER LEFT OUTER JOIN CARTB ON (MEM_ID    = CART_MEMBER)
 				      LEFT OUTER JOIN PROD  ON (CART_PROD = PROD_ID    )	                                      										
 		 WHERE MEM_ID = #{mem_id}
@@ -97,14 +99,17 @@
 			    MEM_HOMETEL ,    MEM_COMTEL     ,    MEM_HP,              
 			    MEM_MAIL    ,    MEM_JOB        ,    MEM_LIKE,                  
 			    MEM_MEMORIAL,    MEM_MEMORIALDAY,    MEM_MILEAGE,
-			    MEM_IMG     ,    MEM_ROLE
-			) VALUES (                                              
+			    MEM_ROLE
+			    <if test="mem_img!=null">
+			    , MEM_IMG
+			    </if>      
+		) VALUES (                                              
 				#{mem_id         , jdbcType=VARCHAR}
 			  , #{mem_pass       , jdbcType=VARCHAR}    
 			  , #{mem_name       , jdbcType=VARCHAR}					
 			  , #{mem_regno1     , jdbcType=CHAR   }    
 			  , #{mem_regno2     , jdbcType=CHAR   }    
-	  , TO_DATE(#{mem_bir        , jdbcType=DATE   } 'YYYY-MM-DD')         
+	  , TO_DATE(#{mem_bir        , jdbcType=DATE   }, 'YYYY-MM-DD')         
 			  , #{mem_zip        , jdbcType=CHAR   }    
 			  , #{mem_add1       , jdbcType=VARCHAR}    
 			  , #{mem_add2       , jdbcType=VARCHAR}                  
@@ -117,12 +122,11 @@
 			  , #{mem_memorial   , jdbcType=VARCHAR}  
       , TO_DATE(#{mem_memorialday, jdbcType=DATE   }, 'YYYY-MM-DD')
 		      , #{mem_mileage    , jdbcType=NUMERIC}
-		      , #{mem_IMG        , jdbcType=BLOB   }
-		      , "ROLE_USER"
+		      , 'ROLE_USER'
 		      <if test="mem_img!=null">
 		      , #{mem_img        , jdbcType=BLOB   }
 		      </if>
-			)                                                       
+		)                                                       
 	</insert>
 	<delete id="deleteMember" parameterType="string">
 		 UPDATE MEMBER 

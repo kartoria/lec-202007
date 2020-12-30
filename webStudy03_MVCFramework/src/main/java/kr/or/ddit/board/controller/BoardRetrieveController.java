@@ -21,6 +21,7 @@ import kr.or.ddit.vo.SearchVO;
 
 @Controller
 public class BoardRetrieveController {
+	private IBoardService service = BoardServiceImpl.getInstance(); 
 	
 	@RequestMapping("/board/boardList.do")
 	public String getBoardRetrieve(
@@ -28,8 +29,7 @@ public class BoardRetrieveController {
 			, @ModelAttribute("searchVO") SearchVO searchVO
 			, HttpServletRequest req, HttpServletResponse resp) throws IOException{
 		
-		IBoardService service = BoardServiceImpl.getInstance(); 
-		PagingVO<BoardVO> pagingVO = new PagingVO<>(5, 5);
+		PagingVO<BoardVO> pagingVO = new PagingVO<>();
 		// 목록 조회와 카운트 조회시 동일 검색 조건 사용.
 		pagingVO.setSearchVO(searchVO);
 		

@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import kr.or.ddit.filter.fileupload.MultiPartFile;
+import kr.or.ddit.filter.fileupload.MultipartFile;
 import lombok.Data;
 
 @Data
@@ -13,11 +13,11 @@ public class FileUploadTestVO {
 	private String TextParam;
 	private Integer numberParam;
 	
-	private List<MultiPartFile> uploadFile;
-	public void setUploadFile(List<MultiPartFile> uploadFile) {
+	private List<MultipartFile> uploadFile;
+	public void setUploadFile(List<MultipartFile> uploadFile) {
 		if(uploadFile == null || uploadFile.size() == 0) return;
 		this.uploadFile = new ArrayList<>();
-		for(MultiPartFile tmp : uploadFile) {
+		for(MultipartFile tmp : uploadFile) {
 			if(tmp!=null && StringUtils.isNotBlank(tmp.getOriginalFilename())) {
 				String mime = tmp.getContentType();
 				if(mime==null || !mime.startsWith("image/")) {

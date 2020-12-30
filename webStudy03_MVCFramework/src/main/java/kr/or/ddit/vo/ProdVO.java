@@ -12,7 +12,7 @@ import javax.validation.constraints.Size;
 
 import org.apache.commons.lang3.StringUtils;
 
-import kr.or.ddit.filter.fileupload.MultiPartFile;
+import kr.or.ddit.filter.fileupload.MultipartFile;
 import kr.or.ddit.validate.groups.InsertGroup;
 import kr.or.ddit.validate.groups.UpdateGroup;
 import lombok.Data;
@@ -94,8 +94,8 @@ public class ProdVO implements Serializable {
 	
 	private Set<MemberVO> memberList;
 	
-	private MultiPartFile prod_image;
-	public void setProd_image(MultiPartFile prod_image) {
+	private MultipartFile prod_image;
+	public void setProd_image(MultipartFile prod_image) {
 		if(prod_image != null && StringUtils.isNotBlank(prod_image.getOriginalFilename())) {
 			this.prod_image = prod_image;
 			this.prod_img = prod_image.getSavename();

@@ -16,7 +16,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.ClassUtils;
 
 import kr.or.ddit.filter.fileupload.FileUploadRequestWrapper;
-import kr.or.ddit.filter.fileupload.MultiPartFile;
+import kr.or.ddit.filter.fileupload.MultipartFile;
 import kr.or.ddit.vo.MemberVO;
 
 public class ModelAttributeArgumentResolver implements IHanderMethodArgumentResolver {
@@ -49,16 +49,16 @@ public class ModelAttributeArgumentResolver implements IHanderMethodArgumentReso
 					try {
 						PropertyDescriptor pd = new PropertyDescriptor(partName, parameterType);
 						Class<?> propertyType = pd.getPropertyType();
-						if(propertyType.equals(MultiPartFile.class)) {
+						if(propertyType.equals(MultipartFile.class)) {
 							// prod.setProd_image(file);
-							MultiPartFile file = ((FileUploadRequestWrapper) req).getFile(partName);
+							MultipartFile file = ((FileUploadRequestWrapper) req).getFile(partName);
 							pd.getWriteMethod().invoke(vo, file);
 						}else if(List.class.isAssignableFrom(propertyType)) {
-							List<MultiPartFile> files = ((FileUploadRequestWrapper) req).getFiles(partName);
+							List<MultipartFile> files = ((FileUploadRequestWrapper) req).getFiles(partName);
 							pd.getWriteMethod().invoke(vo, propertyType.cast(files));
-						}else if(propertyType.isArray() && propertyType.getComponentType().equals(MultiPartFile.class)) {
-							List<MultiPartFile> files = ((FileUploadRequestWrapper) req).getFiles(partName);
-							MultiPartFile[] array = new MultiPartFile[files.size()];
+						}else if(propertyType.isArray() && propertyType.getComponentType().equals(MultipartFile.class)) {
+							List<MultipartFile> files = ((FileUploadRequestWrapper) req).getFiles(partName);
+							MultipartFile[] array = new MultipartFile[files.size()];
 							array = files.toArray(array);
 							pd.getWriteMethod().invoke(vo, array);
 						}

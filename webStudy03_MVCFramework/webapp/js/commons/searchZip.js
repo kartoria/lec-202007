@@ -21,9 +21,10 @@ $.searchZip=function(param){
 	});
 	
 	let zipTable = zipModal.find('#zipTable').DataTable( {
+		processing: true,
+		serverSide: true,
 	    ajax: {
 	        url: $.getContextPath() + '/commons/searchZip.do'
-	        , dataSrc:"zipList"
 	    },
 	    columns: [ 
 	    	{ data: 'zipcode' }

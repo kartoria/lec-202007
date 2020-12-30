@@ -10,7 +10,7 @@ import javax.validation.constraints.Size;
 
 import org.apache.commons.lang3.StringUtils;
 
-import kr.or.ddit.filter.fileupload.MultiPartFile;
+import kr.or.ddit.filter.fileupload.MultipartFile;
 import kr.or.ddit.validate.groups.UpdateGroup;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -55,13 +55,13 @@ public class BoardVO implements Serializable{
 	private Integer rep_cnt;
 	private int[] delAttNos;
 
-	private transient List<MultiPartFile> bo_files;
+	private transient List<MultipartFile> bo_files;
 
-	public void setBo_files(List<MultiPartFile> bo_files) {
+	public void setBo_files(List<MultipartFile> bo_files) {
 		if(bo_files==null || bo_files.size()==0) {
 			this.bo_files = bo_files;
 			this.attatchList = new ArrayList<>();
-			for(MultiPartFile tmp : bo_files) {
+			for(MultipartFile tmp : bo_files) {
 				if(StringUtils.isBlank(tmp.getOriginalFilename())) {
 					attatchList.add(new AttachVO(tmp));
 				}

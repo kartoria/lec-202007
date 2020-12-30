@@ -7,7 +7,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import kr.or.ddit.filter.fileupload.MultiPartFile;
+import org.apache.commons.io.FileUtils;
+
+import kr.or.ddit.filter.fileupload.MultipartFile;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -18,12 +20,16 @@ import lombok.ToString;
 @EqualsAndHashCode(of="att_no")
 @ToString(exclude="realFile")
 public class AttachVO {
-	public AttachVO(MultiPartFile realFile) {
+	public AttachVO(MultipartFile realFile) {
 		this.realFile = realFile;
 		this.att_savename = realFile.getSavename();
+		this.att_filename = realFile.getOriginalFilename();
+		this.att_mime = realFile.getContentType();
+		this.att_filesize = realFile.getSize();
+		this.att_fancy = FileUtils.byteCountToDisplaySize(att_filesize);
 	}
 
-	private MultiPartFile realFile;
+	private MultipartFile realFile;
 	public void saveTo(File saveFolder) throws IOException {
 		if(realFile!=null) {
 			realFile.saveToWithNewName(saveFolder);

@@ -15,7 +15,7 @@ import javax.validation.groups.Default;
 
 import org.apache.commons.lang3.StringUtils;
 
-import kr.or.ddit.filter.fileupload.MultiPartFile;
+import kr.or.ddit.filter.fileupload.MultipartFile;
 import kr.or.ddit.validate.groups.DeleteGroup;
 import kr.or.ddit.validate.groups.InsertGroup;
 import kr.or.ddit.validate.rule.TelNumber;
@@ -97,8 +97,8 @@ public class MemberVO implements Serializable{
 	}
 	
 	
-	private MultiPartFile mem_image; // client 데이터 받기용.
-	public void setMem_image(MultiPartFile mem_image) throws IOException {
+	private MultipartFile mem_image; // client 데이터 받기용.
+	public void setMem_image(MultipartFile mem_image) throws IOException {
 		if(mem_image!=null && StringUtils.isNotBlank(mem_image.getOriginalFilename())) {
 			this.mem_image = mem_image;
 			this.mem_img = mem_image.getBytes();

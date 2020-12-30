@@ -3,7 +3,7 @@
 <mapper namespace="kr.or.ddit.board.dao.IBoardDAO">
 	<sql id="searchFrag">
 		<where>
-			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+			<if test="searchVO!=null and @org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
 				<choose>
 					<when test="'writer'.equals(searchVO.searchType)">
 						INSTR(BO_WRITER, #{searchVO.searchWord}) > 0
@@ -51,7 +51,23 @@
 		]]>
 	</select>
 
-
+	<insert id="insertBoard" parameterType="BoardVO">
+		<selectKey order="BEFORE" keyProperty="bo_no" resultType="int">
+			SELECT NVL(MAX(BO_NO), 0)+1
+			FROM BOARD
+		</selectKey>
+		INSERT INTO board (
+		    BO_NO,    BO_CONTENT,    
+		    BO_TITLE, BO_WRITER,   
+		    BO_PASS,    BO_IP,
+		    BO_MAIL
+		) VALUES (
+		  	#{bo_no,jdbcType=NUMERIC},    #{bo_content,jdbcType=CLOB},    
+		  	#{bo_title,jdbcType=VARCHAR}, #{bo_writer,jdbcType=VARCHAR},   
+		  	#{bo_pass,jdbcType=VARCHAR},    #{bo_ip,jdbcType=VARCHAR},
+		    #{bo_mail,jdbcType=VARCHAR}
+		)
+	</insert>
 
 
 </mapper>

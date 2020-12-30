@@ -3,39 +3,39 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 
-<h4>${member["mem_name"] }님의 상세 정보</h4>
+<h4>${member.mem_name }님의 상세 정보</h4>
 <table class="col-md-7 table-bordered table-responsive">
 	<tr>
 		<th class="text-center">아이디</th>
-		<td class="text-center pb-1">${member["mem_id"] }</td>
+		<td class="text-center pb-1">${member.mem_id }</td>
 	</tr>
 	<tr>
 		<th class="text-center">이름</th>
-		<td class="text-center pb-1">${member["mem_name"] }</td>
+		<td class="text-center pb-1">${member.mem_name }</td>
 	</tr>
 	<tr>
-		<th class="text-center">프로필 사진</th>
+		<th class="text-center">사진</th>
 		<td class="text-center pb-1">
 			<c:if test="${not empty member.mem_img }">
 				<img class="thumbnail" src="data:image/*;base64,${member.base64Image }" />
 			</c:if>
 		</td>
-	</tr>	
+	</tr>
 	<tr>
 		<th class="text-center">주민번호1</th>
-		<td class="text-center pb-1">${member["mem_regno1"] }</td>
+		<td class="text-center pb-1">${member.mem_regno1 }</td>
 	</tr>
 	<tr>
 		<th class="text-center">주민번호2</th>
-		<td class="text-center pb-1">${member["mem_regno2"] }</td>
+		<td class="text-center pb-1">${member.mem_regno2 }</td>
 	</tr>
 	<tr>
 		<th class="text-center">생일</th>
-		<td class="text-center pb-1">${member["mem_bir"] }</td>
+		<td class="text-center pb-1">${member.mem_bir }</td>
 	</tr>
 	<tr>
 		<th class="text-center">우편번호</th>
-		<td class="text-center pb-1">${member["mem_zip"] }</td>
+		<td class="text-center pb-1">${member.mem_zip }</td>
 	</tr>
 	<tr>
 		<th class="text-center">주소1</th>
@@ -83,7 +83,7 @@
 	</tr>
 	<tr>
 		<th class="text-center">탈퇴여부</th>
-		<td class="text-center pb-1">${"Y" eq member.mem_delete ? "탈퇴" : "이용중" }</td>
+		<td class="text-center pb-1">${"Y" eq member.mem_delete ?"탈퇴":"이용중" }</td>
 	</tr>
 	<tr>
 		<td colspan="2">
@@ -131,7 +131,7 @@
 <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form action="<c:url value='/member/removeMember.do'/>" method="post">
+      <form action="<c:url value='/member/removeMember.do' />" method="post">
 	      <div class="modal-header">
 	        <h5 class="modal-title" id="passwordModalLabel">Modal title</h5>
 	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -165,7 +165,7 @@
 			passwordModal.modal("show");
 		});
 		$("#modifyBtn").on("click", function(){
-			location.href="<c:url value='/member/modifyMember.do'/>";
+			location.href="${pageContext.request.contextPath }/member/modifyMember.do";
 		});
 	});
 </script>

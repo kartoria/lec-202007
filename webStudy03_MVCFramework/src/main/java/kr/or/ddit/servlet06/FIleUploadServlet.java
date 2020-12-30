@@ -16,7 +16,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
 import kr.or.ddit.filter.fileupload.FileUploadRequestWrapper;
-import kr.or.ddit.filter.fileupload.MultiPartFile;
+import kr.or.ddit.filter.fileupload.MultipartFile;
 import kr.or.ddit.mvc.annotation.RequestMethod;
 import kr.or.ddit.mvc.annotation.resolvers.ModelAttribute;
 import kr.or.ddit.mvc.streotype.Controller;
@@ -35,9 +35,9 @@ public class FIleUploadServlet{
 			saveFolder.mkdirs();
 		}
 		
-		List<MultiPartFile> list = commandObject.getUploadFile();
+		List<MultipartFile> list = commandObject.getUploadFile();
 		if(list!=null) {
-			for(MultiPartFile multipartFile  : list) {
+			for(MultipartFile multipartFile  : list) {
 //				String filename = multipartFile.getOriginalFilename();
 				String savename = multipartFile.saveToWithNewName(saveFolder);
 				System.out.println(savename);

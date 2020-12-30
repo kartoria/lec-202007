@@ -17,7 +17,7 @@ import javax.servlet.http.Part;
 
 public class FileUploadRequestWrapper extends HttpServletRequestWrapper{
 	
-	private Map<String, List<MultiPartFile>> fileMap; 
+	private Map<String, List<MultipartFile>> fileMap; 
 	
 	public FileUploadRequestWrapper(HttpServletRequest request) {
 		super(request);
@@ -31,27 +31,27 @@ public class FileUploadRequestWrapper extends HttpServletRequestWrapper{
 			for(Part tmp : parts) {
 				if(tmp.getContentType()==null) continue;
 				String name = tmp.getName();
-				List<MultiPartFile> already = fileMap.get(name);
+				List<MultipartFile> already = fileMap.get(name);
 				if(already==null) {
 					already = new ArrayList<>();
 					fileMap.put(name, already);
 				}
-				already.add(new MultiPartFile(tmp));
+				already.add(new MultipartFile(tmp));
 			}
 		} catch (IOException | ServletException e) {
 			throw new RuntimeException(e);
 		}
 	}
 	
-	public MultiPartFile getFile(String name){
-		List<MultiPartFile> already = fileMap.get(name);
-		MultiPartFile file = null;
+	public MultipartFile getFile(String name){
+		List<MultipartFile> already = fileMap.get(name);
+		MultipartFile file = null;
 		if(already!=null && already.size() > 0) {
 			file = already.get(0);
 		}
 		return file;
 	}
-	public List<MultiPartFile> getFiles(String name) {
+	public List<MultipartFile> getFiles(String name) {
 		return fileMap.get(name);
 	}
 	
@@ -69,13 +69,13 @@ public class FileUploadRequestWrapper extends HttpServletRequestWrapper{
 		};
 	}
 	
-	public Map<String, List<MultiPartFile>> getFileMap() {
+	public Map<String, List<MultipartFile>> getFileMap() {
 		return fileMap;
 	}
 	
 	public void deleteAll() throws IOException {
-		for(Entry<String, List<MultiPartFile>> entry : fileMap.entrySet()) {
-			for(MultiPartFile tmp : entry.getValue()) {
+		for(Entry<String, List<MultipartFile>> entry : fileMap.entrySet()) {
+			for(MultipartFile tmp : entry.getValue()) {
 				tmp.delete();
 			}
 		}
