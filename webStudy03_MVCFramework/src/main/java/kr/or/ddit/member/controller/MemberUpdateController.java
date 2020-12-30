@@ -26,6 +26,7 @@ import kr.or.ddit.mvc.annotation.resolvers.RequestParam;
 import kr.or.ddit.mvc.streotype.Controller;
 import kr.or.ddit.mvc.streotype.RequestMapping;
 import kr.or.ddit.validate.CommonValidator;
+import kr.or.ddit.validate.groups.UpdateGroup;
 import kr.or.ddit.vo.MemberVO;
 import kr.or.ddit.vo.NotyMessageVO;
 import kr.or.ddit.vo.ProdVO;
@@ -50,30 +51,37 @@ public class MemberUpdateController{
 	@RequestMapping(value="/member/modifyMember.do", method=RequestMethod.POST)
 	public String doPost(@ModelAttribute("member") MemberVO member, HttpServletRequest req) {
 		addCommandAttribute(req);
-		
 		Map<String, List<String>> errors = new LinkedHashMap<>();
 		req.setAttribute("errors", errors);
 		CommonValidator<MemberVO> validator = new CommonValidator<>();
-		boolean valid = validator.validate(member, errors);
+		boolean valid = validator.validate(member, errors, UpdateGroup.class);
 		
+		String goPage = null;
 		if(valid) {
 			ServiceResult result = service.modifyMember(member);
 			switch (result) {
 			case INVALIDPASSWORD:
+				goPage = "member/memberForm";
 				req.setAttribute("message", NotyMessageVO.builder("비번 오류:").build());
+				break;
 			case FAILED:
+				goPage = "member/memberForm";
 				req.setAttribute("message", NotyMessageVO.builder("서버 오류:").build());
+				break;
 			default:
+				goPage =  "redirect:/mypage.do";
 				MemberVO authMember =(MemberVO) req.getSession().getAttribute("authMember");
 				try {
 					BeanUtils.copyProperties(authMember, member);
 				} catch (IllegalAccessException | InvocationTargetException e) {
 					throw new RuntimeException(e);
 				}
-				return "redirect:/mypage.do";
+				break;
 			}
+		}else {
+			goPage = "member/memberForm";
 		}
-		return "member/memberForm";
+		return goPage;
 	}
 }
 

@@ -49,7 +49,7 @@
 <%	} %>
 		</tbody>
 	</table>
-<script type="text/javascript" src="<%=request.getContextPath() %>/js/asyncForm.js"></script>
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/asyncForm.js"></script>
 <script type="text/javascript">
 	let listBody = $("#listBody");
 	$("#searchForm").asyncForm({

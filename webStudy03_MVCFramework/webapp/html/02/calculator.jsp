@@ -2,7 +2,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 	<h3>사칙연산</h3>
-	<form id="calculateForm" method="post" action="<%=request.getContextPath() %>/Calculator.do">
+	<form id="calculateForm" method="post" action="${pageContext.request.contextPath }/Calculator.do">
 		<input type="number" name="num1" required>
 		<select name="sign">
 			<% for(CalculatorSign tmp : CalculatorSign.values()){ %>

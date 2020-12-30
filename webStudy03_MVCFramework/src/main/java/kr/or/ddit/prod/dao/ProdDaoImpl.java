@@ -11,7 +11,6 @@ import kr.or.ddit.vo.ProdVO;
 
 public class ProdDaoImpl implements IProdDao{
 	private static IProdDao self;
-	
 	private SqlSessionFactory SqlSessionFactory;
 	private ProdDaoImpl() {
 		SqlSessionFactory = CustomSqlSessionFactoryBuilder.getSqlSessionFactory();
@@ -56,7 +55,10 @@ public class ProdDaoImpl implements IProdDao{
 
 	@Override
 	public int updateProd(ProdVO prod) {
-		return 0;
+		try(SqlSession sqlSession = SqlSessionFactory.openSession()){
+			IProdDao mapper = sqlSession.getMapper(IProdDao.class);
+			return mapper.updateProd(prod);
+		}
 	}
 
 }

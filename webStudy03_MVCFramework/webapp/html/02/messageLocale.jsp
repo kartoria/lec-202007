@@ -18,8 +18,8 @@
 </head>
 <body>
 
-<input type="image" src="<%=request.getContextPath()%>/images/korean.jpg" class="flag" id="ko"/>
-<input type="image" src="<%=request.getContextPath()%>/images/us.png" class="flag" id="en"/>
+<input type="image" src="${pageContext.request.contextPath }/images/korean.jpg" class="flag" id="ko"/>
+<input type="image" src="${pageContext.request.contextPath }/images/us.png" class="flag" id="en"/>
 <div id="resultArea">
 
 </div>
@@ -33,9 +33,9 @@
 	let resultArea = $("resultArea");
 	$(".flag").on("click", function(event){
 		let language = $(this).prop("id");
-<%-- 		location.href="<%=request.getContextPath()%>/02/getMessage.jsp?lang=" + language; --%>
+<%-- 		location.href="${pageContext.request.contextPath }/02/getMessage.jsp?lang=" + language; --%>
 		$.ajax({
-			url:"<%=request.getContextPath() %>/02/getMessage.do",
+			url:"${pageContext.request.contextPath }/02/getMessage.do",
 			data:{
 				"lang" : language
 			},

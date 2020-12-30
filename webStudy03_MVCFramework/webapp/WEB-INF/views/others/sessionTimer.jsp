@@ -4,10 +4,10 @@
 <div id="timeArea">
 </div>
 
-<script type="text/javascript" src="<%=request.getContextPath() %>/js/sessionTimer.js"></script>
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/sessionTimer.js"></script>
 <script type="text/javascript">
 	$("#timerArea").sessionTimer({
 		timeout : <%=session.getMaxInactiveInterval() %>,
-		sessionURL : "<%=request.getContextPath() %>/02/getMessage.do"
+		sessionURL : "${pageContext.request.contextPath }/02/getMessage.do"
 	});
 </script>

@@ -1,9 +1,6 @@
-<%@page import="java.util.Objects"%>
-<%@page import="java.util.List"%>
-<%@page import="kr.or.ddit.vo.MemberVO"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<jsp:useBean id="pagingVO" class="kr.or.ddit.vo.PagingVO" scope="request" />
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <table class="table table-bordered">
 	<thead>
 		<tr>
@@ -16,22 +13,20 @@
 		</tr>
 	</thead>
 	<tbody>
-	<%
-		List<MemberVO> memberList = pagingVO.getDataList();
+	<c:forEach items="${pagingVO.dataList }" var="member">
+			<tr>
+				<td>${member.mem_id }</td>
+				<td>${member.mem_name }</td>
+				<td>${member.mem_hp }</td>
+				<td>${member.mem_mail }</td>
+				<td>${member.mem_add1 }</td>
+				<td>${member.mem_mileage }</td>
+			</tr>
+	</c:forEach>
+	<%--
 		for(Object element : memberList){
 			MemberVO member = (MemberVO)element;
-			%>
-			<tr>
-				<td><%=member.getMem_id() %></td>
-				<td><%=member.getMem_name() %></td>
-				<td><%=member.getMem_hp() %></td>
-				<td><%=member.getMem_mail() %></td>
-				<td><%=member.getMem_add1() %></td>
-				<td><%=member.getMem_mileage() %></td>
-			</tr>
-			<%
-		}
-	%>
+			--%>
 	</tbody>
 	<tfoot>
 		<tr>
@@ -39,7 +34,7 @@
 				<form id="searchForm">
 					<input type="hidden" name="page" />
 					<input type="hidden" name="searchType" />
-					<input type="hidden" name="searchWord" value="<%=pagingVO.getSearchVO().getSearchWord() %>"/>
+					<input type="hidden" name="searchWord" value="${pagingVO.searchVO.searchWord }"/>
 				</form>
 				<div id="inputUI" class="row">
 					<div class="col-auto">
@@ -51,20 +46,20 @@
 					</div>
 					<div class="col-auto">
 						<input type="text" name="searchWord"  class="form-control mr-3" 
-							value="<%=pagingVO.getSearchVO().getSearchWord() %>"/>
+							value="${pagingVO.searchVO.searchWord }"/>
 					</div>
 					<div class="col-auto">	
 						<input type="button" value="검색" id="searchBtn" class="btn btn-primary"/>
 					</div>
 				</div>	
-				<%=pagingVO.getPagingHTML() %>
+				${pagingVO.pagingHTML }
 			</td>
 		</tr>
 	</tfoot>
 </table>
 <script type="text/javascript">
 	let searchForm = $("#searchForm");
-	$("[name='searchType']").val("<%=Objects.toString( pagingVO.getSearchVO().getSearchType(), "") %>");
+	$("[name='searchType']").val("${pagingVO.searchVO.searchType }");
 	$(".pagination").on("click", "a" ,function(event){
 		event.preventDefault();
 		let page = $(this).data("page");

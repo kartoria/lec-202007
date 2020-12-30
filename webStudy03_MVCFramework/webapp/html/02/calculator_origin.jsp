@@ -32,7 +32,7 @@
 </head>
 <body>
 	<h3>사칙연산</h3>
-	<form method="post" action="<%=request.getContextPath() %>/Calculator.do">
+	<form method="post" action="${pageContext.request.contextPath }/Calculator.do">
 		<input type="number" name="num1" required>
 		<select name="sign">
 			<% for(CalculatorSign tmp : CalculatorSign.values()){ %>

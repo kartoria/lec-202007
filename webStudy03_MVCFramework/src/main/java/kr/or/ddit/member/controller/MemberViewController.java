@@ -25,14 +25,13 @@ public class MemberViewController extends HttpServlet{
 	private IAuthenticateService service = AuthenticateServiceImpl.getInstance();
 	
 	@RequestMapping("/mypage.do")
-	protected String doGet(){
+	public String doGet(){
 		return "member/passwordForm";
 	}
 	
 	@RequestMapping(value="/mypage.do", method=RequestMethod.POST)
-	protected String doPost(@RequestParam("mem_pass") String mem_pass, 
-			HttpServletRequest req) throws ServletException, IOException {
-		
+	public String doPost(@RequestParam("mem_pass") String mem_pass, 
+			HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		HttpSession session = req.getSession(false);
 		if(session == null || session.isNew()) {
 			return null;
@@ -50,7 +49,7 @@ public class MemberViewController extends HttpServlet{
 			return "member/mypage";
 		}else {
 			session.setAttribute("message", NotyMessageVO.builder("비밀번호 오류, 다시 해보셈").build());
-			return "redirct:/mypage.do";
+			return "redirect:/mypage.do";
 		}
 	}
 }

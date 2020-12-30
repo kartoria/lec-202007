@@ -11,6 +11,49 @@
   <listener>
     <listener-class>org.apache.tiles.web.startup.simple.SimpleTilesListener</listener-class>
   </listener>
+  
+  
+  <filter>
+  	<filter-name>characterEncodingFilter</filter-name>
+  	<filter-class>kr.or.ddit.filter.characterEncodingFilter</filter-class>
+  	<init-param>
+  		<param-name>encoding</param-name>
+  		<param-value>UTF-8</param-value>
+  	</init-param>
+  </filter>
+  <filter-mapping>
+  	<filter-name>characterEncodingFilter</filter-name>
+  	<url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
+  <filter>
+  	<filter-name>AuthenticationFilter</filter-name>
+  	<filter-class>kr.or.ddit.filter.auth.AuthenticationFilter</filter-class>
+  </filter>
+  <filter-mapping>
+  	<filter-name>AuthenticationFilter</filter-name>
+  	<url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
+  <filter>
+  	<filter-name>AuthorizationFilter</filter-name>
+  	<filter-class>kr.or.ddit.filter.auth.AuthorizationFilter</filter-class>
+  </filter>
+  <filter-mapping>
+  	<filter-name>AuthorizationFilter</filter-name>
+  	<url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
+  <filter>
+  	<filter-name>FileUploadCheckFilter</filter-name>
+  	<filter-class>kr.or.ddit.filter.fileupload.FileUploadCheckFilter</filter-class>
+  </filter>
+  <filter-mapping>
+  	<filter-name>FileUploadCheckFilter</filter-name>
+  	<url-pattern>*.do</url-pattern>
+  </filter-mapping>
+  
+  
   <servlet>
   	<servlet-name>FrontController</servlet-name>
   	<servlet-class>kr.or.ddit.mvc.FrontController</servlet-class>
@@ -19,11 +62,13 @@
 	  	<param-value>kr.or.ddit</param-value>
   	</init-param>
   	<load-on-startup>1</load-on-startup>
+  	<multipart-config />
   </servlet>
   <servlet-mapping>
   	<servlet-name>FrontController</servlet-name>
   	<url-pattern>*.do</url-pattern>
   </servlet-mapping>
+  
   <servlet>
     <servlet-name>TilesDispatchServlet</servlet-name>
     <servlet-class>org.apache.tiles.web.util.TilesDispatchServlet</servlet-class>
@@ -33,6 +78,7 @@
     <servlet-name>TilesDispatchServlet</servlet-name>
     <url-pattern>*.tiles</url-pattern>
   </servlet-mapping>
+  
   <servlet>
     <servlet-name>ImageListServlet</servlet-name>
     <servlet-class>kr.or.ddit.servlet01.ImageListServlet</servlet-class>
@@ -45,6 +91,8 @@
     <servlet-name>ImageListServlet</servlet-name>
     <url-pattern>/01/imageList.tmpl</url-pattern>
   </servlet-mapping>
+  
+  
 <!--   <session-config> -->
 <!--     <session-timeout>2</session-timeout> -->
 <!--   </session-config> -->

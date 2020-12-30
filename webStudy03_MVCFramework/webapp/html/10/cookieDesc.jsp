@@ -80,7 +80,7 @@
 		
 	%>
 	<a href="viewCookie.jsp">동일 경로에서 쿠키 확인</a>
-	<a href="<%=request.getContextPath() %>/html/09/viewCookie.jsp">다른 경로에서 쿠키 확인</a>
+	<a href="${pageContext.request.contextPath }/html/09/viewCookie.jsp">다른 경로에서 쿠키 확인</a>
 </pre>
 </body>
 </html>

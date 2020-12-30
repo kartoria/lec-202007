@@ -2,13 +2,13 @@
 <%@page import="kr.or.ddit.enumpkg.ServiceKind"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<form id="menuForm" action="<%=request.getContextPath() %>/module.do">
+<form id="menuForm" action="${pageContext.request.contextPath }/module.do">
 	<input type="hidden" name="service" />
 </form>    
  <div class="position-sticky pt-3">
    <ul class="nav flex-column menuUl">
      <li class="nav-item">
-       <a class="nav-link active" aria-current="page" href="<%=request.getContextPath() %>">
+       <a class="nav-link active" aria-current="page" href="${pageContext.request.contextPath }">
          <span data-feather="home"></span>
          Dashboard
        </a>
@@ -22,7 +22,7 @@
 				<%
 					if(model2){
 						%>
-						<a class="nav-link" href="<%=request.getContextPath() %><%=service.getMenu().getMenuURI() %>"><%=service.getMenu().getMenuText() %></a>
+						<a class="nav-link" href="${pageContext.request.contextPath }<%=service.getMenu().getMenuURI() %>"><%=service.getMenu().getMenuText() %></a>
 						<%					
 					}else{
 						%>

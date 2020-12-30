@@ -34,4 +34,7 @@
   <definition name="imageList" extends="parent">
   	<put-attribute name="contents" value="/WEB-INF/views/imageList.jsp"/>
   </definition>
+  <definition name="board/*" extends="parent">
+  	<put-attribute name="contents" value="/WEB-INF/views/board/{1}.jsp"/>
+  </definition>
 </tiles-definitions>

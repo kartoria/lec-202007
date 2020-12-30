@@ -17,46 +17,40 @@ import kr.or.ddit.vo.MemberVO;
 import kr.or.ddit.vo.PagingVO;
 
 public class MemberDaoImpl implements IMemberDao{
-	private static IMemberDao memDao;
+	private static IMemberDao self;
 	private MemberDaoImpl() {}
 	public static IMemberDao getInstance() {
-		if(memDao == null) memDao = new MemberDaoImpl();
-		return memDao;
+		if(self == null) self = new MemberDaoImpl();
+		return self;
 	}
 	private SqlSessionFactory sqlSessionFactory = CustomSqlSessionFactoryBuilder.getSqlSessionFactory(); 
 	
 	@Override
 	public int insertMember(MemberVO member) {
-		try(
-				SqlSession sqlSession = sqlSessionFactory.openSession();
-			){		
-				IMemberDao mapper = sqlSession.getMapper(IMemberDao.class);
-				int rowcnt = mapper.insertMember(member);
-				sqlSession.commit();
-				return rowcnt;
+		try(SqlSession sqlSession = sqlSessionFactory.openSession() ){		
+			IMemberDao mapper = sqlSession.getMapper(IMemberDao.class);
+			int rowcnt = mapper.insertMember(member);
+			sqlSession.commit();
+			return rowcnt;
 		}
 	}
 	@Override
 	public int selectMemberCount(PagingVO pagingVO) {
-		try(
-				SqlSession sqlSession = sqlSessionFactory.openSession();
-			){		
-				IMemberDao mapper = sqlSession.getMapper(IMemberDao.class);
-				return mapper.selectMemberCount(pagingVO);
+		try(SqlSession sqlSession = sqlSessionFactory.openSession() ){		
+			IMemberDao mapper = sqlSession.getMapper(IMemberDao.class);
+			return mapper.selectMemberCount(pagingVO);
 		}
 	}
 	@Override
 	public List<MemberVO> selectMemberList(PagingVO pagingVO) {
-		try(
-				SqlSession sqlSession = sqlSessionFactory.openSession();
-			){		
-				IMemberDao mapper = sqlSession.getMapper(IMemberDao.class);
-				return mapper.selectMemberList(pagingVO);
+		try(SqlSession sqlSession = sqlSessionFactory.openSession() ){		
+			IMemberDao mapper = sqlSession.getMapper(IMemberDao.class);
+			return mapper.selectMemberList(pagingVO);
 		}
 	}
 	@Override
 	public MemberVO selectMember(String mem_id) {
-		try(SqlSession sqlSession = sqlSessionFactory.openSession()){
+		try(SqlSession sqlSession = sqlSessionFactory.openSession() ){
 //			return sqlSession.selectOne("kr.or.ddit.member.dao.IMemberDao.selectMember", mem_id);
 			IMemberDao mapper = sqlSession.getMapper(IMemberDao.class);
 			return mapper.selectMember(mem_id);
@@ -64,7 +58,7 @@ public class MemberDaoImpl implements IMemberDao{
 	}
 	@Override
 	public int updateMember(MemberVO member) {
-		try(SqlSession sqlSession = sqlSessionFactory.openSession()){
+		try(SqlSession sqlSession = sqlSessionFactory.openSession() ){
 			IMemberDao mapper = sqlSession.getMapper(IMemberDao.class);
 			int rowcnt = mapper.updateMember(member);
 			sqlSession.commit();
@@ -73,9 +67,7 @@ public class MemberDaoImpl implements IMemberDao{
 	}
 	@Override
 	public int deleteMember(String mem_id) {
-		try(
-				SqlSession sqlSession = sqlSessionFactory.openSession();
-			){		
+		try(SqlSession sqlSession = sqlSessionFactory.openSession() ){		
 				IMemberDao mapper = sqlSession.getMapper(IMemberDao.class);
 				int rowcnt = mapper.deleteMember(mem_id);
 				sqlSession.commit();

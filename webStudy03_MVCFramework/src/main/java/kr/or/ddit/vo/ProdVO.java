@@ -1,5 +1,7 @@
 package kr.or.ddit.vo;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
 
@@ -8,6 +10,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.apache.commons.lang3.StringUtils;
+
+import kr.or.ddit.filter.fileupload.MultiPartFile;
+import kr.or.ddit.validate.groups.InsertGroup;
 import kr.or.ddit.validate.groups.UpdateGroup;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -52,7 +58,7 @@ public class ProdVO implements Serializable {
 	
 	private String prod_detail;
 	
-	@NotBlank
+	@NotBlank(groups=InsertGroup.class)
 	@Size(max = 40)
 	private String prod_img;
 	
@@ -87,4 +93,17 @@ public class ProdVO implements Serializable {
 	private BuyerVO buyer; // Prod has a Buyer
 	
 	private Set<MemberVO> memberList;
+	
+	private MultiPartFile prod_image;
+	public void setProd_image(MultiPartFile prod_image) {
+		if(prod_image != null && StringUtils.isNotBlank(prod_image.getOriginalFilename())) {
+			this.prod_image = prod_image;
+			this.prod_img = prod_image.getSavename();
+		}
+	}
+	public void saveTo(File saveFolder) throws IOException {
+		if(prod_image != null) {
+			prod_image.saveToWithNewName(saveFolder);
+		}
+	}
 }

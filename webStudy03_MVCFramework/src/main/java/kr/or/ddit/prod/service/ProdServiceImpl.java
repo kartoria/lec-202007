@@ -22,10 +22,10 @@ public class ProdServiceImpl implements IProdService{
 	
 	@Override
 	public ServiceResult createProd(ProdVO prod) {
-		if(dao.insertProd(prod) == 0) 
-			return ServiceResult.FAILED;
-		else 
+		if(dao.insertProd(prod) > 0) 
 			return ServiceResult.OK;
+		else 
+			return ServiceResult.FAILED;
 	}
 
 	@Override
@@ -41,14 +41,15 @@ public class ProdServiceImpl implements IProdService{
 	@Override
 	public ProdVO retrieveProd(String prod_id) {
 		ProdVO prod = dao.selectProd(prod_id);
-		if(prod == null)
-			throw new CustomException();
+		if(prod == null) throw new CustomException(prod_id+"에 해당하는 상품 없음.");
 		return prod;
 	}
 
 	@Override
 	public ServiceResult modifyProd(ProdVO prod) {
-		return null;
+		if(prod == null) throw new CustomException();
+		if(dao.updateProd(prod) > 0) return ServiceResult.OK;
+		else return ServiceResult.FAILED;
 	}
 
 }

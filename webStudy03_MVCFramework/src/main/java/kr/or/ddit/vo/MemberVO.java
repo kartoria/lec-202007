@@ -1,6 +1,8 @@
 package kr.or.ddit.vo;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.Base64;
 import java.util.List;
 
 import javax.validation.constraints.Email;
@@ -11,9 +13,11 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import javax.validation.groups.Default;
 
+import org.apache.commons.lang3.StringUtils;
+
+import kr.or.ddit.filter.fileupload.MultiPartFile;
 import kr.or.ddit.validate.groups.DeleteGroup;
 import kr.or.ddit.validate.groups.InsertGroup;
-import kr.or.ddit.validate.groups.UpdateGroup;
 import kr.or.ddit.validate.rule.TelNumber;
 import lombok.*;
 
@@ -59,6 +63,7 @@ public class MemberVO implements Serializable{
 	private String mem_hometel;
 	
 	@NotBlank
+	@TelNumber
 	private String mem_comtel;
 	
 	@TelNumber(value="\\d{2,3} \\d{3,4} \\d{4}", placeholder="000 0000 0000")
@@ -83,4 +88,30 @@ public class MemberVO implements Serializable{
 	private String mem_delete;
 	
 	private List<ProdVO> prodList; // Member has many Prod;
+	
+	private String mem_role;
+	
+	
+	public String getTest() {
+		return "테스트";
+	}
+	
+	
+	private MultiPartFile mem_image; // client 데이터 받기용.
+	public void setMem_image(MultiPartFile mem_image) throws IOException {
+		if(mem_image!=null && StringUtils.isNotBlank(mem_image.getOriginalFilename())) {
+			this.mem_image = mem_image;
+			this.mem_img = mem_image.getBytes();
+		}
+	}
+	
+	private byte[] mem_img;   // DB 전달 용
+	
+	public String getBase64Image() {
+		String encoded = null;
+		if(mem_img!= null) {
+			encoded = Base64.getEncoder().encodeToString(mem_img);
+		}
+		return encoded;
+	}
 }

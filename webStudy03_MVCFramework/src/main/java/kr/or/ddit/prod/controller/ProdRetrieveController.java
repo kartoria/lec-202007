@@ -38,7 +38,6 @@ import kr.or.ddit.vo.SearchVO;
 public class ProdRetrieveController{
 	private static final Logger logger = LoggerFactory.getLogger(ProdRetrieveController.class);
 	private IProdService service = ProdServiceImpl.getInstance();
-	private IOthersDao dao = OthersDaoImpl.getInstance();
 	
 	@RequestMapping("/prod/prodList.do")
 	public String prodList(
@@ -46,7 +45,7 @@ public class ProdRetrieveController{
 			@ModelAttribute("searchDetail") ProdVO searchDetail, HttpServletRequest req, HttpServletResponse resp) 
 					throws ServletException, IOException {
 		
-		PagingVO<ProdVO> pagingVO = new PagingVO<>(3, 2);
+		PagingVO<ProdVO> pagingVO = new PagingVO<>(7, 3);
 		// 목록 조회와 카운트 조회시 동일 검색 조건 사용.
 		pagingVO.setSearchDetail(searchDetail);
 		
@@ -69,23 +68,14 @@ public class ProdRetrieveController{
 	}
 	
 	@RequestMapping("/prod/prodView.do")
-	public String prodView(@RequestParam("prod_id") String prod_id, HttpServletRequest req) throws IOException {
+	public String prodView(@RequestParam("prod_id") String prod_id
+				, HttpServletRequest req) throws IOException {
 		ProdVO prod = service.retrieveProd(prod_id);
 		req.setAttribute("prod", prod);
 		return "prod/prodView";
 	}
 	
-	@RequestMapping("/prod/getOthers.do")
-	public String getOthers(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		// json 데이터로 비동기 요청에 대한 응답의 형태로 buyerList/lprodList 제공
-		List<BuyerVO> buyerList = dao.selectBuyerList();
-		List<Map<String, Object>> lprodList = dao.selectLProdList();
-		req.setAttribute("lprodList", lprodList);
-		req.setAttribute("buyerList", buyerList);
-		
-		JsonResponseUtils.toJsonResponse(req, resp);
-		return null;
-	}
+	
 	
 	
 	

@@ -1,5 +1,6 @@
 package kr.or.ddit.member.controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -24,7 +25,9 @@ import kr.or.ddit.mvc.annotation.resolvers.RequestParam;
 import kr.or.ddit.mvc.streotype.Controller;
 import kr.or.ddit.mvc.streotype.RequestMapping;
 import kr.or.ddit.validate.CommonValidator;
+import kr.or.ddit.validate.groups.InsertGroup;
 import kr.or.ddit.vo.MemberVO;
+import kr.or.ddit.vo.NotyMessageVO;
 
 @Controller
 public class MemberInsertController {
@@ -36,25 +39,37 @@ public class MemberInsertController {
 	}
 	
 	@RequestMapping(value="/member/registMember.do", method=RequestMethod.POST)
-	public String InsertMemberPost(@ModelAttribute("member") MemberVO member ,HttpServletRequest req){
-		CommonValidator<MemberVO> validator = new CommonValidator<>();
+	public String InsertMemberPost(@ModelAttribute("member") MemberVO member ,HttpServletRequest req) throws IOException{
 		Map<String, List<String>> errors = new LinkedHashMap<>();
-		boolean valid = validator.validate(member, errors);
 		req.setAttribute("errors", errors);
+		CommonValidator<MemberVO> validator = new CommonValidator<>();
+		boolean valid = validator.validate(member, errors, InsertGroup.class);
+		
+		String goPage = null;
+		
 		if(valid) {
 			ServiceResult result = service.registMember(member);
 			switch (result) {
+			case PKDUPLICATED:
+				goPage = "member/memberForm";
+				req.setAttribute("message", NotyMessageVO.builder("아이디 중복").build());
+				break;
+			case FAILED:
+				goPage = "member/memberForm";
+				req.setAttribute("message", NotyMessageVO.builder("서버 오류").build());
+				break;
 			case OK:
-				return  "redirect:/login/loginForm.do";
-			default :
-				//메세지 전달
+				goPage =  "redirect:/login/loginForm.do";
+				break;
 			}
+		}else {
+			goPage = "member/memberForm";
 		}
-		return "member/memberForm";
+		return goPage;
 	}
 	
 	@RequestMapping("/member/idCheck.do")
-	public String IdCheckGet(@RequestParam("mem_id") String inputId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	public String IdCheckGet(@RequestParam("mem_id") String inputId, HttpServletResponse resp) throws IOException {
 		boolean canUse = false;
 		try {
 			service.retrieveMember(inputId);
@@ -71,7 +86,7 @@ public class MemberInsertController {
 	}
 	
 	@RequestMapping(value="/member/idCheck.do", method=RequestMethod.POST)
-	public String IdCheckPost(@RequestParam("mem_id") String inputId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	public String IdCheckPost(@RequestParam("mem_id") String inputId, HttpServletResponse resp) throws IOException {
 		boolean canUse = false;
 		try {
 			service.retrieveMember(inputId);

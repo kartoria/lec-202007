@@ -1,20 +1,18 @@
-<%@page import="kr.or.ddit.vo.MemberVO"%>
-<%@page import="java.util.Set"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-<jsp:useBean id="prod" class="kr.or.ddit.vo.ProdVO" scope="request" />	
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <table class="table table-bordered">
 	<tr>
 		<th class="text-center">상품코드</th>
-		<td class="pb-1"><%=prod.getProd_id()%></td>
+		<td class="pb-1">${prod.prod_id }</td>
 	</tr>
 	<tr>
 		<th class="text-center">상품명</th>
-		<td class="pb-1"><%=prod.getProd_name()%></td>
+		<td class="pb-1">${prod.prod_name }</td>
 	</tr>
 	<tr>
 		<th class="text-center">분류</th>
-		<td class="pb-1"><%=prod.getProd_lgu()%></td>
+		<td class="pb-1">${prod.prod_lgu }</td>
 	</tr>
 	<tr>
 		<th class="text-center">거래처</th>
@@ -33,12 +31,12 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td><%=prod.getBuyer().getBuyer_id() %></td>
-						<td><%=prod.getBuyer().getBuyer_name() %></td>
-						<td><%=prod.getBuyer().getBuyer_charger() %></td>
-						<td><%=prod.getBuyer().getBuyer_comtel() %></td>
-						<td><%=prod.getBuyer().getBuyer_fax() %></td>
-						<td><%=prod.getBuyer().getBuyer_mail() %></td>
+						<td>${prod.buyer.buyer_id }</td>
+						<td>${prod.buyer.buyer_name }</td>
+						<td>${prod.buyer.buyer_charger }</td>
+						<td>${prod.buyer.buyer_comtel }</td>
+						<td>${prod.buyer.buyer_fax }</td>
+						<td>${prod.buyer.buyer_mail }</td>
 					</tr>
 				</tbody>
 			</table>
@@ -46,67 +44,67 @@
 	</tr>
 	<tr>
 		<th class="text-center">구매가</th>
-		<td class="pb-1"><%=prod.getProd_cost()%></td>
+		<td class="pb-1">${prod.prod_cost }</td>
 	</tr>
 	<tr>
 		<th class="text-center">판매가</th>
-		<td class="pb-1"><%=prod.getProd_price()%></td>
+		<td class="pb-1">${prod.prod_price }</td>
 	</tr>
 	<tr>
 		<th class="text-center">세일가</th>
-		<td class="pb-1"><%=prod.getProd_sale()%></td>
+		<td class="pb-1">${prod.prod_sale }</td>
 	</tr>
 	<tr>
 		<th class="text-center">상품요약</th>
-		<td class="pb-1"><%=prod.getProd_outline()%></td>
+		<td class="pb-1">${prod.prod_outline }</td>
 	</tr>
 	<tr>
 		<th class="text-center">상세정보</th>
-		<td class="pb-1"><%=prod.getProd_detail()%></td>
+		<td class="pb-1">${prod.prod_detail }</td>
 	</tr>
 	<tr>
 		<th class="text-center">이미지경로</th>
-		<td class="pb-1"><%=prod.getProd_img()%></td>
+		<td class="pb-1">${prod.prod_img }</td>
 	</tr>
 	<tr>
 		<th class="text-center">재고수량</th>
-		<td class="pb-1"><%=prod.getProd_totalstock()%></td>
+		<td class="pb-1">${prod.prod_totalstock }</td>
 	</tr>
 	<tr>
 		<th class="text-center">입고일</th>
-		<td class="pb-1"><%=prod.getProd_insdate()%></td>
+		<td class="pb-1">${prod.prod_insdate }</td>
 	</tr>
 	<tr>
 		<th class="text-center">적정재고</th>
-		<td class="pb-1"><%=prod.getProd_properstock()%></td>
+		<td class="pb-1">${prod.prod_properstock }</td>
 	</tr>
 	<tr>
 		<th class="text-center">상품크기</th>
-		<td class="pb-1"><%=prod.getProd_size()%></td>
+		<td class="pb-1">${prod.prod_size }</td>
 	</tr>
 	<tr>
 		<th class="text-center">색상</th>
-		<td class="pb-1"><%=prod.getProd_color()%></td>
+		<td class="pb-1">${prod.prod_color }</td>
 	</tr>
 	<tr>
 		<th class="text-center">배송방법</th>
-		<td class="pb-1"><%=prod.getProd_delivery()%></td>
+		<td class="pb-1">${prod.prod_delivery }</td>
 	</tr>
 	<tr>
 		<th class="text-center">단위</th>
-		<td class="pb-1"><%=prod.getProd_unit()%></td>
+		<td class="pb-1">${prod.prod_unit }</td>
 	</tr>
 	<tr>
 		<th class="text-center">입고량</th>
-		<td class="pb-1"><%=prod.getProd_qtyin()%></td>
+		<td class="pb-1">${prod.prod_qtyin }</td>
 	</tr>
 	<tr>
 		<th class="text-center">출고량</th>
-		<td class="pb-1"><%=prod.getProd_qtysale()%></td>
+		<td class="pb-1">${prod.prod_qtysale }</td>
 	</tr>
 	<tr>
 		<th class="text-center">마일리지</th>
-		<td class="pb-1"><%=prod.getProd_mileage()%></td>
+		<td class="pb-1">${prod.prod_mileage }</td>
 	</tr>
 	<tr>
 		<th>구매자목록</th>
@@ -123,29 +121,25 @@
 					</tr>
 				</thead>
 				<tbody>
-					<%
-						Set<MemberVO> memberList = prod.getMemberList();
-						if(memberList.size()>0){
-							for(MemberVO member : memberList){
-								%>
-								<tr>
-									<td><%=member.getMem_id() %></td>
-									<td><%=member.getMem_name() %></td>
-									<td><%=member.getMem_hp() %></td>
-									<td><%=member.getMem_mail() %></td>
-									<td><%=member.getMem_add1() %></td>
-									<td><%=member.getMem_mileage() %></td>
-								</tr>
-								<%
-							}
-						}else{
-							%>
+				<c:choose>
+					<c:when test="${not empty prod.memberList }">
+						<c:forEach items="${prod.memberList }">
+							<tr>
+								<td>${member.mem_id }</td>
+								<td>${member.mem_name }</td>
+								<td>${member.mem_hp }</td>
+								<td>${member.mem_mail }</td>
+								<td>${member.mem_add1 }</td>
+								<td>${member.mem_mileage }</td>			
+							</tr>
+						</c:forEach>
+					</c:when>
+					<c:otherwise>
 							<tr>
 								<td colspan="6">구매자 정보가 없음.</td>
 							</tr>
-							<%
-						}
-					%>
+					</c:otherwise>
+				</c:choose>
 				</tbody>
 			</table>
 		</td>

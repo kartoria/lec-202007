@@ -1,8 +1,3 @@
-<%@page import="kr.or.ddit.vo.BuyerVO"%>
-<%@page import="java.util.Map"%>
-<%@page import="java.util.Objects"%>
-<%@page import="kr.or.ddit.vo.ProdVO"%>
-<%@page import="java.util.List"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <!--    분류명, 상품명, 거래처명으로 검색 기능 제공  -->
@@ -52,6 +47,7 @@
 		</tr>
 	</tfoot>
 </table>
+<a href="${pageContext.request.contextPath }/prod/prodInsert.do">물품신규등록</a>
 <script type="text/javascript">
 	let prod_lguTag = $("[name='prod_lgu']").on("change", function(){
 		let buyer_lgu = this.value;
@@ -60,7 +56,7 @@
 	});
 	let prod_buyerTag = $("[name='prod_buyer']");
 	$.ajax({
-		url:"<%=request.getContextPath()%>/prod/getOthers.do",
+		url:"${pageContext.request.contextPath }/prod/getOthers.do",
 		dataType:"json",
 		success:function(resp){
 			let buyerOpts = [];
@@ -102,7 +98,7 @@
 		  		$(prodList).each(function(idx, prod){
 		  			trTags.push(
 		  				$("<tr class='trTag'>").append(
-		  					$("<td>").append($("<a href='<%=request.getContextPath() %>/prod/prodView.do?prod_id="+prod.prod_id+"'>").text(prod.prod_id))
+		  					$("<td>").append($("<a href='${pageContext.request.contextPath }/prod/prodView.do?prod_id="+prod.prod_id+"'>").text(prod.prod_id))
 		  					, $("<td>").text(prod.prod_lgu)
 		  					, $("<td>").text(prod.prod_name)		
 		  					, $("<td>").text(prod.prod_cost)		

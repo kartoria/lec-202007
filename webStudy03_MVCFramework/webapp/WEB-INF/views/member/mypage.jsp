@@ -1,82 +1,89 @@
-<%@page import="kr.or.ddit.vo.ProdVO"%>
-<%@page import="java.util.List"%>
-<%@page import="java.util.Objects"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-<jsp:useBean id="member" class="kr.or.ddit.vo.MemberVO" scope="request" />
-<h4><%=member.getMem_name()%>님의 상세 정보</h4>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
+
+<h4>${member["mem_name"] }님의 상세 정보</h4>
 <table class="col-md-7 table-bordered table-responsive">
 	<tr>
 		<th class="text-center">아이디</th>
-		<td class="text-center pb-1"><%=member.getMem_id()%></td>
+		<td class="text-center pb-1">${member["mem_id"] }</td>
 	</tr>
 	<tr>
 		<th class="text-center">이름</th>
-		<td class="text-center pb-1"><%=member.getMem_name()%></td>
+		<td class="text-center pb-1">${member["mem_name"] }</td>
 	</tr>
 	<tr>
+		<th class="text-center">프로필 사진</th>
+		<td class="text-center pb-1">
+			<c:if test="${not empty member.mem_img }">
+				<img class="thumbnail" src="data:image/*;base64,${member.base64Image }" />
+			</c:if>
+		</td>
+	</tr>	
+	<tr>
 		<th class="text-center">주민번호1</th>
-		<td class="text-center pb-1"><%=member.getMem_regno1()%></td>
+		<td class="text-center pb-1">${member["mem_regno1"] }</td>
 	</tr>
 	<tr>
 		<th class="text-center">주민번호2</th>
-		<td class="text-center pb-1"><%=member.getMem_regno2()%></td>
+		<td class="text-center pb-1">${member["mem_regno2"] }</td>
 	</tr>
 	<tr>
 		<th class="text-center">생일</th>
-		<td class="text-center pb-1"><%=member.getMem_bir()%></td>
+		<td class="text-center pb-1">${member["mem_bir"] }</td>
 	</tr>
 	<tr>
 		<th class="text-center">우편번호</th>
-		<td class="text-center pb-1"><%=member.getMem_zip()%></td>
+		<td class="text-center pb-1">${member["mem_zip"] }</td>
 	</tr>
 	<tr>
 		<th class="text-center">주소1</th>
-		<td class="text-center pb-1"><%=member.getMem_add1()%></td>
+		<td class="text-center pb-1">${member.mem_add1 }</td>
 	</tr>
 	<tr>
 		<th class="text-center">주소2</th>
-		<td class="text-center pb-1"><%=member.getMem_add2()%></td>
+		<td class="text-center pb-1">${member.mem_add2 }</td>
 	</tr>
 	<tr>
 		<th class="text-center">집전번</th>
-		<td class="text-center pb-1"><%=member.getMem_hometel()%></td>
+		<td class="text-center pb-1">${member.mem_hometel }</td>
 	</tr>
 	<tr>
 		<th class="text-center">회사전번</th>
-		<td class="text-center pb-1"><%=member.getMem_comtel()%></td>
+		<td class="text-center pb-1">${member.mem_comtel }</td>
 	</tr>
 	<tr>
 		<th class="text-center">휴대폰</th>
-		<td class="text-center pb-1"><%=member.getMem_hp()%></td>
+		<td class="text-center pb-1">${member.mem_hp }</td>
 	</tr>
 	<tr>
 		<th class="text-center">메일</th>
-		<td class="text-center pb-1"><%=member.getMem_mail()%></td>
+		<td class="text-center pb-1">${member.mem_mail }</td>
 	</tr>
 	<tr>
 		<th class="text-center">직업</th>
-		<td class="text-center pb-1"><%=member.getMem_job()%></td>
+		<td class="text-center pb-1">${member.mem_job }</td>
 	</tr>
 	<tr>
 		<th class="text-center">취미</th>
-		<td class="text-center pb-1"><%=member.getMem_like()%></td>
+		<td class="text-center pb-1">${member.mem_like }</td>
 	</tr>
 	<tr>
 		<th class="text-center">기념일</th>
-		<td class="text-center pb-1"><%=member.getMem_memorial()%></td>
+		<td class="text-center pb-1">${member.mem_memorial }</td>
 	</tr>
 	<tr>
 		<th class="text-center">기념일자</th>
-		<td class="text-center pb-1"><%=member.getMem_memorialday()%></td>
+		<td class="text-center pb-1">${member.mem_memorialday }</td>
 	</tr>
 	<tr>
 		<th class="text-center">마일리지</th>
-		<td class="text-center pb-1"><%=member.getMem_mileage()%></td>
+		<td class="text-center pb-1">${member.mem_mileage }</td>
 	</tr>
 	<tr>
 		<th class="text-center">탈퇴여부</th>
-		<td class="text-center pb-1"><%="Y".equals(member.getMem_delete())?"탈퇴":"이용중" %></td>
+		<td class="text-center pb-1">${"Y" eq member.mem_delete ? "탈퇴" : "이용중" }</td>
 	</tr>
 	<tr>
 		<td colspan="2">
@@ -87,7 +94,6 @@
 	<tr>
 		<th>구매목록</th>
 		<td>
-			<%=member.getProdList() %>
 			<table class="table">
 				<thead class="table-dark">
 					<tr>
@@ -99,28 +105,23 @@
 					</tr>
 				</thead>
 				<tbody>
-					<%
-						List<ProdVO> prodList = member.getProdList();
-						if(prodList!=null && prodList.size()>0){
-							for(ProdVO prod : prodList){
-								%>
-								<tr>
-									<td><%=prod.getProd_id() %></td>
-									<td><%=prod.getProd_lgu() %></td>
-									<td><%=prod.getProd_name() %></td>
-									<td><%=prod.getProd_cost() %></td>
-									<td><%=prod.getProd_price() %></td>
-								</tr>
-								<%
-							}
-						}else{
-							%>
+					<c:set var="prodList" value="${member.prodList }"/>
+					<c:if test="${not empty prodList }">
+						<c:forEach items="${prodList }" var="prod">
 							<tr>
-								<td colspan="5">구매 목록이 없음.</td>
+								<td>${prod.prod_id }</td>
+								<td>${prod.prod_lgu }</td>
+								<td>${prod.prod_name }</td>
+								<td>${prod.prod_cost }</td>
+								<td>${prod.prod_price }</td>
 							</tr>
-							<%
-						}
-					%>
+						</c:forEach>
+					</c:if>
+					<c:if test="${empty prodList }">
+						<tr>
+							<td colspan="5">구매 목록이 없음.</td>
+						</tr>
+					</c:if>
 				</tbody>
 			</table>
 		</td>
@@ -130,7 +131,7 @@
 <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form action="<%=request.getContextPath() %>/member/removeMember.do" method="post">
+      <form action="<c:url value='/member/removeMember.do'/>" method="post">
 	      <div class="modal-header">
 	        <h5 class="modal-title" id="passwordModalLabel">Modal title</h5>
 	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -164,7 +165,7 @@
 			passwordModal.modal("show");
 		});
 		$("#modifyBtn").on("click", function(){
-			location.href="<%=request.getContextPath() %>/member/modifyMember.do";
+			location.href="<c:url value='/member/modifyMember.do'/>";
 		});
 	});
 </script>

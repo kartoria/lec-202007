@@ -45,7 +45,7 @@
 	<insert id="insertProd" parameterType="ProdVO">
 		<selectKey order="BEFORE" resultType="string" keyProperty="prod_id">
 			SELECT #{prod_lgu} || LPAD(TO_NUMBER(NVL(SUBSTR(MAX(PROD_ID), 5),0))+1, 6, '0')
-			FROM PROD
+			FROM  PROD
 			WHERE PROD_LGU = #{prod_lgu}
 		</selectKey>
 		INSERT INTO PROD
@@ -60,11 +60,36 @@
 			( #{prod_id, jdbcType=VARCHAR}         , #{prod_name, jdbcType=VARCHAR}      , #{prod_lgu, jdbcType=VARCHAR}
 			, #{prod_buyer, jdbcType=VARCHAR}      , #{prod_cost, jdbcType=NUMERIC}      , #{prod_price, jdbcType=NUMERIC}
 			, #{prod_sale, jdbcType=NUMERIC}       , #{prod_outline, jdbcType=VARCHAR}   , #{prod_detail, jdbcType=CLOB}
-			, #{prod_id, jdbcType=VARCHAR}||'.gif' , #{prod_totalstock, jdbcType=NUMERIC}, SYSDATE
+			, #{prod_img, jdbcType=VARCHAR}        , #{prod_totalstock, jdbcType=NUMERIC}, SYSDATE
 			, #{prod_properstock, jdbcType=NUMERIC}, #{prod_size, jdbcType=VARCHAR}      , #{prod_color, jdbcType=VARCHAR}   
 			, #{prod_delivery, jdbcType=VARCHAR}   , #{prod_unit, jdbcType=VARCHAR}      , #{prod_qtyin, jdbcType=NUMERIC}   
 			, #{prod_qtysale, jdbcType=NUMERIC}    , #{prod_mileage, jdbcType=VARCHAR}                    )
 	</insert>
+	
+	<update id="updateProd" parameterType="ProdVO">
+		UPDATE PROD
+	       SET PROD_NAME		  = #{prod_name,jdbcType=VARCHAR}
+			   , PROD_LGU		  = #{prod_lgu,jdbcType=VARCHAR}
+			   , PROD_BUYER		  = #{prod_buyer,jdbcType=VARCHAR}
+			   , PROD_COST		  = #{prod_cost,jdbcType=NUMERIC}
+			   , PROD_PRICE		  = #{prod_price,jdbcType=NUMERIC}
+			   , PROD_SALE		  = #{prod_sale,jdbcType=NUMERIC}
+			   , PROD_OUTLINE	  = #{prod_outline,jdbcType=VARCHAR}
+			   , PROD_DETAIL	  = #{prod_detail,jdbcType=CLOB}
+			   , PROD_TOTALSTOCK  = #{prod_totalstock,jdbcType=NUMERIC}
+			   , PROD_PROPERSTOCK = #{prod_properstock,jdbcType=NUMERIC}
+			   , PROD_SIZE		  = #{prod_size,jdbcType=VARCHAR}
+			   , PROD_COLOR		  = #{prod_color,jdbcType=VARCHAR}
+			   , PROD_DELIVERY	  = #{prod_delivery,jdbcType=VARCHAR}
+			   , PROD_UNIT		  = #{prod_unit,jdbcType=VARCHAR}
+			   , PROD_QTYIN		  = #{prod_qtyin,jdbcType=NUMERIC}
+			   , PROD_QTYSALE	  = #{prod_qtysale,jdbcType=NUMERIC}
+			   , PROD_MILEAGE	  = #{prod_mileage,jdbcType=NUMERIC}
+		   <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(prod_img)">
+			   , PROD_IMG		  = #{prod_img, jdbcType=VARCHAR}
+		   </if>
+		WHERE  PROD_ID = #{prod_id}
+	</update>
 	
 	<resultMap type="ProdVO" id="prodMap" autoMapping="true">
 		<id property="prod_id" column="PROD_ID"/>

@@ -6,7 +6,7 @@
 <head>
 <meta charset="UTF-8">
 <title>05/cacheControl.jsp</title>
-<script type="text/javascript" src="<%=request.getContextPath() %>/js/sample.jsp"></script>
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/sample.jsp"></script>
 </head>
 <body>
 <h4>Cache 제어</h4>
@@ -20,7 +20,7 @@ Cache-Control(HTTP/1.1), Pragma(HTTP/1.0), Expires(만료시간)
 	response.setDateHeader("Expires", 0);
 %>	
 </pre>
-<%-- <img src="<%=request.getContextPath() %>/images/cat1.jpg" /> --%>
+<%-- <img src="${pageContext.request.contextPath }/images/cat1.jpg" /> --%>
 </body>
 </html>
 

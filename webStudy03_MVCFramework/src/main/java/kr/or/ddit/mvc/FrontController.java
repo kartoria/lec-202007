@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import kr.or.ddit.member.controller.MemberRetrieveController;
+import kr.or.ddit.member.controller.MemberListController;
 import kr.or.ddit.mvc.annotation.HandlerAdapter;
 import kr.or.ddit.mvc.annotation.HandlerMapping;
 import kr.or.ddit.mvc.annotation.IHandlerAdapter;
@@ -20,7 +20,6 @@ import kr.or.ddit.prod.controller.ProdRetrieveController;
 
 /**
  * entry point : 모든 요청이 집중됨 , POJO(Plain Old Java Object) 
- * 
  */
 public class FrontController extends HttpServlet{
 	private IHandlerMapping handlerMapping;

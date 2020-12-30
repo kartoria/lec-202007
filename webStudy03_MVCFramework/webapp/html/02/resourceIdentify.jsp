@@ -37,7 +37,7 @@
 		ex) ../depth/name
 	
 </pre>
-<img src="<%=request.getContextPath() %>/images/boris.jpg"/>
+<img src="${pageContext.request.contextPath }/images/boris.jpg"/>
 <img src="../../images/boris2.jpg"/>
 
 <%

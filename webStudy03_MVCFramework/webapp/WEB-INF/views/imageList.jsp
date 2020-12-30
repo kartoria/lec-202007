@@ -31,7 +31,7 @@
 					if(imgTags.length>0){
 						let data = JSON.stringify(imageName);
 						$.ajax({
-							url:"<%=request.getContextPath() %>/imageView.do",
+							url:"${pageContext.request.contextPath }/imageView.do",
 							data: data,
 							method:"post",
 							contentType:"application/json;charset=UTF-8",
@@ -59,7 +59,7 @@
 		<div id="imageArea">
 		
 		<% for(String image : array){ %>
-			<img src="<%=request.getContextPath() %>/imageView.do?image=<%=image %>"/>
+			<img src="${pageContext.request.contextPath }/imageView.do?image=<%=image %>"/>
 		<% } %>
 		</div>
 	</body>

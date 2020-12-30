@@ -47,7 +47,7 @@
 						$("<img>").attr("src", "<%= request.getContextPath() %>/imageView.do?image=" + imageName)
 					);
 					$.ajax({
-						url : "<%=request.getContextPath() %>/myimageList.do",
+						url : "${pageContext.request.contextPath }/myimageList.do",
 						method : "post",
 						data : {"imageName" : imageName},
 						dataType : "json"

@@ -4,12 +4,12 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-<link rel="stylesheet" href="<%=request.getContextPath() %>/js/fancytree/skin-win8/ui.fancytree.min.css">
-<script src="<%=request.getContextPath() %>/js/fancytree/jquery.fancytree-all.min.js"></script>
+<link rel="stylesheet" href="${pageContext.request.contextPath }/js/fancytree/skin-win8/ui.fancytree.min.css">
+<script src="${pageContext.request.contextPath }/js/fancytree/jquery.fancytree-all.min.js"></script>
 <script>
 	$(function(){
-		const NODEURL = "<%=request.getContextPath()%>/server/explorer.do";
-		const COMMANDURL = "<%=request.getContextPath()%>/server/fileCommand.do";
+		const NODEURL = "${pageContext.request.contextPath }/server/explorer.do";
+		const COMMANDURL = "${pageContext.request.contextPath }/server/fileCommand.do";
 		function commandProcess(param){
 			let destFolder = param.destNode ? param.destNode.getKeyPath() : "";
 			$.ajax({

@@ -9,19 +9,53 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
+
 import kr.or.ddit.commons.service.ISearchZipService;
 import kr.or.ddit.commons.service.SearchZipServiceImpl;
+import kr.or.ddit.mvc.annotation.resolvers.RequestParam;
+import kr.or.ddit.mvc.streotype.Controller;
+import kr.or.ddit.mvc.streotype.RequestMapping;
 import kr.or.ddit.utils.JsonResponseUtils;
+import kr.or.ddit.vo.PagingVO;
+import kr.or.ddit.vo.SearchVO;
 import kr.or.ddit.vo.ZipVO;
 
-@WebServlet("/commons/searchZip.do")
+@Controller
 public class SearchZipController extends HttpServlet{
 	private ISearchZipService service= SearchZipServiceImpl.getInstance();
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		List<ZipVO> zipList = service.retrieveZipList(null);
-		req.setAttribute("zipList", zipList);
+	
+	@RequestMapping("/commons/searchZip.do")
+	public String searchZip(
+			@RequestParam(value="draw", requried=false, defaultValue="1") String draw
+			, @RequestParam(value="length", requried=false, defaultValue="7") int screenSize
+			, @RequestParam(value="start", requried=false, defaultValue="0") String start
+			, @RequestParam(value="search[value]", requried=false) String searchWord
+			, HttpServletRequest req, HttpServletResponse resp
+	) throws ServletException, IOException {
+		
+		int currentPage = StringUtils.isNumeric(start)? Integer.parseInt(start)/screenSize + 1 : 1 ;
+		
+		PagingVO<ZipVO> pagingVO = new PagingVO<>(screenSize, 5);
+		
+		// 검색 전 레코드 수
+		int recordsTotal = service.retrieveZipCount(pagingVO);
+		
+		pagingVO.setCurrentPage(currentPage);
+		pagingVO.setSearchVO(new SearchVO(null, searchWord));
+		
+		//검색 후 레코드 수
+		int recordsFiltered = service.retrieveZipCount(pagingVO);
+		
+		List<ZipVO> zipList = service.retrieveZipList(pagingVO);
+		req.setAttribute("draw", draw);
+		req.setAttribute("recordsTotal", recordsTotal);
+		req.setAttribute("recordsFiltered", recordsFiltered);
+		req.setAttribute("data", zipList);
+		
 		JsonResponseUtils.toJsonResponse(req, resp);
+		
+		return null;
 	}
 	
 }

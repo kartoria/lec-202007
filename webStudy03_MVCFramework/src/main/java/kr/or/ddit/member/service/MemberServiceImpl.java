@@ -12,14 +12,14 @@ import kr.or.ddit.vo.MemberVO;
 import kr.or.ddit.vo.PagingVO;
 
 public class MemberServiceImpl implements IMemberService{
-	private IMemberDao memDao;
-	private static IMemberService memService;
+	private IMemberDao dao;
+	private static IMemberService self;
 	private MemberServiceImpl() {
-		memDao = MemberDaoImpl.getInstance();
+		dao = MemberDaoImpl.getInstance();
 	}
 	public static IMemberService getInstance() {
-		if(memService == null) memService = new MemberServiceImpl();
-		return memService;
+		if(self == null) self = new MemberServiceImpl();
+		return self;
 	}
 	
 	private IAuthenticateService authService = AuthenticateServiceImpl.getInstance();
@@ -31,22 +31,34 @@ public class MemberServiceImpl implements IMemberService{
 	
 	@Override
 	public ServiceResult registMember(MemberVO member) {
-		if(memDao.selectMember(member.getMem_id()) != null)
-			return ServiceResult.PKDUPLICATED;
-		if(memDao.insertMember(member) == 0) 
-			return ServiceResult.FAILED;
-		encodePassword(member);
-		return ServiceResult.OK;
+		ServiceResult result = null;
+		if(dao.selectMember(member.getMem_id())==null) {
+			encodePassword(member);
+			int rowcnt = dao.insertMember(member);
+			if(rowcnt>0) {
+				result = ServiceResult.OK;
+			}else {
+				result = ServiceResult.FAILED;
+			}
+		}else {
+			result = ServiceResult.PKDUPLICATED;
+		}
+		return result;
+	}
+	
+	@Override
+	public int retrieveMemberCount(PagingVO pagingVO) {
+		return dao.selectMemberCount(pagingVO);
 	}
 	
 	@Override
 	public List<MemberVO> retrieveMemberList(PagingVO pagingVO) {
-		return memDao.selectMemberList(pagingVO);
+		return dao.selectMemberList(pagingVO);
 	}
 
 	@Override
 	public MemberVO retrieveMember(String mem_id){
-		MemberVO member = memDao.selectMember(mem_id);
+		MemberVO member = dao.selectMember(mem_id);
 		if(member == null) 
 			throw new UserNotFoundException(mem_id+"에 해당하는 유저가 없음");
 		return member;
@@ -57,7 +69,7 @@ public class MemberServiceImpl implements IMemberService{
 		Object authResult = authService.authenticate(member);
 		ServiceResult result = ServiceResult.INVALIDPASSWORD;
 		if(authResult instanceof MemberVO) {
-			int rowcnt = memDao.updateMember(member);
+			int rowcnt = dao.updateMember(member);
 			if(rowcnt>0) {
 				result = ServiceResult.OK;
 			}else {
@@ -74,7 +86,7 @@ public class MemberServiceImpl implements IMemberService{
 		Object authResult = authService.authenticate(member);
 		ServiceResult result = null;
 		if(authResult instanceof MemberVO) {
-			int rowcnt = memDao.deleteMember(member.getMem_id());
+			int rowcnt = dao.deleteMember(member.getMem_id());
 			if(rowcnt>0) {
 				result = ServiceResult.OK;
 			}else {
@@ -88,8 +100,4 @@ public class MemberServiceImpl implements IMemberService{
 		return result;
 	}
 	
-	@Override
-	public int retrieveMemberCount(PagingVO pagingVO) {
-		return memDao.selectMemberCount(pagingVO);
-	}
 }

@@ -73,10 +73,10 @@ public class PagingVO<T> {
 		
 		if(endPage < totalPage){
 			html.append(String.format(LIPTRN, "", ""));
-			html.append(String.format(APTRN, (endPage + 1), "Next"));
+			html.append(String.format(APTRN, (endPage + 1), "다음"));
 		}else {
 			html.append(String.format(LIPTRN, "disabled", ""));
-			html.append(String.format(SPANPTRN, "Next"));
+			html.append(String.format(SPANPTRN, "다음"));
 		}
 		html.append("</li>");
 		html.append("</ul>");
