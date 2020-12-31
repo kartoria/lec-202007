@@ -7,12 +7,14 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import kr.or.ddit.mvc.streotype.Controller;
 import kr.or.ddit.mvc.streotype.RequestMapping;
 import kr.or.ddit.prod.dao.IOthersDao;
 import kr.or.ddit.prod.dao.OthersDaoImpl;
 import kr.or.ddit.utils.JsonResponseUtils;
 import kr.or.ddit.vo.BuyerVO;
 
+@Controller
 public class OthersController {
 	private IOthersDao dao = OthersDaoImpl.getInstance();
 

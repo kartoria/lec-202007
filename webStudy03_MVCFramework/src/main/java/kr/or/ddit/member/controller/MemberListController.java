@@ -28,7 +28,7 @@ public class MemberListController{
 	private IMemberService service = MemberServiceImpl.getInstance();
 	
 	@RequestMapping("/member/memberList.do")
-	public String memberList(@RequestParam(value="page", requried=false, defaultValue="1") int currentPage
+	public String memberList(@RequestParam(value="page", required=false, defaultValue="1") int currentPage
 						   , @ModelAttribute("searchVO") SearchVO searchVO
 						   , HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		PagingVO<MemberVO> pagingVO = new PagingVO<>(5, 2);

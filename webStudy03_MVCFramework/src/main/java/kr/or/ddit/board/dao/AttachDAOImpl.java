@@ -20,16 +20,15 @@ public class AttachDAOImpl implements IAttachDAO{
 	
 	
 	@Override
-	public int insertAttaches(BoardVO board) {
-		try (SqlSession sqlSession = sqlSessionFactory.openSession(true)) {
-			IAttachDAO mapper = sqlSession.getMapper(IAttachDAO.class);
-			return mapper.insertAttaches(board);
-		}
+	public int insertAttaches(BoardVO board, SqlSession sqlSession) {
+		return sqlSession.insert("kr.or.ddit.dao.IAttachDAO.insertAttaches", board);
 	}
+	
 	@Override
 	public int deleteAttaches(BoardVO board) {
 		return 0;
 	}
+	
 	@Override
 	public AttachVO selectAttach(int att_no) {
 		return null;

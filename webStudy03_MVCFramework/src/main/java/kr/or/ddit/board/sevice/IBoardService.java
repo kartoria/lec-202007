@@ -17,4 +17,5 @@ public interface IBoardService {
 	public BoardVO retrieveBoard(int bo_no);
 	
 	public AttachVO download(int att_no);
+	public ServiceResult incrementRecCnt(int bo_no);
 }

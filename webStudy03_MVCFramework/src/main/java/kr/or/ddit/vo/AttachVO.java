@@ -2,6 +2,7 @@ package kr.or.ddit.vo;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -53,4 +54,6 @@ public class AttachVO {
 	@Size(max = 20)
 	private String att_fancy;
 	private Integer att_downcount;
+	
+
 }

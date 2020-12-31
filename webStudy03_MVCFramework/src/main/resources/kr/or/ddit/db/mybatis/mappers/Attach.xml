@@ -12,10 +12,10 @@
 			     ATT_NO  , ATT_SAVENAME, ATT_FILENAME
 			   , ATT_MIME, BO_NO       , ATT_FILESIZE, ATT_FANCY
 			) VALUES (
-				#{startAttNo, jdbcType=NUMERIC}+#{idx},    #{attatch.att_savename,jdbcType=VARCHAR},
-			    #{attatch.att_filename,jdbcType=VARCHAR},    #{attatch.att_mime,jdbcType=VARCHAR},
-			    #{bo_no,jdbcType=NUMERIC},    #{attatch.att_filesize,jdbcType=NUMERIC},
-			    #{attatch.att_fancy,jdbcType=VARCHAR}
+				#{startAttNo, jdbcType=NUMERIC}+#{idx},    #{attach.att_savename,jdbcType=VARCHAR},
+			    #{attach.att_filename,jdbcType=VARCHAR},    #{attach.att_mime,jdbcType=VARCHAR},
+			    #{bo_no,jdbcType=NUMERIC},    #{attach.att_filesize,jdbcType=NUMERIC},
+			    #{attach.att_fancy,jdbcType=VARCHAR}
 			)
 		</foreach>
 		SELECT * FROM DUAL

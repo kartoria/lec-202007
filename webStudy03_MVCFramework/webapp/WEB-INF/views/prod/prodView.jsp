@@ -64,7 +64,7 @@
 	</tr>
 	<tr>
 		<th class="text-center">이미지경로</th>
-		<td class="pb-1">${prod.prod_img }</td>
+		<td class="pb-1"><img class="thumbnail" src="${pageContext.request.contextPath }/prodImages/${prod.prod_img }" /></td>
 	</tr>
 	<tr>
 		<th class="text-center">재고수량</th>

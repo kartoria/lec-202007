@@ -57,7 +57,6 @@ public class ProdUpdateController {
 			switch (result) {
 				case OK:
 					goPage =  "redirect:/prod/prodView.do?what="+prod.getProd_id();
-					prod.saveTo(saveFolder);
 					break;
 				default:	
 					req.setAttribute("message", NotyMessageVO.builder("서버 오류").build());

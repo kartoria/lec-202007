@@ -41,7 +41,7 @@ public class ProdRetrieveController{
 	
 	@RequestMapping("/prod/prodList.do")
 	public String prodList(
-			@RequestParam(value="page", requried=false, defaultValue="1") int currentPage,
+			@RequestParam(value="page", required=false, defaultValue="1") int currentPage,
 			@ModelAttribute("searchDetail") ProdVO searchDetail, HttpServletRequest req, HttpServletResponse resp) 
 					throws ServletException, IOException {
 		

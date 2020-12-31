@@ -1,5 +1,6 @@
 package kr.or.ddit.prod.service;
 
+import java.io.IOException;
 import java.util.List;
 
 import kr.or.ddit.enumpkg.ServiceResult;
@@ -10,7 +11,7 @@ import kr.or.ddit.vo.ProdVO;
  * 상품관리 Business Logic Layer 
  */
 public interface IProdService {
-	public ServiceResult createProd(ProdVO prod);
+	public ServiceResult createProd(ProdVO prod) throws IOException;
 	public int retrieveProdCount(PagingVO<ProdVO> pagingVO);
 	public List<ProdVO> retrieveProdList(PagingVO<ProdVO> pagingVO);
 	

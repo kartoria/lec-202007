@@ -84,7 +84,7 @@
 		      , MEM_JOB         = #{mem_job     , jdbcType=VARCHAR}                        
 		      , MEM_LIKE        = #{mem_like    , jdbcType=VARCHAR}                        
 		      , MEM_MEMORIAL    = #{mem_memorial, jdbcType=VARCHAR}                        
-		      , MEM_MEMORIALDAY = TO_DATE(#{mem_memorialdayjdbcType=DATE} 'YYYY-MM-DD')
+		      , MEM_MEMORIALDAY = TO_DATE(#{mem_memorialday, jdbcType=DATE}, 'YYYY-MM-DD')
 	      <if test="mem_img!=null">
 		      , MEM_IMG         = #{mem_img     , jdbcType=BLOB} 
 	      </if> 

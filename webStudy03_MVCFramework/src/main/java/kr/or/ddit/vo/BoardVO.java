@@ -18,7 +18,7 @@ import lombok.ToString;
 
 @Data
 @EqualsAndHashCode(of= {"bo_no"})
-@ToString(exclude= {"bo_files", "attatchList", "replyList"})
+@ToString(exclude= {"bo_files", "attachList", "replyList"})
 public class BoardVO implements Serializable{
 	
 	@NotNull(groups=UpdateGroup.class)
@@ -58,17 +58,16 @@ public class BoardVO implements Serializable{
 	private transient List<MultipartFile> bo_files;
 
 	public void setBo_files(List<MultipartFile> bo_files) {
-		if(bo_files==null || bo_files.size()==0) {
-			this.bo_files = bo_files;
-			this.attatchList = new ArrayList<>();
-			for(MultipartFile tmp : bo_files) {
-				if(StringUtils.isBlank(tmp.getOriginalFilename())) {
-					attatchList.add(new AttachVO(tmp));
-				}
-			}
+		if(bo_files==null || bo_files.size()==0) return;
+		this.bo_files = bo_files;
+		this.attachList = new ArrayList<>();
+		for(MultipartFile tmp : bo_files) {
+			if(StringUtils.isBlank(tmp.getOriginalFilename())) continue; 
+			attachList.add(new AttachVO(tmp));
 		}
 	}
 
-	private transient List<AttachVO> attatchList;
+	private transient List<AttachVO> attachList;
 	private transient List<ReplyVO> replyList;
+	private int startAttNo;
 }

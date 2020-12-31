@@ -26,7 +26,7 @@ public class RequestParamArgumentResolver implements IHanderMethodArgumentResolv
 		Class<?> parameterType = parameter.getType();
 		RequestParam requestParam = parameter.getAnnotation(RequestParam.class);
 		String reqParamName =requestParam.value();
-		boolean requried = requestParam.requried();
+		boolean requried = requestParam.required();
 		String paramValue = req.getParameter(reqParamName);
 		if(requried && (paramValue==null || paramValue.isEmpty())) {
 			throw new IllegalArgumentException("필수 파라미터 누락");

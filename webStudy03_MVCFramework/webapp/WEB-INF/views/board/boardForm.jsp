@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<script src="${cPath }/webStudy03_MVCFramework/webapp/js/ckeditor/ckeditor.js"></script>
 <form method="post" enctype="multipart/form-data">
 	<input type="hidden" class="form-control" name="bo_no" />
 	<input type="hidden" class="form-control" required 
@@ -63,6 +64,7 @@
 	</table>
 </form>
 <script type="text/javascript">
+	CKEDITOR.replace("bo_content");
 	$("#fileArea").on("click", ".plusBtn", function(){
 		let clickDiv = $(this).parents("div.input-group");
 		let newDiv = clickDiv.clone();

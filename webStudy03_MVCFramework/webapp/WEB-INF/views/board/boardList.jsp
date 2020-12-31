@@ -12,11 +12,11 @@
 			<th>추천수</th>
 		</tr>
 	</thead>
-	<tbody>
+	<tbody id="boardList">
 		<c:set var="boardList" value="${pagingVO.dataList }" />
 		<c:if test="${not empty boardList }">
 			<c:forEach items="${boardList }" var="board">
-				<tr>
+				<tr data-bo_no='${board.bo_no }'>
 					<td>${board.rnum }</td>
 					<td>${board.bo_title }[${board.rep_cnt }]</td>
 					<td>${board.bo_writer }</td>
@@ -83,6 +83,11 @@
 			hidden.val(value);
 		});
 		searchForm.submit();
+	});
+	
+	$("#boardList").on("click", "tr", function(){
+		let boardNo = $(this).data("bo_no");
+		location.href = "${pageContext.request.contextPath }/board/boardView.do?bo_no="+boardNo;
 	});
 </script>
 

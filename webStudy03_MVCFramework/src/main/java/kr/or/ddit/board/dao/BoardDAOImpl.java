@@ -21,11 +21,8 @@ public class BoardDAOImpl implements IBoardDAO{
 	}
 
 	@Override
-	public int insertBoard(BoardVO board) {
-		try (SqlSession sqlSession = sqlSessionFactory.openSession(true)) {
-			IBoardDAO mapper = sqlSession.getMapper(IBoardDAO.class);
-			return mapper.insertBoard(board);
-		}
+	public int insertBoard(BoardVO board, SqlSession sqlSession) {
+		return sqlSession.insert("kr.or.ddit.dao.IBoardDAO.insertBoard", board);
 	}
 
 	@Override
@@ -60,6 +57,11 @@ public class BoardDAOImpl implements IBoardDAO{
 			IBoardDAO mapper = sqlSession.getMapper(IBoardDAO.class);
 			return mapper.selectBoard(bo_no);
 		}
+	}
+
+	@Override
+	public void incrementRecCnt(int bo_no) {
+		
 	}
 
 }

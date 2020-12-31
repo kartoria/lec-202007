@@ -1,8 +1,14 @@
 package kr.or.ddit.prod.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+
 import kr.or.ddit.CustomException;
+import kr.or.ddit.db.mybatis.CustomSqlSessionFactoryBuilder;
 import kr.or.ddit.enumpkg.ServiceResult;
 import kr.or.ddit.prod.dao.IProdDao;
 import kr.or.ddit.prod.dao.ProdDaoImpl;
@@ -11,21 +17,34 @@ import kr.or.ddit.vo.ProdVO;
 
 public class ProdServiceImpl implements IProdService{
 	private IProdDao dao;
-	private static IProdService self;
+	private static ProdServiceImpl self;
 	private ProdServiceImpl() {
 		dao = ProdDaoImpl.getInstance();
 	}
-	public static IProdService getInstance() {
+	public static ProdServiceImpl getInstance() {
 		if(self == null) self = new ProdServiceImpl();
 		return self;
 	}
 	
+	private File saveFolder;
+	public void setSaveFolder(File saveFolder) {
+		this.saveFolder = saveFolder;
+	}
+	
+	private SqlSessionFactory sqlSessionFactory = CustomSqlSessionFactoryBuilder.getSqlSessionFactory();
 	@Override
-	public ServiceResult createProd(ProdVO prod) {
-		if(dao.insertProd(prod) > 0) 
-			return ServiceResult.OK;
-		else 
-			return ServiceResult.FAILED;
+	public ServiceResult createProd(ProdVO prod){
+		try(SqlSession sqlSession = sqlSessionFactory.openSession()) {
+			if(dao.insertProd(prod, null) > 0) {
+				prod.saveTo(saveFolder);
+				sqlSession.commit();
+				return ServiceResult.OK;
+			}else { 
+				return ServiceResult.FAILED;
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -47,9 +66,16 @@ public class ProdServiceImpl implements IProdService{
 
 	@Override
 	public ServiceResult modifyProd(ProdVO prod) {
-		if(prod == null) throw new CustomException();
-		if(dao.updateProd(prod) > 0) return ServiceResult.OK;
-		else return ServiceResult.FAILED;
+		try {
+			if(prod == null) throw new CustomException();
+			if(dao.updateProd(prod) > 0) {
+				prod.saveTo(saveFolder);
+				return ServiceResult.OK;
+			}else 
+				return ServiceResult.FAILED;
+		}catch(IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }

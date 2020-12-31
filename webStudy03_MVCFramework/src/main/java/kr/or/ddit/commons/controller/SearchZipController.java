@@ -27,10 +27,10 @@ public class SearchZipController extends HttpServlet{
 	
 	@RequestMapping("/commons/searchZip.do")
 	public String searchZip(
-			@RequestParam(value="draw", requried=false, defaultValue="1") String draw
-			, @RequestParam(value="length", requried=false, defaultValue="7") int screenSize
-			, @RequestParam(value="start", requried=false, defaultValue="0") String start
-			, @RequestParam(value="search[value]", requried=false) String searchWord
+			@RequestParam(value="draw", required=false, defaultValue="1") String draw
+			, @RequestParam(value="length", required=false, defaultValue="7") int screenSize
+			, @RequestParam(value="start", required=false, defaultValue="0") String start
+			, @RequestParam(value="search[value]", required=false) String searchWord
 			, HttpServletRequest req, HttpServletResponse resp
 	) throws ServletException, IOException {
 		

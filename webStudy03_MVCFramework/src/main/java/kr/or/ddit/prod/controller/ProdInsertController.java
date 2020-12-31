@@ -39,19 +39,11 @@ public class ProdInsertController {
 		CommonValidator<ProdVO> validator = new CommonValidator<>();
 		boolean valid = validator.validate(prod, errors);
 		
-		String saveFolderUrl = "/prodImages";
-		File saveFolder = new File(req.getServletContext().getRealPath(saveFolderUrl));
-		
-		if(!saveFolder.exists()) {
-			saveFolder.mkdirs();
-		}
-		
 		String goPage = null;
 		if(valid) {
 			ServiceResult result = service.createProd(prod);
 			switch (result) {
 			case OK:
-				prod.saveTo(saveFolder);
 				goPage = "redirect:/prod/prodView.do?prod_id="+prod.getProd_id();
 				break;
 			default:

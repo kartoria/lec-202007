@@ -4,10 +4,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import javax.management.RuntimeErrorException;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+
+import kr.or.ddit.CustomException;
 import kr.or.ddit.board.dao.AttachDAOImpl;
 import kr.or.ddit.board.dao.BoardDAOImpl;
 import kr.or.ddit.board.dao.IAttachDAO;
 import kr.or.ddit.board.dao.IBoardDAO;
+import kr.or.ddit.db.mybatis.CustomSqlSessionFactoryBuilder;
 import kr.or.ddit.enumpkg.ServiceResult;
 import kr.or.ddit.utils.SecurityUtils;
 import kr.or.ddit.vo.AttachVO;
@@ -40,21 +47,24 @@ public class BoardServiceImpl implements IBoardService{
 		board.setBo_pass(encoded);
 	}
 
-	
+	private SqlSessionFactory sqlSessionFactory = CustomSqlSessionFactoryBuilder.getSqlSessionFactory();
 	@Override
 	public ServiceResult createBoard(BoardVO board) {
-		encodePassword(board);
-		int cnt = boardDAO.insertBoard(board);
-		if(cnt > 0) {
-			cnt += processAttaches(board);
+		try(SqlSession sqlSession = sqlSessionFactory.openSession()){
+			encodePassword(board);
+			int cnt = boardDAO.insertBoard(board, sqlSession);
+			if(cnt > 0) {
+				cnt += processAttaches(board, sqlSession);
+			}
+			ServiceResult result = null;
+			if(cnt > 0) {
+				result = ServiceResult.OK;
+				sqlSession.commit();
+			}else {
+				result = ServiceResult.FAILED;
+			}
+			return result;
 		}
-		ServiceResult result = null;
-		if(cnt > 0) {
-			result = ServiceResult.OK;
-		}else {
-			result = ServiceResult.FAILED;
-		}
-		return result;
 	}
 	
 	@Override
@@ -79,7 +89,10 @@ public class BoardServiceImpl implements IBoardService{
 	
 	@Override
 	public BoardVO retrieveBoard(int bo_no) {
-		return boardDAO.selectBoard(bo_no);
+		BoardVO board = boardDAO.selectBoard(bo_no);
+		if(board == null)
+			throw new CustomException("해당 글을 찾을 수 없습니다.");
+		return board;
 	}
 	
 	@Override
@@ -87,15 +100,15 @@ public class BoardServiceImpl implements IBoardService{
 		return null;
 	}
 	
-	private int processAttaches(BoardVO board) {
-		List<AttachVO> attachList = board.getAttatchList();
+	private int processAttaches(BoardVO board, SqlSession sqlSession) {
+		List<AttachVO> attachList = board.getAttachList();
 		int cnt = 0;
 		if(attachList != null && !attachList.isEmpty() ) {
-			cnt += attachDAO.insertAttaches(board);
+			cnt += attachDAO.insertAttaches(board, sqlSession);
 			try {
 				for(AttachVO attach : attachList) {
 					attach.saveTo(saveFolder);
-				}	
+				}
 			}catch (IOException e) {
 				throw new RuntimeException(e);
 			}

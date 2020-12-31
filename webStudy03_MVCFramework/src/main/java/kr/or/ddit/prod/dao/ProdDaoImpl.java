@@ -23,10 +23,8 @@ public class ProdDaoImpl implements IProdDao{
 	
 	
 	@Override
-	public int insertProd(ProdVO prod) {
-		try(SqlSession sqlSession = SqlSessionFactory.openSession(true)){
-			return sqlSession.insert("kr.or.ddit.prod.dao.IProdDao.insertProd", prod);
-		}
+	public int insertProd(ProdVO prod, SqlSession sqlSession) {
+		return sqlSession.insert("kr.or.ddit.prod.dao.IProdDao.insertProd", prod);
 	}
 
 	@Override

@@ -36,11 +36,11 @@
 		FROM (
 			SELECT A.*, ROWNUM RNUM
 			FROM (
-				SELECT A.BO_NO    , BO_CONTENT, BO_TITLE  
-				     , BO_WRITER, TO_CHAR(BO_DATE, 'YYYY-MM-DD HH:MI') BO_DATE
-				     , BO_HIT, BO_REC, BO_IP     
-					 , BO_MAIL  , BO_PARENT
-					 , NVL(REP_CNT, 0) REP_CNT
+				SELECT A.BO_NO , BO_CONTENT, BO_TITLE  
+					, BO_WRITER, TO_CHAR(BO_DATE, 'YYYY-MM-DD HH:MI') BO_DATE
+				    , BO_HIT   , BO_REC    , BO_IP     
+					, BO_MAIL  , BO_PARENT
+					, NVL(REP_CNT, 0) REP_CNT
 				FROM BOARD A LEFT OUTER JOIN REPLYCNT B ON (A.BO_NO = B.BO_NO)
 				<include refid="searchFrag" />				
 				ORDER BY A.BO_NO DESC
@@ -51,23 +51,60 @@
 		]]>
 	</select>
 
+	<resultMap type="BoardVO" id="boardMap" autoMapping="true">
+		<id property="bo_no" column="BONO"/>
+		<collection property="attachList" javaType="java.util.List" ofType="AttachVO" autoMapping="true">
+			<id property="att_no" column="ATT_NO"/>
+		</collection>
+		<collection property="replyList" javaType="java.util.List" ofType="ReplyVO" autoMapping="true">
+			<id property="rep_no" column="REP_NO"/>
+		</collection>
+	</resultMap>
+	<select id="selectBoard" parameterType="int" resultMap="boardMap">
+		SELECT A.BO_NO BONO  , BO_CONTENT   , BO_TITLE
+			 , BO_WRITER     , BO_DATE      , BO_HIT
+			 , BO_PASS       , BO_REC       , BO_IP
+			 , BO_MAIL       , BO_PARENT    
+			 , ATT_NO        , ATT_SAVENAME , ATT_FILENAME
+			 , ATT_MIME      , ATT_FILESIZE , ATT_FANCY
+			 , ATT_DOWNCOUNT                
+			 , REP_NO        , REP_WRITER   , REP_DATE
+			 , REP_CONTENT   , REP_IP
+		  FROM BOARD A LEFT OUTER JOIN ATTACH B ON (A.BO_NO = B.BO_NO)
+		               LEFT OUTER JOIN REPLY  C ON (A.BO_NO = C.BO_NO)
+		 WHERE A.BO_NO = #{bo_no, jdbcType=NUMERIC}
+	</select>
+
+
 	<insert id="insertBoard" parameterType="BoardVO">
 		<selectKey order="BEFORE" keyProperty="bo_no" resultType="int">
 			SELECT NVL(MAX(BO_NO), 0)+1
 			FROM BOARD
 		</selectKey>
 		INSERT INTO board (
-		    BO_NO,    BO_CONTENT,    
-		    BO_TITLE, BO_WRITER,   
-		    BO_PASS,    BO_IP,
-		    BO_MAIL
+		      BO_NO   ,  BO_CONTENT
+		    , BO_TITLE,  BO_WRITER   
+		    , BO_PASS ,  BO_IP
+			, BO_MAIL
 		) VALUES (
-		  	#{bo_no,jdbcType=NUMERIC},    #{bo_content,jdbcType=CLOB},    
-		  	#{bo_title,jdbcType=VARCHAR}, #{bo_writer,jdbcType=VARCHAR},   
-		  	#{bo_pass,jdbcType=VARCHAR},    #{bo_ip,jdbcType=VARCHAR},
-		    #{bo_mail,jdbcType=VARCHAR}
+			  #{bo_no   , jdbcType=NUMERIC}, #{bo_content, jdbcType=CLOB   }    
+			, #{bo_title, jdbcType=VARCHAR}, #{bo_writer , jdbcType=VARCHAR}   
+		  	, #{bo_pass , jdbcType=VARCHAR}, #{bo_ip     , jdbcType=VARCHAR}
+		  	, #{bo_mail , jdbcType=VARCHAR}
 		)
 	</insert>
+	
+	<update id="incrementHit" parameterType="int">
+		UPDATE BOARD
+		SET BO_HIT = BO_HIT + 1
+		WHERE BO_NO = #{bo_no, jdbcType=NUMERIC}
+	</update>
+	<update id="incrementRecCnt" parameterType="int">
+		UPDATE BOARD
+		SET BO_REC = BO_REC + 1
+		WHERE BO_NO = #{bo_no}
+	</update>
+	
 
 
 </mapper>
