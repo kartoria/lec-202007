@@ -26,12 +26,12 @@ public class AuthenticationFilter implements Filter{
 	private Map<String, List<String>> securedResources;
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
-		LOGGER.info("{} 초기화");
+		LOGGER.info("{} 초기화", getClass().getSimpleName());
 		securedResources = new LinkedHashMap<>();
-		filterConfig.getServletContext().setAttribute("securedResources", securedResources);
+		filterConfig.getServletContext().setAttribute(SECUREDNAME, securedResources);
 		ResourceBundle bundle = ResourceBundle.getBundle("kr.or.ddit.auth.securedResources");
 		Enumeration<String> en = bundle.getKeys();
-		while(en.hasMoreElements()) {
+		while (en.hasMoreElements()) {
 			String uri = (String) en.nextElement();
 			String roleStr = bundle.getString(uri);
 			List<String> roles = Arrays.asList(roleStr.replaceAll("\\s+", "").split(","));
@@ -57,6 +57,7 @@ public class AuthenticationFilter implements Filter{
 		if(pass) chain.doFilter(req, resp);
 		else resp.sendRedirect(req.getContextPath() + "/login/loginForm.do");
 	}
+	
 	@Override
 	public void destroy() {
 		

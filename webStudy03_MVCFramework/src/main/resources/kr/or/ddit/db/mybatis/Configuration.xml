@@ -20,8 +20,10 @@
 		<mapper resource="kr/or/ddit/db/mybatis/mappers/Member.xml"/>
 		<mapper resource="kr/or/ddit/db/mybatis/mappers/Prod.xml"/>
 		<mapper resource="kr/or/ddit/db/mybatis/mappers/Others.xml"/>
+		<mapper resource="kr/or/ddit/db/mybatis/mappers/Buyer.xml"/>
 		<mapper resource="kr/or/ddit/db/mybatis/mappers/SearchZip.xml"/>
-		<mapper resource="kr/or/ddit/db/mybatis/mappers/Attach.xml"/>
+		<mapper resource="kr/or/ddit/db/mybatis/mappers/DBProp.xml"/>
 		<mapper resource="kr/or/ddit/db/mybatis/mappers/Board.xml"/>
+		<mapper resource="kr/or/ddit/db/mybatis/mappers/Attatch.xml"/>
 	</mappers>
 </configuration>

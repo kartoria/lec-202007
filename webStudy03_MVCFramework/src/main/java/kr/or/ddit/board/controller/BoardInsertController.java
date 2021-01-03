@@ -41,7 +41,7 @@ public class BoardInsertController {
 			ServiceResult result = service.createBoard(board);
 			switch (result) {
 				case OK:
-					goPage =  "redirect:/board/boardList.do";
+					goPage =  "redirect:/board/boardView.do?what="+board.getBo_no();
 					break;
 				default:	
 					req.setAttribute("message", NotyMessageVO.builder("서버 오류").build());

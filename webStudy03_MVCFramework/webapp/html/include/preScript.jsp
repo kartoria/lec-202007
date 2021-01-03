@@ -12,7 +12,8 @@
 	$.getContextPath = function(){
 		return "${pageContext.request.contextPath }";
 	}
-	
+	const language = "ko";
+	$.getScript($.getContextPath()+`/js/jquery-validation-1.19.2/localization/messages_\${language}.min.js`);
 </script>
 <style type="text/css">
 	.error{
@@ -20,5 +21,13 @@
 	}
 	.invalid{
 		border-color: red;
+	}
+	.thumbnail{
+		width: 100px;
+		height: 100px;
+	}
+	.delAtt{
+		width: 10px;
+		height: 10px;
 	}
 </style>

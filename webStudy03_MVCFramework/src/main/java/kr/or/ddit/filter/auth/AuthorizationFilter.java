@@ -34,7 +34,7 @@ public class AuthorizationFilter implements Filter{
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 		Map<String, List<String>> securedResources = 
-				(Map<String, List<String>>) request.getServletContext().getAttribute(AuthenticationFilter.SECUREDNAME);
+				(Map) request.getServletContext().getAttribute(AuthenticationFilter.SECUREDNAME);
 		HttpServletRequest req = (HttpServletRequest) request;
 		HttpServletResponse resp = (HttpServletResponse) response;
 		String uri = req.getRequestURI();

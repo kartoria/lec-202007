@@ -16,7 +16,7 @@
           <a class="nav-link" href="${pageContext.request.contextPath }/prod/prodList.do" tabindex="-1" aria-disabled="true">상품관리</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="${pageContext.request.contextPath }/board/buyerList.do" tabindex="-1" aria-disabled="true">거래처관리</a>
+          <a class="nav-link" href="${pageContext.request.contextPath }/buyer/buyerList.do" tabindex="-1" aria-disabled="true">거래처관리</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="${pageContext.request.contextPath }/board/boardList.do"" tabindex="-1" aria-disabled="true">게시판</a>
