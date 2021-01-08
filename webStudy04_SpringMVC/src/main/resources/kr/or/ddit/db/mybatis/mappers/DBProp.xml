@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.dbprop.dao.IDataBasePropertyDAO">
+	<select id="selectDBProperties" parameterType="DataBasePropertyVO" resultType="DataBasePropertyVO">
+		SELECT PROPERTY_NAME, PROPERTY_VALUE, DESCRIPTION 
+		FROM DATABASE_PROPERTIES
+		<trim prefix=" WHERE " prefixOverrides="OR">
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(property_name)">
+				OR INSTR(PROPERTY_NAME, #{property_name}) > 0
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(property_value)">
+				OR INSTR(PROPERTY_VALUE, #{property_value}) > 0
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(description)">
+				OR INSTR(DESCRIPTION, #{description}) > 0
+			</if>
+		</trim>
+	</select>
+</mapper>

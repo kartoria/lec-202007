@@ -41,21 +41,6 @@ public class PagingVO<T> {
 		this.startPage = blockSize * ( (currentPage-1) / blockSize ) + 1;
 		this.endPage = startPage + (blockSize - 1);
 	}
-//	<nav aria-label='...'>
-//	  <ul class='pagination'>
-//	    <li class='page-item disabled'>
-//	      <span class='page-link'>Previous</span>
-//	    </li>
-//	    <li class='page-item'><a class='page-link' href='#'>1</a></li>
-//	    <li class='page-item active' aria-current='page'>
-//	      <span class='page-link'>2</span>
-//	    </li>
-//	    <li class='page-item'><a class='page-link' href='#'>3</a></li>
-//	    <li class='page-item'>
-//	      <a class='page-link' href='#'>Next</a>
-//	    </li>
-//	  </ul>
-//	</nav>
 	
 	private static final String LIPTRN = "<li class='page-item %s' %s>";
 	private static final String APTRN = "<a class='page-link' href='#' data-page='%s'>%s</a>";

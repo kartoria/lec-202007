@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN" "http://tiles.apache.org/dtds/tiles-config_3_0.dtd" >
+<tiles-definitions>
+  <definition name="parent" template="/WEB-INF/views/template.jsp">
+  	<put-attribute name="preScript" value="/includee/preScript.jsp"/>
+  	<put-attribute name="topMenu" value="/includee/topMenu.jsp"/>
+  	<put-attribute name="leftMenu" value="/includee/leftMenu.jsp"/>
+  	<put-attribute name="footer" value="/includee/footer.jsp"/>
+  </definition>
+  
+  <definition name="btsForm" extends="parent">
+  	<put-attribute name="contents" value="/WEB-INF/views/btsForm.jsp" />
+  </definition>
+  <definition name="index" extends="parent">
+  	<put-attribute name="contents" value="/WEB-INF/views/index.jsp" />
+  </definition>
+  <definition name="login/loginForm" extends="parent">
+  	<put-attribute name="contents" value="/WEB-INF/views/login/loginForm.jsp" />
+  </definition>
+  <definition name="bts/*" extends="parent">
+  	<put-attribute name="contents" value="/WEB-INF/views/bts/{1}.jsp" />
+  </definition>
+  <definition name="model1/**" extends="parent">
+  	<put-attribute name="contents" value="/{1}" />
+  </definition>
+  <definition name="others/*" extends="parent">
+  	<put-attribute name="contents" value="/WEB-INF/views/others/{1}.jsp" />
+  </definition>
+  <definition name="imageList" extends="parent">
+  	<put-attribute name="contents" value="/WEB-INF/views/imageList.jsp" />
+  </definition>
+  <definition name="employee/*" extends="parent">
+  	<put-attribute name="contents" value="/WEB-INF/views/employee/{1}.jsp" />
+  </definition>
+  <definition name="member/*" extends="parent">
+  	<put-attribute name="contents" value="/WEB-INF/views/member/{1}.jsp" />
+  </definition>
+  <definition name="prod/*" extends="parent">
+  	<put-attribute name="contents" value="/WEB-INF/views/prod/{1}.jsp" />
+  </definition>
+  <definition name="buyer/*" extends="parent">
+  	<put-attribute name="contents" value="/WEB-INF/views/buyer/{1}.jsp" />
+  </definition>
+  <definition name="board/*" extends="parent">
+  	<put-attribute name="contents" value="/WEB-INF/views/board/{1}.jsp" />
+  </definition>
+</tiles-definitions>
+
+
+
+
+
+
+
+
+
+
+
+
