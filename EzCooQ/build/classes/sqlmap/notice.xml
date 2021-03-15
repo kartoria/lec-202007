@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+			PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+			"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="notice">
+	<select id = "displayAll" resultClass = "kr.or.ddit.notice.vo.NoticeVO">
+		select AA.* 
+		from
+		(select A.*, rownum rnum
+		from
+		(select * 
+		from NOTICE_BOARD) A)AA
+		where rnum between #firstRecNo# and #lastRecNo#
+		order By 1 desc
+	</select>
+	
+	<select id="selectTotalCount" resultClass = "int">
+		select count(*) from NOTICE_BOARD
+	</select>
+</sqlMap>			
+
+
+
+
+
