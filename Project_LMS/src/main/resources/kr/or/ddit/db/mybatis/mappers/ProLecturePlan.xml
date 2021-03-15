@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.lms.professor.lecture.dao.IProfessorLectureDAO">
+
+
+<select id="selectSubNameList" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.lms.professor.lecture.vo.InsertGradeVO">
+
+ SELECT B.SUB_NAME, B.SUB_CODE, A.LEC_CODE
+ FROM LECTURE A, SUBJECT B  
+ WHERE MEM_ID = #{memId}
+ AND A.SUB_CODE = B.SUB_CODE
+ AND A.LEC_SMST =  (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+
+</select>
+<select id="selectLecCode" parameterType="kr.or.ddit.vo.LectureVO" resultType="kr.or.ddit.enrolment.vo.EnrolmentVO">
+SELECT A.LEC_CODE
+ FROM LECTURE A, SUBJECT B  
+ WHERE B.SUB_NAME=#{subjectVo.subName}
+ AND A.SUB_CODE = B.SUB_CODE
+ AND A.MEM_ID=#{memId}
+ AND A.LEC_SMST =  (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+</select>
+
+<!-- <update id="subPlanUpdate" parameterType="SubjectVO"> -->
+<!--     UPDATE SUBJECT -->
+<!--     SET -->
+<!--         SUB_CREDIT = #{subCredit }, -->
+<!--         SUB_DETAIL =#{subDetail } -->
+<!-- 	WHERE -->
+<!--    		SUB_CODE = #{subCode } -->
+<!-- </update> -->
+
+<update id="lecPlanUpdate" parameterType="kr.or.ddit.vo.LectureVO">
+UPDATE LECTURE
+    SET
+<!--         LEC_FULL=#{lecFull} , -->
+<!--         LEC_GRD=#{lecGrd} , -->
+        LEC_MBK=#{lecMbk} ,
+        LEC_SBK=#{lecSbk} 
+WHERE
+    LEC_CODE =#{lecCode} 
+</update>
+
+
+<select id="proScheduleList" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.enrolment.vo.EnrolmentVO">
+    SELECT A.LTIME_START, 
+		   A.LTIME_END, 
+		   C.SUB_NAME, 
+		   A.LTIME_DAY 
+	FROM SUBJECT C, LECTURE_TIME A,LECTURE D
+	WHERE A.LEC_CODE = D.LEC_CODE 
+	AND D.SUB_CODE = C.SUB_CODE
+	AND D.MEM_ID = #{memId}
+	AND D.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+
+</select>
+
+<select id="selectProLectureList" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.enrolment.vo.EnrolmentVO">
+	SELECT  A.LEC_CODE ,
+	        A.LEC_GRD,
+	        B.SUB_NAME,
+	        C.ROOM_CODE,
+	        LTIME_START,
+	        LTIME_END,
+	        LTIME_DAY
+	FROM LECTURE A, SUBJECT B, LECTURE_TIME C
+	WHERE A.SUB_CODE = B.SUB_CODE
+	AND A.LEC_CODE = C.LEC_CODE
+	AND A.MEM_ID=#{memId}
+	AND A.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+</select>
+
+<select id="selectLectureList" parameterType="kr.or.ddit.lms.professor.lecture.vo.InsertGradeVO" resultType="kr.or.ddit.lms.professor.lecture.vo.InsertGradeVO">
+	SELECT A.LEC_CODE, B.SUB_NAME
+	FROM LECTURE A
+	JOIN SUBJECT B ON A.SUB_CODE = B.SUB_CODE
+	WHERE MEM_ID = #{memId}
+	AND LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+	ORDER BY A.LEC_CODE
+</select>
+
+<select id="selectStudentScoreList" parameterType="kr.or.ddit.lms.professor.lecture.vo.InsertGradeVO" resultType="kr.or.ddit.lms.professor.lecture.vo.InsertGradeVO">
+	SELECT A.TLEC_NO
+		 , A.MEM_ID
+		 , MEM_NAME
+		 , D.SCR_ATTEND
+		 , SCR_TASK
+		 , SCR_MIDDLE
+		 , SCR_FINAL
+		 , TOTAL_SCORE
+		 , SLIST_CODE
+		 , RANK() OVER (ORDER BY TOTAL_SCORE DESC NULLS LAST) AS RANK
+	FROM TAKE_LEC A
+	JOIN LECTURE B ON A.LEC_CODE = B.LEC_CODE
+	JOIN MEMBER C ON A.MEM_ID = C.MEM_ID
+	LEFT OUTER JOIN STUDENT_SCORE D ON A.TLEC_NO = D.TLEC_NO
+	WHERE A.LEC_CODE = #{lecCode}
+	AND B.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+	<if test="howToSort.equals('학번')">
+	ORDER BY A.MEM_ID
+	</if>
+	<if test="howToSort.equals('석차')">
+	ORDER BY RANK
+	</if>
+</select>
+
+<select id="selectGradeCodeList" resultType="kr.or.ddit.lms.professor.lecture.vo.InsertGradeVO">
+	SELECT CODE AS SLIST_CODE, CODE_NAME
+	FROM CODE
+	WHERE GROUP_CODE = 'A04'
+	ORDER BY CODE_NAME DESC
+</select>
+
+<update id="updateStudentScore" parameterType="kr.or.ddit.lms.professor.lecture.vo.InsertGradeVO">
+	UPDATE STUDENT_SCORE 
+	SET SLIST_CODE = #{slistCode}
+	WHERE TLEC_NO = #{tlecNo}
+</update>
+
+<insert id="lecWeekPlan" parameterType="java.util.List" >
+
+<foreach item="item" collection="list " separator=" " open="INSERT ALL" close=" SELECT * FROM DUAL" >
+ INTO LEC_PLAN (
+    LEC_CODE,
+    LEC_WEEK,
+    LEC_CONTENT
+) VALUES (
+	#{item.lecCode,jdbcType=VARCHAR },
+	#{item.lecWeek,jdbcType=NUMERIC},
+	#{item.lecContent,jdbcType=VARCHAR }
+)
+</foreach>
+
+</insert>
+
+<select id="lecPlanCount" parameterType="kr.or.ddit.myclassroom.video.vo.LecPlanVO" resultType="int">
+	SELECT 
+	COUNT(*)
+	FROM LEC_PLAN
+	WHERE LEC_CODE=#{lecCode,jdbcType=VARCHAR }
+
+
+
+</select>
+
+<update id="lecWeekPlanUpdate" parameterType="java.util.List">
+ <foreach collection="list" item="item" separator=";" open="DECLARE BEGIN" close="; END;">
+        UPDATE LEC_PLAN
+         SET 
+		    LEC_CONTENT =#{item.lecContent }
+		 WHERE   LEC_CODE =#{item.lecCode }
+		   	AND	 LEC_WEEK =#{item.lecWeek }
+</foreach>
+
+</update>
+
+
+<select id="selectPlanWeekContent" parameterType="kr.or.ddit.vo.LectureVO" resultType="kr.or.ddit.myclassroom.video.vo.LecPlanVO">
+
+SELECT LEC_WEEK,
+LEC_CONTENT
+FROM LEC_PLAN
+WHERE LEC_CODE=#{lecCode}
+ORDER BY 1
+
+</select>
+
+
+
+<select id="selectBK" parameterType="kr.or.ddit.myclassroom.video.vo.LecPlanVO" resultType="kr.or.ddit.vo.LectureVO">
+SELECT LEC_MBK,
+		LEC_SBK
+FROM LECTURE
+WHERE LEC_CODE=#{lecCode}
+</select>
+
+
+</mapper>

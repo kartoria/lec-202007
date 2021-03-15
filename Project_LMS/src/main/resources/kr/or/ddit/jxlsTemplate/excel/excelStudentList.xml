@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<workbook>
+	<worksheet name="Sheet1" >
+		<section startRow="0" endRow="20"></section> <!-- 입력 안하는 곳 -->
+		<loop startRow="21" endRow="21" items="memberList" var="memberVO" varType="kr.or.ddit.member.vo.MemberVO">
+			<section startRow="21" endRow="21">
+				<mapping row="21" col="0">memberVO.depNo</mapping>			
+				<mapping row="21" col="1">memberVO.memName</mapping>			
+				<mapping row="21" col="2">memberVO.memReg1</mapping>			
+				<mapping row="21" col="3">memberVO.memReg2</mapping>			
+			</section>
+			<loopbreakcondition>
+				<rowcheck offset="0"/>
+			</loopbreakcondition>
+		</loop>
+	</worksheet>
+</workbook>

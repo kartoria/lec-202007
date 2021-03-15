@@ -1,0 +1,85 @@
+@charset "UTF-8";
+/**@author 조예슬**/
+
+/**lectureForm.jsp**/
+#timeTable{
+	width: 70%;
+	margin-left: 10%;
+	height: 450px;
+	cellpadding:2; 
+}
+.timeTalbeTd{
+	background-color:#EAF2F2;
+	}
+.inputTable{height: 400px;}
+input[type="checkbox"]{
+width:20px; 
+height:20px; 
+border-color : white;
+padding:0; 
+clip:rect(0,0,0,0); 
+}
+#btnArea {
+	text-align: right;
+}
+.select-chkbox{
+	position:relative;
+}
+.select-chkbox .chk{
+	display:none;
+}
+.select-room{
+	position:absolute;
+	top:0;
+	left:0;
+	right:0;
+	bottom:0;
+	width:100%;
+	height:100%;
+	cursor:pointer;
+}
+.select-active{
+	background: #88e091;
+}
+.select-disable{
+	background: #c8cacc;
+}
+
+/**subject/lectureList.jsp**/
+#contentArea{
+		width: 80%;
+		float: right;
+}
+#inputUI{
+	margin-left :4px;
+	padding-bottom : 3%;
+	height: 10%;
+	border-radius :20px 20px;
+	background-color: #e8eef3;
+}
+.text-primary:hover { 
+	cursor:pointer; 
+}
+div select {
+	margin-left: 20px;
+	margin-right: 20px;
+}
+#department{
+	width: 150px;
+}
+#proList{
+	width: 150px;
+}
+#pagingArea{
+	margin-top : 5%;
+	margin-left: 50%;
+}
+
+/**lectureUpdateForm.jsp/lectureView.jsp/subjectView.jsp**/
+#btnDiv{
+	text-align: right;
+}
+#depTable{
+	width: 400px;
+	margin-left: 20%;
+}

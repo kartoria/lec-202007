@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.admin.lecture.dao.AdminSubjectDAO">
+<sql id="searchFrag">
+	<if test="searchDetail!=null">
+		<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchDetail.code)">
+			AND A.DEP_NO LIKE SUBSTR(#{searchDetail.code},1,1)||'%'
+		</if>
+		<if test="searchDetail.depNo!=null and searchDetail.depNo gt 0">
+			AND A.DEP_NO = #{searchDetail.depNo}
+		</if>
+		<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchDetail.subDetail)">
+			AND A.SUB_DETAIL = #{searchDetail.subDetail}
+		</if>
+	</if>			
+	<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+		<choose>
+			<when test="'subCode'.equals(searchVO.searchType)">
+			AND INSTR(A.SUB_CODE, #{searchVO.searchWord}) > 0
+			</when>
+			<when test="'subName'.equals(searchVO.searchType)">
+			AND	INSTR(B.SUB_NAME, #{searchVO.searchWord}) > 0
+			</when>
+			<otherwise>
+				AND INSTR(A.SUB_CODE, #{searchVO.searchWord}) > 0
+				OR INSTR(B.SUB_NAME, #{searchVO.searchWord}) > 0
+			</otherwise>
+		</choose>
+	</if>
+</sql>
+
+<select id="selectSubjectCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+SELECT 
+COUNT(*)
+FROM SUBJECT A,DEPARTMENT B
+LEFT OUTER JOIN CODE C ON(B.COL_CODE=C.CODE)
+WHERE A.DEP_NO=B.DEP_NO
+<include refid="searchFrag" />
+</select>
+
+<select id="selectSubjectList" parameterType="kr.or.ddit.vo.PagingVO" resultType="kr.or.ddit.vo.SubjectVO">
+SELECT E.*
+		FROM (
+			SELECT D.* , ROWNUM RNUM
+			FROM(
+				SELECT 
+					A.SUB_CODE,
+					A.SUB_NAME,
+					A.SUB_CREDIT,
+					A.SUB_DETAIL,
+					A.SUB_DATE,
+					A.DEP_NO,
+					C.CODE_NAME,
+					B.DEP_NAME
+				FROM SUBJECT A,DEPARTMENT B
+				LEFT OUTER JOIN CODE C ON(B.COL_CODE=C.CODE)
+				WHERE A.DEP_NO=B.DEP_NO
+	             <include refid="searchFrag" />
+	            ORDER BY SUB_CODE
+            ) D
+         ) E
+          <![CDATA[
+		WHERE RNUM >= #{startRow} AND RNUM <= #{endRow}
+			]]> 
+</select>
+
+<insert id="insertSubject" parameterType="kr.or.ddit.vo.SubjectVO">
+<selectKey order="BEFORE" keyProperty="subCode" resultType="String">
+SELECT NVL(MAX(SUB_CODE), CONCAT(#{colCode},'00'))+1 AS SUB_CODE
+FROM SUBJECT A, DEPARTMENT C
+LEFT OUTER JOIN CODE B ON (C.COL_CODE=B.CODE)
+WHERE C.DEP_NO=A.DEP_NO
+AND CODE=#{colCode}
+</selectKey>
+INSERT INTO SUBJECT(
+SUB_CODE,
+SUB_NAME,
+SUB_CREDIT,
+SUB_DETAIL,
+SUB_DATE,
+DEP_NO
+)VALUES
+(
+	#{subCode},
+	#{subName},
+	#{subCredit},
+	#{subDetail},
+	#{subDate},
+	#{depNo}
+)
+
+</insert>
+
+<select id="selectSubject" parameterType="kr.or.ddit.vo.SubjectVO" resultType="kr.or.ddit.vo.SubjectVO">
+SELECT 
+	A.SUB_CODE,
+	A.SUB_NAME,
+	A.SUB_CREDIT,
+	A.SUB_DETAIL,
+	A.SUB_DATE,
+	A.DEP_NO,
+	C.CODE_NAME,
+	B.DEP_NAME
+FROM SUBJECT A,DEPARTMENT B
+LEFT OUTER JOIN CODE C ON(B.COL_CODE=C.CODE)
+WHERE A.DEP_NO=B.DEP_NO
+AND A.SUB_CODE=#{subCode}
+</select>
+
+<update id="updateSubject" parameterType="kr.or.ddit.vo.SubjectVO">
+UPDATE SUBJECT
+	    SET
+	        SUB_NAME =   #{subName,jdbcType=VARCHAR},
+	        SUB_CREDIT =  #{subCredit,jdbcType=NUMERIC},
+	        SUB_DETAIL = #{subDetail,jdbcType=VARCHAR}
+		WHERE
+	   		 SUB_CODE = #{subCode,jdbcType=VARCHAR}
+</update>
+
+</mapper>

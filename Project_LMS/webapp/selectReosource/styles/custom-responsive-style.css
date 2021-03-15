@@ -1,0 +1,98 @@
+/*mobile styles*/
+
+@media (min-width: 0px) and (max-width: 767px) {
+  #Gain .each-icon .icon-text,
+  #Gain .each-icon:hover .icon-wrap {
+    visibility: visible;
+    opacity: 1;
+  }
+  #Gain .each-icon .icon-wrap,
+  #Gain .each-icon .icon-text {
+    position: static;
+    transform: none;
+  }
+  #Gain .each-icon .icon-text {
+    padding-bottom: 20px;
+  }
+  #Gain .each-icon .icon-wrap {
+    padding-top: 16px;
+  }
+  #Gain .each-icon .icon-wrap i {
+    font-size: 50px;
+  }
+  #Gain .title {
+    width: 100%;
+  }
+  #Gain .title h3 {
+    font-size: 22px;
+  }
+  #Gain .title h3 br {
+    display: none;
+  }
+  #Gain .title p {
+    font-size: 16px;
+    margin-bottom: 15px;
+  }
+  #Gain .each-icon {
+    margin-bottom: 10px;
+  }
+}
+
+
+/* Tablet Portrait view */
+
+@media (min-width: 768px) and (max-width: 991px) {
+  #Gain .title h3 {
+    font-size: 28px;
+  }
+  #Gain .each-icon {
+    min-height: 310px;
+  }
+  #Gain .each-icon.box-1,
+  #Gain .each-icon.box-2 {
+    margin-bottom: 30px;
+  }
+  #Gain .each-icon .icon-text,
+  #Gain .each-icon:hover .icon-wrap {
+    visibility: visible;
+    opacity: 1;
+  }
+  #Gain .each-icon .icon-wrap,
+  #Gain .each-icon .icon-text {
+    position: static;
+    transform: none;
+  }
+  #Gain .each-icon .icon-text {
+    padding-bottom: 20px;
+  }
+  #Gain .each-icon .icon-wrap {
+    padding-top: 16px;
+  }
+  #Gain .each-icon .icon-wrap i {
+    font-size: 50px;
+  }
+}
+
+
+/*Tablet Landscape*/
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  #Gain .each-icon .icon-wrap i {
+    font-size: 65px;
+    padding-top: 15px;
+  }
+  #Gain .each-icon .icon-text {
+    padding: 8px 10px;
+  }
+  #Gain .each-icon .icon-text,
+  #Gain .each-icon:hover .icon-wrap {
+    visibility: visible;
+    opacity: 1;
+  }
+  #Gain .each-icon .icon-wrap,
+  #Gain .each-icon .icon-text {
+    position: static;
+    transform: none;
+  }
+}
+

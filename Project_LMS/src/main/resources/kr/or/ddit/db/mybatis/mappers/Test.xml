@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.myclassroom.test.dao.ITestDAO">
+	<select id="testList" parameterType="kr.or.ddit.myclassroom.test.vo.TestVO" resultType="kr.or.ddit.myclassroom.test.vo.TestVO">
+		SELECT
+		    TEST_NO,
+		    TEST_QNO,
+		    LEC_CODE,
+		    TEST_QTYPE,
+		    TEST_START,
+		    TEST_TYPE,
+		    TEST_END,
+		    ROUND((TEST_END-TEST_START)*24*60) AS TOTALTIME
+		FROM TEST
+		WHERE LEC_CODE = #{lecCode}
+		<if test="testNo!=0">
+	    	AND TEST_NO = #{testNo}
+	    </if>
+		ORDER BY TEST_QNO
+	</select>
+	
+	<resultMap type="kr.or.ddit.myclassroom.test.vo.ObjectiveVO" id="testMap" autoMapping="true">
+		<id property="testQno" column="TEST_QNO"/>
+		<collection property="deList" ofType="kr.or.ddit.myclassroom.test.vo.DetailVO" autoMapping="true" />
+	</resultMap>
+	
+	<!-- 객관식 -->
+	<select id="obList" parameterType="kr.or.ddit.myclassroom.test.vo.ObjectiveVO" resultMap="testMap">
+		SELECT
+		    A.TEST_NO,
+		    B.TEST_QNO,
+		    OTEST_Q,
+		    OTEST_A,
+		    OTEST_SCORE,
+		    DTL_NO,
+		    DTL_CONTENT
+		FROM OBJECTIVE_Q A LEFT OUTER JOIN DETAIL_Q B ON(A.TEST_NO = B.TEST_NO AND A.TEST_QNO = B.TEST_QNO) 
+		WHERE A.TEST_NO = #{testNo}
+	</select>
+	
+	<!-- 주관식 -->
+	<select id="sbList" parameterType="kr.or.ddit.myclassroom.test.vo.SubjectiveVO" resultType="kr.or.ddit.myclassroom.test.vo.SubjectiveVO">
+		SELECT
+		    TEST_NO,
+		    TEST_QNO,
+		    STEST_Q,
+		    STEST_A,
+		    STEST_SCORE
+		FROM SUBJECTIVE_Q
+		WHERE TEST_NO = #{testNo}
+	</select>
+	
+	
+	<insert id="answerInsert" parameterType="kr.or.ddit.myclassroom.test.vo.StuAnsVO">
+		INSERT ALL
+		<foreach collection="ansList" item="item" index="idx">
+			INTO STUDENT_ANSWER (
+			    TEST_NO,
+			    TEST_QNO,
+			    MEM_ID,
+			    SANS_ANS,
+			    SANS_SCORE
+			) VALUES (
+			    #{item.testNo,jdbcType=NUMERIC},
+			    #{item.testQno,jdbcType=NUMERIC},
+			    #{item.memId,jdbcType=VARCHAR},
+			    #{item.sansAns,jdbcType=VARCHAR},
+			    #{item.sansScore,jdbcType=NUMERIC}
+			)
+		</foreach>
+		SELECT * FROM DUAL
+	</insert>
+	
+	<select id="retrieveProTestList" parameterType="kr.or.ddit.myclassroom.test.vo.TestVO" resultType="kr.or.ddit.myclassroom.test.vo.TestVO">
+		SELECT
+		    TEST_NO,
+		    TEST_QNO,
+		    LEC_CODE,
+		    TEST_QTYPE,
+		    TEST_START,
+		    TEST_TYPE,
+		    TEST_END,
+		    ROUND((TEST_END-TEST_START)*24*60) AS TOTALTIME
+		FROM TEST
+		WHERE LEC_CODE = #{lecCode}
+	</select>
+	
+	
+	<!-- 객관식 -->
+	<select id="selectObAns" parameterType="int" resultType="kr.or.ddit.myclassroom.test.vo.RightAnsVO">
+		SELECT
+		    TEST_NO,
+		    TEST_QNO,
+		    OTEST_A AS ANS,
+		    OTEST_SCORE AS ANSSCORE
+		FROM OBJECTIVE_Q
+		WHERE TEST_NO = #{testNo}
+	</select>
+	
+	<select id="selectSbAns" parameterType="int" resultType="kr.or.ddit.myclassroom.test.vo.RightAnsVO">
+		SELECT
+		    TEST_NO,
+		    TEST_QNO,
+		    STEST_A AS ANS,
+		    STEST_SCORE AS ANSSCORE
+		FROM
+		    SUBJECTIVE_Q
+		WHERE TEST_NO = #{testNo}
+	</select>
+	
+	<select id="retrieveAns" parameterType="kr.or.ddit.myclassroom.test.vo.TestVO" resultType="kr.or.ddit.myclassroom.test.vo.StudentAnswerVO">
+			SELECT
+			    TEST_NO
+			FROM 
+			    STUDENT_ANSWER
+			WHERE MEM_ID = #{memId}    
+			AND TEST_NO IN 
+			<foreach item="item" index="index" collection="resultList"
+			      open="(" separator="," close=")">
+			       #{item.testNo}
+		  	</foreach>
+	</select>
+	
+	<select id="tlecNoSelect" parameterType="kr.or.ddit.myclassroom.test.vo.StudentScoreVO" resultType="kr.or.ddit.myclassroom.test.vo.StudentScoreVO">
+		SELECT
+		    TLEC_NO,
+		    MEM_ID,
+		    LEC_CODE,
+		    TLEC_SCORE,
+		    TLEC_GRD
+		FROM
+		    TAKE_LEC
+		WHERE MEM_ID = #{memId}
+		AND LEC_CODE = #{lecCode}    
+	</select>
+	
+	<sql id="updateFrag">
+		<trim prefix="UPDATE SET" prefixOverrides=",">
+			<if test="scrMiddle!=null and scrMiddle!=0.0">
+				,A.SCR_MIDDLE = #{scrMiddle}
+				,A.TOTAL_SCORE = NVL(A.TOTAL_SCORE,0)+#{scrMiddle}
+			</if>
+			<if test="scrFinal!=null and scrFinal!=0.0">
+				,A.SCR_FINAL = #{scrFinal}
+				,A.TOTAL_SCORE = NVL(A.TOTAL_SCORE,0)+#{scrFinal}
+			</if>
+		</trim>
+	</sql>
+	
+	<insert id="totalScoreInsert" parameterType="kr.or.ddit.myclassroom.test.vo.StudentScoreVO">
+		MERGE INTO STUDENT_SCORE A
+			USING DUAL
+			ON (TLEC_NO = #{tlecNo})
+			WHEN MATCHED THEN
+				<include refid="updateFrag" />
+				WHERE TLEC_NO = #{tlecNo}
+			WHEN NOT MATCHED THEN
+				INSERT (
+				    TLEC_NO,
+				    <if test="scrMiddle!=null and scrMiddle!=0.0">
+				    SCR_MIDDLE,
+				    </if>
+				    <if test="scrFinal!=null and scrFinal!=0.0">
+				    SCR_FINAL,
+				    </if>
+				    TOTAL_SCORE
+				    
+				) VALUES (
+				    #{tlecNo,jdbcType=NUMERIC},
+				    <if test="scrMiddle!=null and scrMiddle!=0.0">
+				    #{scrMiddle,jdbcType=NUMERIC},
+				    #{scrMiddle,jdbcType=NUMERIC}
+				    </if>
+				    <if test="scrFinal!=null and scrFinal!=0.0">
+				    #{scrFinal,jdbcType=NUMERIC},
+				    #{scrFinal,jdbcType=NUMERIC}
+				    </if>
+				)
+	</insert>
+	
+	<select id="stuScoreSelect" parameterType="kr.or.ddit.myclassroom.test.vo.StudentScoreVO" resultType="kr.or.ddit.myclassroom.test.vo.StudentScoreVO">
+	    SELECT
+		    TLEC_NO
+		    ,SCR_ATTEND
+		    ,SCR_TASK
+		    ,SCR_FINAL
+		    ,TOTAL_SCORE
+		    ,SLIST_CODE
+		   <if test="testType eq 'M'.toString()">
+		    ,SCR_MIDDLE
+		   </if>
+		   <if test="testType eq 'F'.toString()">
+		    ,SCR_FINAL
+		   </if>
+		FROM STUDENT_SCORE
+		WHERE TLEC_NO = #{tlecNo}   
+	</select>
+	
+	<sql id="searchFrag">
+	<if test="searchVO!=null and @org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+		<choose>
+			<when test="'memId'.equals(searchVO.searchType)">
+				AND INSTR(C.MEM_ID, #{searchVO.searchWord}) > 0
+			</when>
+			<when test="'memName'.equals(searchVO.searchType)">
+				AND INSTR(C.MEM_NAME, #{searchVO.searchWord}) > 0
+			</when>
+			<otherwise>
+				AND INSTR(C.MEM_ID, #{searchVO.searchWord}) > 0
+				OR INSTR(C.MEM_NAME, #{searchVO.searchWord}) > 0
+			</otherwise>
+		</choose>
+	</if>
+	</sql>
+	
+	<select id="proStuScoreList" parameterType="kr.or.ddit.vo.PagingVO" resultType="kr.or.ddit.myclassroom.test.vo.StudentScoreVO">
+		SELECT
+			A.TLEC_NO
+			,A.SCR_ATTEND
+			,A.SCR_TASK
+			,A.TOTAL_SCORE
+			,A.SLIST_CODE
+			,C.MEM_ID
+			,C.MEM_NAME
+			,A.SCR_MIDDLE
+			,A.SCR_FINAL
+		FROM STUDENT_SCORE A, TAKE_LEC B, MEMBER C 
+		WHERE A.TLEC_NO = B.TLEC_NO
+		AND B.MEM_ID = C.MEM_ID
+		AND B.LEC_CODE = #{boGroupCode}
+		ORDER BY MEM_ID
+		<include refid="searchFrag" />
+	</select>
+	
+	<select id="retrieveNoTestList" parameterType="kr.or.ddit.myclassroom.test.vo.TestVO" resultType="kr.or.ddit.myclassroom.test.vo.TestVO">
+ 		 SELECT 
+			TEST_NO, 
+          	TEST_QNO, 
+          	LEC_CODE, 
+          	TEST_START, 
+          	TEST_TYPE, 
+          	TEST_END 
+	   FROM TEST
+	   WHERE TEST_NO NOT IN
+	   (SELECT
+	        A.TEST_NO
+	        FROM STUDENT_ANSWER A, TEST B
+	        WHERE A.TEST_NO=B.TEST_NO
+	        AND A.MEM_ID= #{memId}
+	        AND B.LEC_CODE=#{lecCode}) 
+	</select>
+ </mapper>

@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.commons.dao.IBoardDAO">
+	<sql id="searchFrag">
+		<if test="searchVO!=null and @org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+			<choose>
+				<when test="'title'.equals(searchVO.searchType)">
+					AND INSTR(BO_TITLE, #{searchVO.searchWord}) > 0
+				</when>
+				<when test="'date'.equals(searchVO.searchType)">
+					AND INSTR(BO_DATE, #{searchVO.searchWord}) > 0
+				</when>
+				<when test="'writer'.equals(searchVO.searchType)">
+					AND INSTR(B.MEM_NAME, #{searchVO.searchWord}) > 0
+				</when>
+				<otherwise>
+					AND INSTR(BO_TITLE, #{searchVO.searchWord}) > 0
+					OR INSTR(B.MEM_NAME, #{searchVO.searchWord}) > 0
+				</otherwise>
+			</choose>
+		</if>
+	</sql>
+	<sql id="qnaSearchFrag">
+		<if test="searchVO!=null and @org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+			<choose>
+				<when test="'title'.equals(searchVO.searchType)">
+					AND INSTR(BO_TITLE, #{searchVO.searchWord}) > 0
+				</when>
+				<when test="'writer'.equals(searchVO.searchType)">
+					AND INSTR(MEM_NAME, #{searchVO.searchWord}) > 0
+				</when>
+				<otherwise>
+					AND (INSTR(BO_TITLE, #{searchVO.searchWord}) > 0
+					OR INSTR(MEM_NAME, #{searchVO.searchWord}) > 0)
+				</otherwise>
+			</choose>
+		</if>
+	</sql>
+	<select id="selectBoardCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+		SELECT COUNT(*)
+		  FROM BOARD A, MEMBER B
+		 WHERE BO_PARENT IS NULL
+		   AND A.MEM_ID = B.MEM_ID
+		<include refid="searchFrag" />
+		<if test="boGroupCode!=null and @org.apache.commons.lang3.StringUtils@isNotBlank(boGroupCode)">
+			AND BO_GROUP_CODE = #{boGroupCode}
+		</if>
+	</select>
+	
+	<select id="selectQnaCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+		SELECT COUNT(A.BO_NO)
+		  FROM BOARD A, MEMBER B
+	     WHERE A.BO_DELETE = 'N'
+		   AND A.BO_GROUP_CODE = 'CYQNA'
+		   AND A.MEM_ID = B.MEM_ID
+		<include refid="qnaSearchFrag" />
+	</select>
+	<select id="selectBoardList" parameterType="kr.or.ddit.vo.PagingVO" resultType="kr.or.ddit.vo.BoardVO">
+				SELECT B.*
+				FROM (
+					<![CDATA[
+					SELECT ROWNUM AS RNUM, A.*
+					FROM (
+						SELECT
+						    BO_NO,    
+						    BO_TITLE,	
+						    A.MEM_ID,
+						    MEM_NAME,    
+						    TO_CHAR(BO_DATE, 'YYYY-MM-DD HH24:MI:SS') AS BO_DATE,    
+						    BO_HIT,    
+						    BO_PARENT, 
+						    BO_GROUP_CODE, 
+						    LEC_CODE
+						FROM BOARD A LEFT OUTER JOIN MEMBER B ON (A.MEM_ID = B.MEM_ID)
+	                	]]>
+	                	WHERE BO_GROUP_CODE = #{boGroupCode}
+	                	AND BO_PARENT IS NULL
+	                	<if test="lecCode!=null and @org.apache.commons.lang3.StringUtils@isNotBlank(lecCode)">
+							AND LEC_CODE = #{lecCode}
+						</if>	
+						<include refid="searchFrag" />
+						ORDER BY BO_DATE DESC
+					) A
+				) B
+				WHERE RNUM BETWEEN #{startRow} AND #{endRow}
+				ORDER BY RNUM
+	</select>
+	
+	<select id="selectQnaList" parameterType="kr.or.ddit.vo.PagingVO" resultType="kr.or.ddit.vo.BoardVO">
+	SELECT Y.*
+		    FROM (    
+		        SELECT  ROWNUM RNUM
+		            , X.*
+		        FROM( 
+		        	<![CDATA[
+		        		SELECT 
+		         			C.MEM_ID
+	                        , A.BO_TITLE
+	                        , C.MEM_NAME
+	                        , A.BO_DATE
+	                        , A.BO_HIT
+	                        , A.BO_PARENT
+	                        , A.BO_GROUP_CODE
+	                        , A.BO_SECRET
+	                        , A.BO_DELETE
+	                        , A.BO_NO
+	                     FROM BOARD A
+				         INNER JOIN MEMBER C ON(A.MEM_ID = C.MEM_ID)
+				         ]]>
+				         <include refid="qnaSearchFrag" />
+	                      WHERE A.BO_DELETE = 'N'
+						  AND A.BO_GROUP_CODE = 'CYQNA'
+						  ORDER BY A.BO_NO DESC, A.BO_DATE DESC
+							 
+		    ) X ) Y
+ 	 	    WHERE RNUM BETWEEN #{startRow} AND #{endRow}
+			ORDER BY RNUM
+	</select>
+	
+	
+	<insert id="insertBoard" parameterType="kr.or.ddit.vo.BoardVO">
+		<selectKey order="BEFORE" keyProperty="boNo" resultType="int">
+			SELECT NVL(MAX(BO_NO), 0)+1
+			FROM BOARD
+		</selectKey>
+		INSERT INTO board (
+		    BO_NO,
+		    MEM_ID,
+		    BO_TITLE,
+		    BO_CONTENT,
+		    BO_DATE,
+		    BO_GROUP_CODE
+	      	<if test="lecCode!=null">
+		    	, LEC_CODE
+		    </if>
+	        <if test="boParent!=null and boParent gt 0">
+		    	, BO_PARENT
+		    </if>
+		) VALUES (
+		    #{boNo,jdbcType=NUMERIC},
+		    #{memId,jdbcType=VARCHAR},
+		    #{boTitle,jdbcType=VARCHAR},
+		    #{boContent,jdbcType=VARCHAR},
+		   	SYSDATE,
+		    #{boGroupCode,jdbcType=VARCHAR}
+	    	<if test="lecCode!=null">
+		    	, #{lecCode,jdbcType=VARCHAR}
+		    </if>
+		   	<if test="boParent!=null and boParent gt 0">
+		    	, #{boParent,jdbcType=NUMERIC}
+		    </if>
+		)
+	</insert>
+	
+	
+    <!-- Q&A INSERT -->
+	<insert id="insertQna" parameterType="kr.or.ddit.vo.BoardVO">
+		<selectKey order="BEFORE" keyProperty="boNo" resultType="int">
+			SELECT NVL(MAX(BO_NO), 0)+1
+			FROM BOARD
+		</selectKey>
+		INSERT INTO BOARD (
+		    BO_NO,
+		    MEM_ID,
+		    BO_TITLE,
+		    BO_CONTENT,
+		    BO_DATE,
+		    BO_GROUP_CODE,
+		    BO_SECRET
+		    <if test="boParent!=null and boParent gt 0">
+		    	, BO_PARENT
+		    </if>
+		) VALUES (
+		    #{boNo,jdbcType=NUMERIC},
+		    #{memId,jdbcType=VARCHAR},
+		    #{boTitle,jdbcType=VARCHAR},
+		    #{boContent,jdbcType=VARCHAR},
+		    SYSDATE,
+		    #{boGroupCode,jdbcType=VARCHAR},
+		    #{boSecret, jdbcType=CHAR}
+	       <if test="boParent!=null and boParent gt 0">
+		    	, #{boParent,jdbcType=NUMERIC}
+		    </if>
+		)
+	</insert>
+	
+	<!-- boardMap -->
+	<resultMap type="kr.or.ddit.vo.BoardVO" id="boardMap" autoMapping="true">
+		<id property="boNo" column="ALBONO" />
+		<association property="memberVO" javaType="kr.or.ddit.member.vo.MemberVO" autoMapping="true">
+			<id property="memId" column="MEM_ID"/>
+		</association>
+		<collection property="attachList" ofType="kr.or.ddit.vo.AttachVO" autoMapping="true">
+			<id property="attNo" column="ATT_NO"/>
+		</collection>
+	</resultMap>
+	
+	<select id="selectBoard" parameterType="kr.or.ddit.vo.BoardVO" resultMap="boardMap">
+		SELECT A.BO_NO AS ALBONO
+			 , A.MEM_ID
+			 , BO_TITLE
+		     , BO_CONTENT
+		     , TO_CHAR(BO_DATE, 'YYYY-MM-DD HH24:MI:SS') AS BO_DATE
+		     , BO_HIT
+		     , BO_PARENT
+		     , BO_GROUP_CODE
+		     , LEC_CODE
+		     , ATT_NO 
+		     , ATT_SAVENAME
+		     , ATT_FILENAME
+		     , FILE_ATT_MIME
+		     , ATT_FILESIZE
+		     , ATT_FANCY
+		     , ATT_DOWNCOUNT
+		     , MEM_NAME
+		FROM BOARD A 
+		LEFT OUTER JOIN ATTACH B 
+		ON (A.BO_NO = B.BO_NO)
+		LEFT OUTER JOIN MEMBER C 
+		ON (A.MEM_ID = C.MEM_ID)
+		WHERE A.BO_NO = #{boNo,jdbcType=NUMERIC}
+		AND BO_DELETE = 'N'
+		<if test="boGroupCode != null">
+		AND BO_GROUP_CODE = #{boGroupCode}
+		</if>
+		<if test="lecCode != null">
+		AND LEC_CODE = #{lecCode}
+		</if>
+	</select>
+	
+	<select id="selectQna" parameterType="kr.or.ddit.vo.BoardVO" resultMap="boardMap">
+	SELECT A.BO_NO
+		   , A.MEM_ID
+		   , BO_TITLE
+		   , BO_CONTENT
+		   , TO_CHAR(BO_DATE, 'YYYY-MM-DD HH24:MI:SS') AS BO_DATE
+		   , BO_PARENT
+		   , BO_GROUP_CODE
+		   , MEM_NAME
+		   , BO_HIT
+		   , MEM_PASS
+		   , BO_DELETE
+		   , BO_SECRET
+	  FROM BOARD A LEFT OUTER JOIN MEMBER C ON (A.MEM_ID = C.MEM_ID)
+	 WHERE A.BO_NO = #{boNo,jdbcType=NUMERIC}
+	</select>
+
+	<update id="updateBoard" parameterType="kr.or.ddit.vo.BoardVO">
+		UPDATE BOARD
+		SET
+			BO_TITLE = #{boTitle,jdbcType=VARCHAR},
+			BO_CONTENT = #{boContent,jdbcType=VARCHAR}
+		WHERE BO_NO = #{boNo}
+	</update>
+	
+	<update id="updateQna" parameterType="kr.or.ddit.vo.BoardVO">
+		UPDATE BOARD
+		   SET
+		       BO_TITLE = #{boTitle, jdbcType=VARCHAR},
+		       BO_CONTENT = #{boContent, jdbcType=VARCHAR},
+		       BO_SECRET = #{boSecret, jdbcType=CHAR}
+		WHERE BO_NO = #{boNo, jdbcType=NUMERIC}
+	</update>
+	
+	<update id="incrementHit" parameterType="kr.or.ddit.vo.BoardVO">
+		UPDATE BOARD
+		   SET BO_HIT = BO_HIT +1
+		 WHERE BO_NO = #{boNo}
+	</update>
+	
+	<update id="deleteBoard" parameterType="kr.or.ddit.vo.BoardVO">
+		DELETE FROM board
+		 WHERE BO_NO = #{boNo}
+	</update>
+	
+	<update id="deleteQna" parameterType="kr.or.ddit.vo.BoardVO">
+		UPDATE BOARD
+		   SET BO_DELETE = 'Y'
+		 WHERE BO_NO = #{boNo}
+	</update>
+	
+	<!-- 페이징 없는 리스트 -->
+	<select id="selectDataList" parameterType="kr.or.ddit.vo.BoardVO" resultMap="boardMap">
+		SELECT ROWNUM AS RNUM, A.*
+		FROM (SELECT A.BO_NO AS ALBONO
+				   , A.MEM_ID
+				   , BO_TITLE
+				   , BO_CONTENT
+				   , TO_CHAR(BO_DATE, 'YYYY-MM-DD') AS BO_DATE
+				   , BO_HIT
+				   , BO_PARENT
+				   , BO_GROUP_CODE
+				   , LEC_CODE
+				   , ATT_NO 
+				   , ATT_SAVENAME
+				   , ATT_FILENAME
+			       , FILE_ATT_MIME
+			       , ATT_FILESIZE
+			       , ATT_FANCY 
+			       , ATT_DOWNCOUNT
+			       , MEM_NAME
+			  FROM BOARD A 
+			  LEFT OUTER JOIN ATTACH B 
+			  ON (A.BO_NO = B.BO_NO)
+			  LEFT OUTER JOIN MEMBER C 
+			  ON (A.MEM_ID = C.MEM_ID)
+			  WHERE BO_GROUP_CODE = #{boGroupCode,jdbcType=VARCHAR}
+			  AND LEC_CODE = #{lecCode,jdbcType=VARCHAR}
+			  AND BO_DELETE = 'N'
+			  ORDER BY A.BO_NO
+		) A
+		ORDER BY ROWNUM DESC
+	</select>
+	
+	<!-- 비밀번호 체크 -->
+	<select id="passCheck" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.member.vo.MemberVO">
+		SELECT MEM_PASS
+ 		 FROM MEMBER
+    	 WHERE MEM_ID = #{memId,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="retrieveRep" parameterType="kr.or.ddit.vo.BoardVO" resultType="kr.or.ddit.vo.BoardVO">
+		SELECT 
+			BO_NO
+			, MEM_ID
+			, BO_TITLE
+			, BO_CONTENT
+			, BO_DATE
+			, BO_PARENT
+			, BO_GROUP_CODE
+			, LEC_CODE
+			, BO_DELETE
+		FROM BOARD
+		WHERE BO_PARENT = #{boParent}	
+	</select>
+	
+	<select id="retrieveRepList" parameterType="kr.or.ddit.vo.BoardVO" resultType="kr.or.ddit.vo.BoardVO">
+		SELECT BO_PARENT
+		FROM BOARD 
+		WHERE BO_PARENT IN 
+		<foreach item="item" index="index" collection="list"
+		      open="(" separator="," close=")">
+		       #{item.boNo}
+	  	</foreach>
+	</select>
+	
+	<select id="retrieveRecentNoty" parameterType="kr.or.ddit.vo.BoardVO" resultType="kr.or.ddit.vo.BoardVO">
+		SELECT 
+			BO_TITLE,
+			BO_NO,
+			SUBSTR(BO_CONTENT,0,20) BO_CONTENT,
+			TO_CHAR(BO_DATE,'YYYY-MM-DD') BO_DATE
+		FROM 
+		( SELECT 
+		    BO_TITLE,
+		    BO_NO,
+		    BO_CONTENT,
+		    BO_DATE
+		    FROM BOARD
+		    WHERE BO_GROUP_CODE= #{boGroupCode}
+		    AND BO_DELETE='N'
+		    AND LEC_CODE = #{lecCode}
+		    ORDER BY BO_DATE DESC )
+		      <![CDATA[
+			WHERE ROWNUM < 4
+					]]> 
+	</select>
+	
+	<select id="retrieveAttChart" resultType="kr.or.ddit.myclassroom.dash.vo.AttChartVO">
+		SELECT 
+			ASS_ATTEND,
+			ASS_TASK,
+			ASS_MIDDLE,
+			ASS_FINAL
+		FROM ASSESSMENT
+	</select>
+	
+	<select id="previousQna" parameterType="kr.or.ddit.vo.BoardVO" resultType="kr.or.ddit.vo.BoardVO">
+		   SELECT
+                  BO_NO,
+                  BO_TITLE,
+                  TO_CHAR(BO_DATE, 'YYYY-MM-DD HH24:MI:SS') AS BO_DATE
+             FROM BOARD
+            WHERE BO_NO = (SELECT MAX(BO_NO)
+                             FROM BOARD 
+                            WHERE  BO_GROUP_CODE = 'CYQNA'
+                              AND BO_SECRET ='Y'
+                              AND BO_DELETE ='N'
+                   <![CDATA[  AND BO_NO  < #{boNo}  ]]> 
+                            )
+	</select>
+	
+	<select id="nextQna" parameterType="kr.or.ddit.vo.BoardVO" resultType="kr.or.ddit.vo.BoardVO">
+		  SELECT
+                  BO_NO,
+                  BO_TITLE,
+                  TO_CHAR(BO_DATE, 'YYYY-MM-DD HH24:MI:SS') AS BO_DATE
+            FROM  BOARD
+           WHERE BO_NO = (SELECT MIN(BO_NO)
+                            FROM BOARD 
+                           WHERE  BO_GROUP_CODE = 'CYQNA'
+                             AND BO_SECRET ='Y'
+                             AND BO_DELETE ='N'
+                <![CDATA[    AND BO_NO  >  #{boNo}]]> 
+                          )
+	</select>
+	
+	<select id="retrieveQnaList" parameterType="kr.or.ddit.vo.BoardVO" resultType="kr.or.ddit.vo.BoardVO">
+		 SELECT 
+	          BO_NO 
+	         ,BO_TITLE
+	         ,BO_CONTENT
+	         ,BO_DATE
+	         ,BO_PARENT
+	         ,MEM_NAME
+	      FROM BOARD A LEFT OUTER JOIN MEMBER B ON A.MEM_ID = B.MEM_ID
+	      WHERE BO_NO NOT IN
+	      (SELECT
+	            B.BO_NO
+	           FROM BOARD B
+	           WHERE B.BO_PARENT IS NOT NULL
+	            )
+	        AND BO_GROUP_CODE = #{boGroupCode}
+	        AND LEC_CODE= #{lecCode}
+	</select>
+</mapper>

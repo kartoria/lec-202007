@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.enrolment.dao.IEnrolmentDAO">
+
+<sql id="searchFrag">
+		<if test="searchVO!=null and @org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+			<choose>
+				<when test="'subName'.equals(searchVO.searchType)">
+					AND INSTR(B.SUB_NAME, #{searchVO.searchWord}) > 0
+				</when>
+				<when test="'lecGrd'.equals(searchVO.searchType)">
+					AND INSTR(A.LEC_GRD, #{searchVO.searchWord}) > 0
+				</when>
+				<otherwise>
+					AND (INSTR(B.SUB_NAME, #{searchVO.searchWord}) > 0
+					OR INSTR(A.LEC_GRD, #{searchVO.searchWord}) > 0)
+				</otherwise>
+			</choose>
+		</if>
+</sql>
+
+
+
+
+<select id="selectLectureCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+			SELECT COUNT(*)
+			FROM LECTURE 
+			WHERE LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+			AND LEC_CODE IN(
+            SELECT LEC_CODE
+              FROM LECTURE
+              WHERE LEC_CODE
+               NOT IN (SELECT A.LEC_CODE
+                          FROM LECTURE A , TAKE_LEC B
+                          WHERE B.MEM_ID = #{searchDetail.memId}
+                          AND A.LEC_CODE = B.LEC_CODE)
+                )            
+</select>
+<select id="selectLectureSubNameCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+			SELECT COUNT(DISTINCT(B.SUB_NAME))
+			FROM LECTURE A, SUBJECT B 
+			WHERE INSTR(B.SUB_NAME, #{searchVO.searchWord}) > 0
+			AND LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+</select>
+<select id="selectLectureLecGrdCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+           SELECT COUNT((LEC_GRD))
+			FROM LECTURE 
+			WHERE INSTR(LEC_GRD, #{searchVO.searchWord}) > 0
+			AND LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+             AND LEC_CODE IN(
+                                SELECT LEC_CODE
+                                  FROM LECTURE
+                                  WHERE LEC_CODE
+                                   NOT IN (SELECT A.LEC_CODE
+                                              FROM LECTURE A , TAKE_LEC B
+                                              WHERE B.MEM_ID = #{searchDetail.memId}
+                                              AND A.LEC_CODE = B.LEC_CODE))
+
+</select>
+
+	
+<resultMap type="kr.or.ddit.vo.LectureVO" id="lectureMap" autoMapping="true">
+	<result property="lecCode" column="LEC_CODE"/>
+	<result property="lecFull" column="LEC_FULL"/>
+	<result property="lecNmt" column="LEC_NMT"/>
+	<result property="lecGrd" column="LEC_GRD"/>
+	<collection property="memberVo" javaType="kr.or.ddit.member.vo.MemberVO" ofType="kr.or.ddit.member.vo.MemberVO" autoMapping="true">
+		<result property="memName" column="MEM_NAME"/>
+	</collection>
+	<collection property="subjectVo" javaType="kr.or.ddit.vo.SubjectVO" ofType="kr.or.ddit.vo.SubjectVO" autoMapping="true">
+		<result property="subName" column="SUB_NAME"/>
+		<result property="subDetail" column="SUB_DETAIL"/>
+		<result property="subCredit" column="SUB_CREDIT"/>
+	</collection>
+</resultMap>
+<select id="selectLectureList" resultMap="lectureMap" parameterType="kr.or.ddit.vo.PagingVO">
+
+
+
+SELECT Y.*
+FROM(
+    SELECT ROWNUM RNUM,
+        X.*
+        FROM(
+                SELECT 
+                        A.LEC_CODE  ,
+                        B.SUB_NAME  ,
+                        C.MEM_NAME ,
+                        A.LEC_FULL  ,
+                        A.LEC_NMT ,
+                        A.LEC_GRD ,
+                        B.SUB_DETAIL ,
+                        B.SUB_CREDIT 
+                FROM LECTURE A , SUBJECT B, MEMBER C
+                WHERE 1=1
+                <include refid="searchFrag" />
+                AND A.SUB_CODE = B.SUB_CODE
+                AND C.MEM_TYPE ='ROLE_PROFESSOR'
+                AND C.MEM_ID = A.MEM_ID
+                AND A.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+                AND A.LEC_CODE IN(
+                                SELECT LEC_CODE
+                                  FROM LECTURE
+                                  WHERE LEC_CODE
+                                   NOT IN (SELECT A.LEC_CODE
+                                              FROM LECTURE A , TAKE_LEC B
+                                              WHERE B.MEM_ID = #{searchDetail.memId}
+                                              AND A.LEC_CODE = B.LEC_CODE)
+                )
+        )X)Y
+	WHERE RNUM  BETWEEN #{startRow} AND #{endRow}
+        
+
+</select>
+<insert id="insertEnrolment" parameterType="kr.or.ddit.vo.TakeLecVO">
+
+	INSERT INTO TAKE_LEC (
+		    TLEC_NO,
+		    MEM_ID,
+		    LEC_CODE,
+		    TLEC_GRD
+	) VALUES (
+		    (SELECT NVL(MAX(TLEC_NO)+1,0)
+				FROM TAKE_LEC),
+		    #{memId},
+		    #{lecCode},
+		    #{tlecGrd}
+	    
+	)
+
+
+
+</insert>
+<resultMap type="kr.or.ddit.vo.LectureVO" id="lectureMap2" autoMapping="true">
+	<result property="lecCode" column="LEC_CODE"/>
+	<result property="lecFull" column="LEC_FULL"/>
+	<result property="lecNmt" column="LEC_NMT"/>
+	<result property="lecGrd" column="LEC_GRD"/>
+	<collection property="memberVo" javaType="kr.or.ddit.member.vo.MemberVO" ofType="kr.or.ddit.member.vo.MemberVO" autoMapping="true">
+		<result property="memName" column="MEM_NAME"/>
+	</collection>
+	<collection property="subjectVo" javaType="kr.or.ddit.vo.SubjectVO" ofType="kr.or.ddit.vo.SubjectVO" autoMapping="true">
+		<result property="subName" column="SUB_NAME"/>
+		<result property="subDetail" column="SUB_DETAIL"/>
+		<result property="subCredit" column="SUB_CREDIT"/>
+	</collection>
+</resultMap>
+
+
+
+
+<select id="selectDetailLectureList" resultMap="lectureMap2" parameterType="kr.or.ddit.member.vo.MemberVO">
+		
+		SELECT C.LEC_CODE 
+		    , B.SUB_NAME 
+		    , (SELECT MEM_NAME FROM MEMBER WHERE MEM_ID = C.MEM_ID) AS MEM_NAME
+		    , C.LEC_FULL 
+		    , C.LEC_NMT 
+		    , C.LEC_GRD 
+		    , B.SUB_DETAIL 
+		    , B.SUB_CREDIT 
+		FROM MEMBER A, SUBJECT B, LECTURE C, TAKE_LEC D
+		WHERE D.MEM_ID = #{memId}
+		AND D.MEM_ID = A.MEM_ID
+		AND D.LEC_CODE = C.LEC_CODE
+		AND C.SUB_CODE = B.SUB_CODE
+		AND C.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+
+
+
+</select>
+<delete id="deleteEnrolment" parameterType="kr.or.ddit.vo.TakeLecVO">
+	DELETE FROM TAKE_LEC
+		WHERE MEM_ID =#{memId}
+    	AND LEC_CODE =#{lecCode}
+</delete>
+<insert id="interestEnrolment" parameterType="kr.or.ddit.vo.InterestLecVO">
+	INSERT INTO INTEREST_LEC (
+	    LEC_CODE,
+	    MEM_ID
+	) VALUES (
+	    #{lecCode},
+	    #{memId}
+	)
+
+</insert>
+
+<select id="interstList" parameterType="kr.or.ddit.vo.InterestLecVO" resultMap="lectureMap">
+		SELECT Y.*
+		FROM(
+		    SELECT ROWNUM RNUM,
+		        X.*
+		        FROM(
+		                SELECT 
+		                        D.LEC_CODE  ,
+		                        B.SUB_NAME  ,
+		                        C.MEM_NAME ,
+		                        A.LEC_FULL  ,
+		                        A.LEC_NMT ,
+		                        A.LEC_GRD ,
+		                        B.SUB_DETAIL ,
+		                        B.SUB_CREDIT 
+		                FROM LECTURE A , SUBJECT B, MEMBER C, INTEREST_LEC D
+		                WHERE 1=1
+		                AND A.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+		                AND A.SUB_CODE = B.SUB_CODE
+		                AND C.MEM_TYPE ='ROLE_PROFESSOR'
+		                AND C.MEM_ID = A.MEM_ID
+		                AND A.LEC_CODE = D.LEC_CODE
+		                AND D.MEM_ID =#{memId}
+		                AND A.LEC_CODE IN(
+		                                SELECT LEC_CODE
+		                                    FROM LECTURE
+		                                    WHERE LEC_CODE NOT IN (SELECT A.LEC_CODE
+                                                                    FROM LECTURE A , TAKE_LEC B
+                                                                    WHERE B.MEM_ID = #{memId}
+                                                                    AND A.LEC_CODE = B.LEC_CODE)
+		                )               
+		        )X)Y
+		  
+</select>
+<delete id="deleteInterest" parameterType="kr.or.ddit.vo.InterestLecVO">
+	DELETE FROM INTEREST_LEC
+		WHERE MEM_ID =#{memId}
+    	AND LEC_CODE =#{lecCode}
+</delete>
+
+<update id="insertCount" parameterType="kr.or.ddit.vo.TakeLecVO">
+	UPDATE LECTURE
+    SET
+        LEC_NMT= LEC_NMT + 1
+	WHERE
+    	LEC_CODE =#{lecCode}
+</update>
+<update id="deleteCount" parameterType="kr.or.ddit.vo.TakeLecVO">
+	UPDATE LECTURE
+    SET
+        LEC_NMT= LEC_NMT - 1
+	WHERE
+    	LEC_CODE =#{lecCode}
+</update>
+<!-- <resultMap type="LectureVO" id="lectureTimeMap"  autoMapping="true"> -->
+<!-- 	<id property="lecCode" column="LEC_CODE"/> -->
+<!-- 	<association property="lectureTimeVo" javaType="LectureTimeVO"  autoMapping="true"> -->
+<!-- 		<id property="ltimeNo" column="LTIME_NO" /> -->
+<!-- 	</association> -->
+<!-- 	<association property="subjectVo" javaType="SubjectVO" autoMapping="true"> -->
+<!-- 		<id property="subCode" column="SUB_CODE" /> -->
+<!-- 	</association> -->
+<!-- </resultMap> -->
+<select id="selectLectureTime" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.enrolment.vo.EnrolmentVO">
+		SELECT 
+			A.LTIME_START, 
+			A.LTIME_END, 
+			C.SUB_NAME, 
+			A.LTIME_DAY 
+		FROM LECTURE_TIME A , TAKE_LEC B,  LECTURE D ,SUBJECT C
+		WHERE A.LEC_CODE = B.LEC_CODE 
+		AND B.LEC_CODE = D.LEC_CODE 
+		AND D.SUB_CODE = C.SUB_CODE 
+		AND B.MEM_ID = #{memId}
+		AND D.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00') 
+</select>
+
+
+<select id="selectLectureplan1" parameterType="kr.or.ddit.enrolment.vo.EnrolmentVO" resultType="kr.or.ddit.vo.LectureVO">
+SELECT 
+    LEC_CODE,
+    LEC_GRD,
+    LEC_FULL,
+    LEC_MBK,
+    LEC_SBK,
+    SUB_CODE
+FROM LECTURE
+WHERE LEC_CODE = #{lecCode}
+AND LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+      
+
+
+</select>
+<select id="selectLectureplan2" parameterType="kr.or.ddit.enrolment.vo.EnrolmentVO" resultType="kr.or.ddit.vo.LectureTimeVO">
+
+SELECT 
+A.LTIME_DAY ,
+A.LTIME_START ,
+A.LTIME_END ,
+A.ROOM_CODE
+FROM LECTURE_TIME A, LECTURE B
+WHERE B.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+AND A.LEC_CODE = B.LEC_CODE
+AND B.LEC_CODE=#{lecCode}
+
+
+</select>
+<select id="selectLectureplan3" parameterType="kr.or.ddit.enrolment.vo.EnrolmentVO" resultType="kr.or.ddit.vo.SubjectVO">
+SELECT
+A.SUB_DETAIL,
+A.SUB_NAME ,
+A.SUB_CREDIT ,
+A.SUB_CODE
+FROM SUBJECT A, LECTURE B
+WHERE B.LEC_CODE = #{lecCode}
+AND A.SUB_CODE = B.SUB_CODE
+AND B.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+
+
+</select>
+<select id="selectLectureplan4" parameterType="kr.or.ddit.enrolment.vo.EnrolmentVO" resultType="kr.or.ddit.member.vo.MemberVO">
+
+
+SELECT 
+A.MEM_NAME ,
+A.MEM_TEL ,
+A.MEM_MAIL 
+FROM MEMBER A, LECTURE B
+WHERE A.MEM_ID = B.MEM_ID
+AND B.LEC_CODE=#{lecCode}
+AND B.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+
+</select>
+
+
+
+
+
+</mapper>

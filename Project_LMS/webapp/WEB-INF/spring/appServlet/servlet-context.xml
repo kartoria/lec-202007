@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+	
+	<annotation-driven validator="validator">
+		<argument-resolvers>
+			<beans:bean class="org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver" />
+		</argument-resolvers>
+	</annotation-driven>
+
+	<default-servlet-handler />
+	
+	<!-- PDF 이미지 백그라운드 경로 매핑  -->
+	<resources mapping="/resources/**" location="/resources/" />
+	
+	
+	<beans:bean id="IRVR" class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+		p:prefix="/WEB-INF/views/" p:suffix=".jsp" />
+
+	<beans:bean class="org.springframework.web.servlet.view.tiles3.TilesConfigurer"
+		p:definitions="/WEB-INF/tiles.xml" />
+		
+	<beans:bean id="TVR" class="org.springframework.web.servlet.view.tiles3.TilesViewResolver"
+		p:order="2" />
+
+	<beans:bean id="BNVR" class="org.springframework.web.servlet.view.BeanNameViewResolver"
+		p:order="1" />
+
+	<!-- controller에서 return을 "jsonView"로하면 앞단에 json데이터를 보냄 -->
+	<beans:bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" />
+	
+	<!-- 파일 다운로드  -->
+	<beans:bean id="downloadView" class="kr.or.ddit.utils.DownloadView" />
+	<beans:bean id="downloadTaskSb" class="kr.or.ddit.myclassroom.task.controller.DownloadTaskSubmit" />
+	
+
+	<context:component-scan base-package="kr.or.ddit" use-default-filters="false">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+		<context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice" />
+	</context:component-scan>
+
+	<view-controller path="/cmmn/validator.do" view-name="cmmn/validator"/>
+
+	<!-- For Pagination Tag -->
+    <beans:bean id="imageRenderer" class="kr.or.ddit.egovframework.example.cmmn.web.EgovImgPaginationRenderer"/>
+    
+	<!-- 부트스트랩을 적용한 기본 PageRenderer 들. -->
+    <beans:bean id="bootStrapNumberTypePaginationRenderer" class="kr.or.ddit.egovframework.BootStrapNumberTypePaginationRenderer" />
+    <beans:bean id="bootStrapMoreTypePaginationRenderer" class="kr.or.ddit.egovframework.BootStrapMoreTypePaginationRenderer" />
+
+    <beans:bean id="paginationManager" class="egovframework.rte.ptl.mvc.tags.ui.pagination.DefaultPaginationManager">
+        <beans:property name="rendererType">
+            <beans:map>
+                <beans:entry key="image" value-ref="imageRenderer"/>
+                <beans:entry key="bsNumber" value-ref="bootStrapNumberTypePaginationRenderer" />
+                <beans:entry key="bsMore" value-ref="bootStrapMoreTypePaginationRenderer" />
+            </beans:map>
+        </beans:property>
+    </beans:bean>
+	<!-- /For Pagination Tag -->
+	
+	<security:global-method-security
+		pre-post-annotations="enabled"
+		proxy-target-class="true"
+	/>
+
+
+	<beans:beans profile="stage">
+	<!-- i18n , l10n 지원 -->
+	<interceptors>
+		<interceptor>
+			<mapping path="/**" />
+			<beans:bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"
+				p:paramName="lang" />
+		</interceptor>
+		
+		<interceptor>
+			<mapping path="/enrolment/list.do"/>
+			<beans:bean class="kr.or.ddit.interceptor.EnromentInterceptor"/>
+		</interceptor>
+		
+		<interceptor>
+			<mapping path="/lms/**" />
+			 <beans:bean class="kr.or.ddit.interceptor.LmsInterceptor" /> 
+		</interceptor>
+		
+		<interceptor>
+			<mapping path="/cyber/**" />
+			 <beans:bean class="kr.or.ddit.interceptor.CyberInterceptor" /> 
+		</interceptor>
+	</interceptors>
+	</beans:beans>
+	
+	<beans:beans profile="dev">
+	<interceptors>
+		<interceptor>
+			<mapping path="/**" />
+			<beans:bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"
+				p:paramName="lang" />
+		</interceptor>
+		
+		<interceptor>
+		<mapping path="/**" />
+		<beans:bean class="org.springframework.web.servlet.mvc.WebContentInterceptor"
+			p:cacheSeconds="0"
+			p:useCacheControlHeader="true"
+			p:useCacheControlNoStore="true"
+			p:useExpiresHeader="true"
+		 />
+		</interceptor>
+		
+		<interceptor>
+			<mapping path="/enrolment/list.do"/>
+			<beans:bean class="kr.or.ddit.interceptor.EnromentInterceptor"/>
+		</interceptor>
+		
+		<interceptor>
+			<mapping path="/lms/**" />
+			 <beans:bean class="kr.or.ddit.interceptor.LmsInterceptor" /> 
+		</interceptor>
+		
+		<interceptor>
+			<mapping path="/myclass/**" />
+			 <beans:bean class="kr.or.ddit.interceptor.MyClassInterceptor" /> 
+		</interceptor>
+		
+		<interceptor>
+			<mapping path="/cyber/**" />
+			 <beans:bean class="kr.or.ddit.interceptor.CyberInterceptor" /> 
+		</interceptor>
+		
+		<interceptor>
+			<mapping path="/admin/**" />
+			 <beans:bean class="kr.or.ddit.interceptor.AdminInterceptor" /> 
+		</interceptor>
+	</interceptors>
+	</beans:beans>
+	
+</beans:beans>
+
+
+
+
+
+
+
+
+
+
+
+

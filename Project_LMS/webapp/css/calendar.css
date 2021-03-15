@@ -1,0 +1,62 @@
+@charset "UTF-8";
+/**@author 조예슬**/
+#exitBtn{
+	margin-left: 10px;
+}
+.fc-basic-view .fc-content, .fc-time-grid-event .fc-content,.fc-event-title {
+    color: #fff !important;
+    font-size: 0.85em;
+}
+.fc-right-button, .fc-prev-button, .fc-right-button, .fc-next-button,
+.fc-prevYear-button,.fc-nextYear-button{
+    background-color: #f2f4f5 !important;
+    border-color:#f2f4f5 !important;
+    color: #b8c3d5 !important;
+    background-image: none;
+}
+.fc-dayGridWeek-button,.fc-dayGridDay-button{ 
+	background-color: #f2f4f5 !important;
+    border-color:#f2f4f5 !important;
+    color: #b8c3d5 !important;
+    font-weight: 
+}
+.fc-scheduleInsert-button{background-color:white !important;border-color: blue !important;color: blue !important;}
+#colorView{
+	padding-left: 3%;
+	margin-left : 3%;
+	float: left;
+	width: 150px;
+	height: 20%;
+	border-bottom: 1px dotted;
+	border-top: 1px dotted;
+	border-color : #A9ADAF;
+	margin-top: 150px;
+}
+#calenderBody{
+	float: left;
+	padding-left: 3%;
+}
+#colorSpan{
+	width: 5px;
+	height: 10px;
+}
+.TLEC  {
+	background-color: #8d9dea !important;
+	color: #8d9dea !important;
+}
+.TEST  {
+	background-color: #70c39e !important;
+	color: #70c39e !important;
+}
+.GRADE    {
+	background-color: #f1788f !important;
+	color: #f1788f !important;
+}
+.PAY     {
+	background-color: #fdc16a !important;
+	color: #fdc16a !important;
+}
+.ETC    {
+	background-color: #A9ADAF  !important;
+	color: #A9ADAF !important;
+}

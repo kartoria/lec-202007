@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.commons.dao.IScheduleDAO">
+<select id="selectScheduleList" resultType="kr.or.ddit.commons.vo.ScheduleVO">
+SELECT
+SCHE_NO,
+SCHE_TITLE,
+TO_CHAR(SCHE_START,'YYYY-MM-DD')SCHE_START,
+TO_CHAR(SCHE_END,'YYYY-MM-DD')SCHE_END,
+SCHE_CONTENT,
+SCHE_SORT
+FROM SCHEDULE
+</select>
+
+<select id="selectSchedule" parameterType="kr.or.ddit.commons.vo.ScheduleVO" resultType="kr.or.ddit.commons.vo.ScheduleVO">
+SELECT
+SCHE_NO,
+SCHE_TITLE,
+TO_CHAR(SCHE_START,'YYYY-MM-DD')SCHE_START,
+TO_CHAR(SCHE_END,'YYYY-MM-DD')SCHE_END,
+SCHE_CONTENT,
+SCHE_SORT
+FROM SCHEDULE
+WHERE SCHE_NO=#{scheNo}
+</select>
+
+<insert id="insertSchedule" parameterType="kr.or.ddit.commons.vo.ScheduleVO">
+<selectKey order="BEFORE" keyProperty="scheNo" resultType="int">
+SELECT NVL(MAX(SCHE_NO), 0)+1 AS SCHE_NO
+FROM SCHEDULE
+</selectKey>
+INSERT INTO SCHEDULE(
+SCHE_NO,
+SCHE_TITLE,
+SCHE_START,
+SCHE_END,
+SCHE_CONTENT,
+SCHE_SORT
+)VALUES
+(
+#{scheNo     ,jdbcType=NUMERIC},
+#{scheTitle  ,jdbcType=VARCHAR},
+#{scheStart  ,jdbcType=DATE},
+#{scheEnd    ,jdbcType=DATE},
+#{scheContent,jdbcType=VARCHAR},
+#{scheSort,jdbcType=VARCHAR}
+)
+</insert>
+
+<delete id="deleteSchedule" parameterType="kr.or.ddit.commons.vo.ScheduleVO">
+DELETE FROM SCHEDULE
+WHERE SCHE_NO=#{scheNo}
+</delete>
+
+<update id="updateSchedule" parameterType="kr.or.ddit.commons.vo.ScheduleVO">
+UPDATE SCHEDULE SET
+SCHE_TITLE = #{scheTitle    ,jdbcType=VARCHAR},
+SCHE_START = #{scheStart    ,jdbcType=VARCHAR},
+SCHE_END =   #{scheEnd      ,jdbcType=VARCHAR},
+SCHE_CONTENT = #{scheContent,jdbcType=VARCHAR},
+SCHE_SORT = #{scheSort,jdbcType=VARCHAR}
+WHERE SCHE_NO= #{scheNo     ,jdbcType=NUMERIC}
+</update>
+
+<select id="getSchedule" parameterType="kr.or.ddit.commons.vo.SPlanVO" resultType="kr.or.ddit.commons.vo.SPlanVO">
+	SELECT SPLAN_CODE
+		 , SPLAN_NAME
+		 , SPLAN_START
+		 , SPLAN_END
+	  FROM SCHEDULE_PLAN
+</select>
+
+</mapper>

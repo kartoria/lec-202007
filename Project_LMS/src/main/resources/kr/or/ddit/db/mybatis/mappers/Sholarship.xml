@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.admin.scholarship.dao.AdminScholarshipDAO">
+<sql id="searchFrag">
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+				<choose>
+					<when test="'name'.equals(searchVO.searchType)">
+					AND	INSTR(B.MEM_NAME, #{searchVO.searchWord}) > 0
+					</when>
+					<when test="'stuCode'.equals(searchVO.searchType)">
+					AND INSTR(A.SFUND_STUDENT, #{searchVO.searchWord}) > 0
+					</when>
+					<when test="'schCode'.equals(searchVO.searchType)">
+					AND	INSTR(A.SCHAR_CODE, #{searchVO.searchWord}) > 0
+					</when>
+					<when test="'schName'.equals(searchVO.searchType)">
+					AND	INSTR(C.SCH_NAME, #{searchVO.searchWord}) > 0
+					</when>
+					<otherwise>
+					AND	INSTR(B.MEM_NAME, #{searchVO.searchWord}) > 0
+						OR INSTR(A.SFUND_STUDENT, #{searchVO.searchWord}) > 0
+						OR INSTR(A.SCHAR_CODE, #{searchVO.searchWord}) > 0
+						OR INSTR(C.SCH_NAME, #{searchVO.searchWord}) > 0
+					</otherwise>
+				</choose>
+			</if>
+</sql>
+<select id="selectScholarTypeList" resultType="kr.or.ddit.vo.ScholarshipVO">
+SELECT SCH_CODE,
+SCH_NAME,
+SCH_WHEN,
+SCH_TYPE,
+SCH_DETAIL,
+SCH_AMOUNT,
+SCH_AMOUNT_DETAIL
+FROM SCHOLARSHIP
+WHERE SCH_USE ='Y'
+ORDER BY SCH_CODE
+</select>
+
+<select id="selectScholarType" parameterType="String" resultType="kr.or.ddit.vo.ScholarshipVO">
+SELECT SCH_CODE,
+SCH_NAME,
+SCH_WHEN,
+SCH_TYPE,
+SCH_DETAIL,
+SCH_AMOUNT,
+SCH_AMOUNT_DETAIL
+FROM SCHOLARSHIP
+WHERE SCH_CODE = #{schCode}
+AND SCH_USE ='Y'
+</select>
+
+<update id="updateScholarType" parameterType="kr.or.ddit.vo.ScholarshipVO" >
+UPDATE SCHOLARSHIP
+SET
+SCH_TYPE=#{schType,jdbcType=VARCHAR},
+SCH_DETAIL=#{schDetail,jdbcType=VARCHAR},
+SCH_AMOUNT=#{schAmount,jdbcType=VARCHAR},
+SCH_AMOUNT_DETAIL=#{schAmountDetail,jdbcType=VARCHAR}
+WHERE SCH_CODE = #{schCode}
+</update>
+
+	
+<insert id="insertScholarType" parameterType="kr.or.ddit.vo.ScholarshipVO">
+	<selectKey order="BEFORE" keyProperty="schCode" resultType="String">
+			SELECT TO_CHAR(NVL(MAX(SCH_CODE), 0)+1)
+			FROM SCHOLARSHIP
+	</selectKey>
+	INSERT INTO SCHOLARSHIP(
+	SCH_CODE,
+	SCH_NAME,
+	SCH_WHEN,
+	SCH_TYPE,
+	SCH_DETAIL,
+	<if test="schAmount!=null ">
+	SCH_AMOUNT,
+	</if>
+	SCH_AMOUNT_DETAIL,
+	SCH_USE
+	)
+	VALUES(
+	#{schCode,jdbcType=VARCHAR},
+	#{schName,jdbcType=VARCHAR},
+	'B',
+	#{schType,jdbcType=VARCHAR},
+	#{schDetail,jdbcType=VARCHAR},
+	<if test="schAmount!=null ">
+	#{schAmount,jdbcType=VARCHAR},
+	</if>
+	#{schAmountDetail,jdbcType=VARCHAR},
+	'Y'
+	)
+	
+</insert>
+
+<update id="deleteScholarType" parameterType="String">
+UPDATE SCHOLARSHIP SET SCH_USE ='N'
+WHERE SCH_CODE=#{schCode}
+</update>
+
+<select id="selectScholarFundCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+SELECT COUNT(*)
+	FROM SCHAR_FUND
+	 WHERE CODE_RESULT ='PAYED'
+</select>
+
+<resultMap type="kr.or.ddit.vo.ScholarshipFundVO" id="scholarMap" autoMapping="true">
+	<collection property="memberVO" ofType="kr.or.ddit.member.vo.MemberVO" javaType="kr.or.ddit.member.vo.MemberVO">
+		<result property="memName" column="MEM_NAME"/>
+	</collection>
+	<collection property="schVO" ofType="kr.or.ddit.vo.ScholarshipVO" javaType="kr.or.ddit.vo.ScholarshipVO">
+		<result property="schName" column="SCH_NAME"/>
+	</collection>
+	<collection property="codeVO" ofType="kr.or.ddit.vo.CodeVO" javaType="kr.or.ddit.vo.CodeVO">
+		<result property="code" column="CODE"/>
+		<result property="codeName" column="CODE_NAME"/>
+	</collection>
+</resultMap>
+<select id="selectScholarFundList" parameterType="kr.or.ddit.vo.PagingVO" resultMap="scholarMap">
+SELECT E.*
+		FROM (
+			SELECT D.* , ROWNUM RNUM
+			FROM(
+        	SELECT 
+            A.SFUND_NO,
+            A.SCHAR_CODE,
+            A.CODE_RESULT,
+            E.CODE_NAME,
+            A.SFUND_VALUE,
+            A.SFUND_SMST,
+            TO_CHAR(A.SFUND_RESDATE,'YYYY-MM-DD')AS SFUND_RESDATE,
+            TO_CHAR(A.SFUND_GETDATE,'YYYY-MM-DD')AS SFUND_GETDATE,
+            A.SFUND_STUDENT,
+            B.MEM_NAME,
+            C.SCH_NAME
+            FROM SCHOLARSHIP C,MEMBER B, SCHAR_FUND A 
+			LEFT OUTER JOIN  CODE E ON (A.CODE_RESULT =E.CODE)
+            WHERE A.SFUND_STUDENT=B.MEM_ID
+            AND A.SCHAR_CODE=C.SCH_CODE
+            AND A.CODE_RESULT ='PAYED'
+            <include refid="searchFrag" />
+            ORDER BY SFUND_NO DESC
+			) D
+		) E
+		<![CDATA[
+		WHERE RNUM >= #{startRow} AND RNUM <= #{endRow}
+		]]>
+</select>
+
+<resultMap type="kr.or.ddit.vo.DepartmentVO" id="departMap" autoMapping="true">
+	<collection property="codeVO" ofType="kr.or.ddit.vo.CodeVO" javaType="kr.or.ddit.vo.CodeVO">
+		<result property="code" column="CODE"/>
+	</collection>
+</resultMap>
+<select id="selectDepartmentList" parameterType="int" resultMap="departMap">
+SELECT
+DEP_NO,
+DEP_NAME
+FROM DEPARTMENT A, CODE B
+WHERE A.COL_CODE=B.CODE
+AND A.COL_CODE=#{college }
+ORDER BY DEP_NO
+</select>
+<select id="selectCollegeList" resultType="kr.or.ddit.vo.CodeVO">
+SELECT
+CODE,
+CODE_NAME
+FROM CODE
+WHERE GROUP_CODE='A01'
+</select>
+<select id="selectScoreSemester" resultType="kr.or.ddit.vo.SemesterScoreVO">
+SELECT 
+DISTINCT(SCR_SMST) AS SCR_SMST
+FROM SEMESTER_SCORE
+</select>
+
+<select id="selectScoreScholarshipList" resultType="kr.or.ddit.vo.ScholarshipVO">
+SELECT
+SCH_CODE,
+SCH_NAME,
+SCH_TYPE,
+SCH_AMOUNT,
+SCH_AMOUNT_DETAIL,
+SCH_USE
+FROM SCHOLARSHIP
+WHERE SCH_TYPE ='SCORE'
+AND SCH_USE='Y'
+</select>
+
+<resultMap type="kr.or.ddit.vo.SemesterScoreVO" id="scoreMap" autoMapping="true">
+	<collection property="memberVO" ofType="kr.or.ddit.member.vo.MemberVO" javaType="kr.or.ddit.member.vo.MemberVO">
+		<result property="memId" column="MEM_ID"/>
+		<result property="memGrd" column="MEM_GRD"/>
+		<result property="memName" column="MEM_NAME"/>
+	</collection>
+	<collection property="departmentVO" ofType="kr.or.ddit.vo.DepartmentVO" javaType="kr.or.ddit.vo.DepartmentVO">
+		<result property="depNo" column="DEP_NO"/>
+		<result property="depName" column="DEP_NAME"/>
+		<result property="depFee" column="DEP_FEE"/>
+	</collection>
+	<collection property="codeVO" ofType="kr.or.ddit.vo.CodeVO" javaType="kr.or.ddit.vo.CodeVO">
+		<result property="code" column="CODE"/>
+		<result property="codeName" column="CODE_NAME"/>
+	</collection>
+	<collection property="schoFundVO" ofType="kr.or.ddit.vo.ScholarshipFundVO" javaType="kr.or.ddit.vo.ScholarshipFundVO">
+		<result property="sfundNo" column="SFUND_NO"/>
+		<result property="codeResult" column="CODE_RESULT"/>
+	</collection>
+</resultMap>
+<select id="selectScoreScholarCheck" parameterType="kr.or.ddit.admin.scholarship.vo.ScoreFormVO"  resultMap="scoreMap">
+SELECT B.MEM_ID, 
+B.DEP_NO, 
+B.MEM_NAME, 
+B.MEM_GRD, 
+C.DEP_NAME,
+D.SCR_NO, 
+D.SCR_TOTAL, 
+ROUND(D.SCR_AGV,2)AS SCR_AGV ,
+D.SCR_SMST, 
+D.SCR_CREDIT, 
+E.CODE_NAME,
+F.CODE_RESULT,
+F.SFUND_NO,
+RANK() OVER (ORDER BY D.SCR_TOTAL DESC)AS RANK 
+FROM MEMBER B 
+LEFT OUTER JOIN DEPARTMENT C ON(B.DEP_NO=C.DEP_NO )
+LEFT OUTER JOIN SEMESTER_SCORE D ON(B.MEM_ID=D.MEM_ID )
+LEFT OUTER JOIN CODE E ON (E.CODE=C.COL_CODE )
+LEFT OUTER JOIN (SELECT
+                A.SFUND_NO,
+                A.SFUND_STUDENT,
+                A.SCHAR_CODE,
+                G.CODE_NAME AS CODE_RESULT
+                FROM SCHAR_FUND A
+                LEFT OUTER JOIN CODE G ON(A.CODE_RESULT=G.CODE)
+                WHERE SFUND_SMST = #{currentSmst}
+                AND A.SCHAR_CODE IN (8001,8002))
+                F ON (F.SFUND_STUDENT=B.MEM_ID)
+WHERE B.MEM_GRD = #{memGrd} 
+AND B.DEP_NO= #{depNo}
+AND D.SCR_SMST=#{scrSmst}
+ORDER BY D.SCR_AGV DESC
+</select>
+
+<select id="selectSemesterScoreList" parameterType="kr.or.ddit.admin.scholarship.vo.ScoreFormVO" resultMap="scoreMap">
+SELECT B.MEM_ID, 
+B.DEP_NO, 
+B.MEM_NAME, 
+B.MEM_GRD, 
+C.DEP_NAME, 
+C.DEP_FEE,
+D.SCR_NO,
+D.SCR_TOTAL, 
+ROUND(D.SCR_AGV,2)AS SCR_AGV ,
+D.SCR_SMST, 
+D.SCR_CREDIT, 
+E.CODE_NAME,
+F.CODE_RESULT,
+F.SFUND_NO,
+RANK() OVER (ORDER BY D.SCR_TOTAL DESC)AS RANK
+FROM MEMBER B 
+LEFT OUTER JOIN DEPARTMENT C ON(B.DEP_NO=C.DEP_NO )
+LEFT OUTER JOIN SEMESTER_SCORE D ON(B.MEM_ID=D.MEM_ID )
+LEFT OUTER JOIN CODE E ON (E.CODE=C.COL_CODE )
+LEFT OUTER JOIN (SELECT
+                A.SFUND_NO,
+                A.SFUND_STUDENT,
+                A.SCHAR_CODE,
+                G.CODE_NAME AS CODE_RESULT
+                FROM SCHAR_FUND A
+                LEFT OUTER JOIN CODE G ON(A.CODE_RESULT=G.CODE)
+                WHERE SFUND_SMST = #{currentSmst}
+                AND A.SCHAR_CODE IN (8001,8002))
+                F ON (F.SFUND_STUDENT=B.MEM_ID)
+WHERE B.MEM_GRD =#{memGrd} 
+AND B.DEP_NO= #{depNo}
+AND D.SCR_SMST=#{scrSmst}
+ORDER BY D.SCR_AGV DESC
+</select>
+
+
+<insert id="insertScholarFund" parameterType="kr.or.ddit.admin.scholarship.vo.ScholarshipFundListVO" >
+<selectKey order="BEFORE" keyProperty="sfundNo" resultType="int">
+		SELECT NVL(MAX(SFUND_NO), 0)+1 AS SFUND_NO
+		FROM SCHAR_FUND
+</selectKey>
+INSERT ALL
+<foreach collection="applyList" item="item" index="idx" >
+INTO SCHAR_FUND(
+SFUND_NO,
+SCHAR_CODE,
+CODE_RESULT,
+SFUND_VALUE,
+SFUND_SMST,
+SFUND_RESDATE,
+SFUND_STUDENT
+)VALUES
+(
+	#{sfundNo,jdbcType=NUMERIC}+#{idx},
+	#{item.scharCode,jdbcType=VARCHAR},
+	'ACCEPT',
+	#{item.sfundValue,jdbcType=NUMERIC},
+	#{item.sfundSmst,jdbcType=VARCHAR},
+	TO_CHAR(SYSDATE,'YYYY-MM-DD'),
+	#{item.sfundStudent,jdbcType=VARCHAR}
+)
+</foreach>
+SELECT * FROM DUAL
+</insert>
+
+<select id="selectScholarApplyType" resultType="kr.or.ddit.vo.ScholarshipVO">
+SELECT 
+SCH_CODE,
+SCH_NAME
+FROM SCHOLARSHIP
+WHERE SCH_TYPE IN('APPLY','RECOM')
+AND SCH_USE='Y'
+</select>
+
+<select id="selectScholarSmstList" resultType="kr.or.ddit.vo.ScholarshipFundVO">
+SELECT
+DISTINCT(SFUND_SMST) SFUND_SMST
+FROM SCHAR_FUND A, SCHOLARSHIP B
+WHERE A.SCHAR_CODE=B.SCH_CODE
+AND B.SCH_TYPE != 'SCORE'
+ORDER BY SFUND_SMST DESC
+</select>
+<resultMap type="kr.or.ddit.vo.ScholarshipFundVO" id="schApplyMap" autoMapping="true">
+	<collection property="memberVO" ofType="kr.or.ddit.member.vo.MemberVO" javaType="kr.or.ddit.member.vo.MemberVO">
+		<result property="memName" column="MEM_NAME"/>
+	</collection>
+	<collection property="departVO" ofType="kr.or.ddit.vo.DepartmentVO" javaType="kr.or.ddit.vo.DepartmentVO">
+		<result property="depName" column="DEP_NAME"/>
+	</collection>
+	<collection property="codeVO" ofType="kr.or.ddit.vo.CodeVO" javaType="kr.or.ddit.vo.CodeVO">
+		<result property="code" column="CODE"/>
+		<result property="codeName" column="CODE_NAME"/>
+	</collection>
+	<collection property="schVO" ofType="kr.or.ddit.vo.ScholarshipVO" javaType="kr.or.ddit.vo.ScholarshipVO">
+		<result property="schName" column="SCH_NAME"/>
+	</collection>
+</resultMap>
+<select id="selectScholarApplyList" resultMap="schApplyMap">
+SELECT
+SFUND_NO,
+SCHAR_CODE,
+SFUND_VALUE,
+SFUND_SMST,
+TO_CHAR(A.SFUND_RESDATE,'YYYY-MM-DD')AS SFUND_RESDATE,
+TO_CHAR(A.SFUND_GETDATE,'YYYY-MM-DD')AS SFUND_GETDATE,
+SFUND_STUDENT,
+SFUND_PROFESSOR,
+SFUND_REASON,
+SCH_NAME,
+MEM_NAME,
+CODE_RESULT,
+CODE_NAME
+FROM SCHOLARSHIP B, MEMBER C, SCHAR_FUND A
+LEFT OUTER JOIN ( SELECT 
+                CODE,
+                CODE_NAME
+                FROM CODE
+                WHERE GROUP_CODE='A08') D ON (A.CODE_RESULT=D.CODE)
+WHERE B.SCH_CODE=A.SCHAR_CODE
+AND C.MEM_ID=A.SFUND_STUDENT
+AND SCHAR_CODE IN (8003,8004)
+<if test="scharCode!=null and sfundSmst!=null ">
+AND SCHAR_CODE = #{scharCode}
+AND	SFUND_SMST = #{sfundSmst}
+ORDER BY SFUND_RESDATE DESC
+</if>
+
+</select>
+
+<update id="updateScholarFund" parameterType="kr.or.ddit.admin.scholarship.vo.ScholarshipFundListVO">
+	UPDATE SCHAR_FUND SET 
+	CODE_RESULT='ACCEPT' WHERE SFUND_NO IN
+	<foreach collection="applyList" item="item" index="index"  open="(" separator="," close=")">
+	#{item.sfundNo}
+	</foreach>
+
+</update>
+
+<update id="deleteScholarApplyRecord" parameterType="kr.or.ddit.admin.scholarship.vo.ScholarshipFundListVO">
+	UPDATE SCHAR_FUND SET 
+	CODE_RESULT ='APPLY' WHERE SFUND_NO IN
+	<foreach collection="applyList" item="item" index="index"  open="(" separator="," close=")">
+	#{item.sfundNo}
+	</foreach>
+
+</update>
+
+<select id="selectScholarApply" parameterType="int" resultMap="schApplyMap">
+SELECT
+SFUND_NO,
+SCHAR_CODE,
+CODE_RESULT,
+CODE_NAME,
+SFUND_VALUE,
+SFUND_SMST,
+TO_CHAR(A.SFUND_RESDATE,'YYYY-MM-DD')AS SFUND_RESDATE,
+TO_CHAR(A.SFUND_GETDATE,'YYYY-MM-DD')AS SFUND_GETDATE,
+SFUND_STUDENT,
+SFUND_PROFESSOR,
+SFUND_REASON,
+SCH_NAME,
+MEM_NAME
+FROM SCHOLARSHIP B, MEMBER C, SCHAR_FUND A
+LEFT OUTER JOIN ( SELECT 
+                CODE,
+                CODE_NAME
+                FROM CODE
+                WHERE GROUP_CODE='A08') D ON (A.CODE_RESULT=D.CODE)
+WHERE B.SCH_CODE=A.SCHAR_CODE
+AND C.MEM_ID=A.SFUND_STUDENT
+AND SFUND_NO=#{sfundNo}
+</select>
+
+<delete id="deleteScholarScoreRecord" parameterType="kr.or.ddit.admin.scholarship.vo.ScholarshipFundListVO">
+DELETE FROM SCHAR_FUND
+<where> 
+	<foreach collection="applyList" item="item" open="" close="" separator="OR"> 
+		(SFUND_NO = #{item.sfundNo}) 
+	</foreach> 
+</where> 
+</delete>
+
+<update id="updateScholarApply" parameterType="kr.or.ddit.vo.ScholarshipFundVO">
+UPDATE SCHAR_FUND SET 
+CODE_RESULT =#{codeResult}
+WHERE SFUND_NO = #{sfundNo}
+</update>
+
+<select id="selectAllScholarSemester" parameterType="kr.or.ddit.vo.ScholarshipFundVO">
+SELECT 
+DISTINCT(SFUND_SMST) AS SFUND_SMST
+FROM SCHAR_FUND
+</select>
+
+<select id="selectScholarPayedDetail" parameterType="kr.or.ddit.vo.ScholarshipFundVO" resultType="kr.or.ddit.admin.scholarship.vo.ScholarshipPayedDetailVO">
+SELECT
+SFUND_NO,
+SFUND_STUDENT,
+MEM_NAME,
+SCHAR_CODE,
+SFUND_REASON,
+SCH_NAME,
+CODE_RESULT,
+CODE_NAME,
+SFUND_VALUE,
+SFUND_REASON,
+SFUND_SMST,
+TO_CHAR(A.SFUND_RESDATE,'YYYY-MM-DD')AS SFUND_RESDATE,
+TO_CHAR(A.SFUND_GETDATE,'YYYY-MM-DD')AS SFUND_GETDATE,
+SFUND_PROFESSOR
+FROM SCHOLARSHIP B, MEMBER C, SCHAR_FUND A
+LEFT OUTER JOIN ( SELECT 
+                CODE,
+                CODE_NAME
+                FROM CODE
+                WHERE GROUP_CODE='A08') D ON (A.CODE_RESULT=D.CODE)
+WHERE B.SCH_CODE=A.SCHAR_CODE
+AND C.MEM_ID=A.SFUND_STUDENT
+AND CODE_RESULT='PAYED'
+AND SFUND_NO=#{sfundNo}
+</select>
+</mapper>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.myclassroom.task.dao.ITaskSubmitDAO">
+	<insert id="insertAttaches" parameterType="kr.or.ddit.myclassroom.task.vo.TaskSubmitVO">
+		<selectKey order="BEFORE" keyProperty="tasksubmitNo" resultType="int">
+			SELECT NVL(MAX(TASKSUBMIT_NO), 0)+1
+			FROM TASKSUBMIT
+		</selectKey>
+		INSERT INTO TASKSUBMIT (
+			    TASKSUBMIT_NO,
+			    MEM_ID,
+			    TASK_NO,
+			    ATT_SAVENAME,
+			    ATT_FILENAME,
+			    FILE_ATT_MIME,
+			    ATT_FILESIZE,
+			    ATT_FANCY,
+			    TASK_SUBMIT_DATE,
+			    TASK_REPLY
+			) VALUES (
+			    #{tasksubmitNo,jdbcType=NUMERIC},
+			    #{memId,jdbcType=VARCHAR},
+		       	#{taskNo,jdbcType=NUMERIC},
+				#{attSavename,jdbcType=VARCHAR},
+		       	#{attFilename,jdbcType=VARCHAR},
+		       	#{fileAttMime,jdbcType=VARCHAR},
+		       	#{attFilesize,jdbcType=NUMERIC},
+		       	#{attFancy,jdbcType=VARCHAR},
+		       	SYSDATE,
+		       	#{taskReply,jdbcType=VARCHAR}
+			)
+	</insert>
+	
+	<select id="selectTaskSbCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+		SELECT COUNT(*)
+		FROM TASKSUBMIT
+		WHERE TASK_NO = #{searchDetail.taskNo}
+	</select>
+	
+	
+	<!-- taskSbMap -->
+	<resultMap type="kr.or.ddit.myclassroom.task.vo.TaskSubmitVO" id="taskSbMap" autoMapping="true">
+<!-- 		<id property="taskNo" column="TASK_NO" /> -->
+		<collection property="memberVO" ofType="kr.or.ddit.member.vo.MemberVO" javaType="kr.or.ddit.member.vo.MemberVO" autoMapping="true">
+			<id property="memId" column="MEM_ID"/>
+			<id property="memName" column="MEM_NAME"/>
+			<id property="memType" column="MEM_TYPE"/>
+		</collection>
+	</resultMap>
+	
+	<select id="selectTaskSbList" parameterType="kr.or.ddit.vo.PagingVO" resultMap="taskSbMap">
+		SELECT B.*
+		FROM (
+			SELECT A.*, ROWNUM RNUM 
+			FROM (
+				SELECT 
+                     TASKSUBMIT_NO, 
+                     A.MEM_ID, 
+                     A.TASK_NO, 
+                     ATT_SAVENAME, 
+                     ATT_FILENAME, 
+                     FILE_ATT_MIME, 
+                     ATT_FILESIZE, 
+                     ATT_FANCY, 
+                     TASK_SCR, 
+                     TASK_REPLY,
+                     TASK_SUBMIT_DATE,
+                     MEM_NAME,
+                     MEM_TYPE,
+                     TASK_CREDIT
+				FROM TASKSUBMIT A LEFT OUTER JOIN MEMBER B ON (A.MEM_ID = B.MEM_ID)
+								LEFT OUTER JOIN TASK C ON (A.TASK_NO = C.TASK_NO)
+				WHERE A.TASK_NO = #{searchDetail.taskNo}
+				ORDER BY 1 DESC
+				)  A
+		)  B
+		WHERE RNUM BETWEEN #{startRow} AND #{endRow}
+	</select>
+	
+	<delete id="deleteTaskSb" parameterType="kr.or.ddit.myclassroom.task.vo.TaskSubmitVO">
+		DELETE FROM TASKSUBMIT WHERE TASKSUBMIT_NO = #{tasksubmitNo}
+	</delete>
+	
+	<select id="selectTaskSb" parameterType="kr.or.ddit.myclassroom.task.vo.TaskSubmitVO" resultType="kr.or.ddit.myclassroom.task.vo.TaskSubmitVO">
+		SELECT
+		    TASKSUBMIT_NO,
+		    MEM_ID,
+		    TASK_NO,
+		    ATT_SAVENAME,
+		    ATT_FILENAME,
+		    FILE_ATT_MIME,
+		    ATT_FILESIZE,
+		    ATT_FANCY,
+		    TASK_SCR,
+		    TASK_REPLY,
+		    TASK_SUBMIT_DATE
+		FROM TASKSUBMIT
+		WHERE TASKSUBMIT_NO = #{tasksubmitNo}
+	</select>
+	
+	<update id="insertTaskScr" parameterType="kr.or.ddit.myclassroom.task.vo.TaskSubmitVO">
+		UPDATE TASKSUBMIT
+		SET
+			TASK_SCR = #{taskScr,jdbcType=NUMERIC}
+		WHERE TASKSUBMIT_NO = #{tasksubmitNo}
+	</update>	
+	
+	<select id="selectTask" parameterType="kr.or.ddit.myclassroom.task.vo.TaskSubmitVO" resultType="kr.or.ddit.myclassroom.task.vo.TaskSubmitVO">
+		SELECT TASKSUBMIT_NO
+		FROM TASKSUBMIT
+		WHERE TASK_NO = #{taskNo}
+	</select>
+	
+	
+	<sql id="updateFrag">
+		<trim prefix="UPDATE SET" prefixOverrides="AND">
+			<if test="scrMiddle!=null">
+				AND A.SCR_t = #{scrMiddle }
+			</if>
+			<if test="scrFinal!=null">
+				AND A.SCR_FINAL = #{scrFinal }
+			</if>
+		</trim>
+	</sql>
+	
+	<insert id="insertTaskScoreToTotalScore" parameterType="kr.or.ddit.myclassroom.test.vo.StudentScoreVO">
+			MERGE INTO STUDENT_SCORE A
+			USING DUAL
+			ON (TLEC_NO = #{tlecNo})
+			WHEN MATCHED THEN
+				UPDATE SET 
+					SCR_TASK = NVL(SCR_TASK,0)+#{scrTask},
+					A.TOTAL_SCORE = NVL(A.TOTAL_SCORE,0)+#{scrTask}
+					WHERE TLEC_NO = #{tlecNo}
+			WHEN NOT MATCHED THEN
+				INSERT (
+				    TLEC_NO,
+				    SCR_TASK,
+				    TOTAL_SCORE
+				) VALUES (
+				    #{tlecNo,jdbcType=NUMERIC},
+				    #{scrTask,jdbcType=NUMERIC},
+				    #{scrTask,jdbcType=NUMERIC}
+				)
+	</insert>
+	
+</mapper>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.myclassroom.task.dao.ITaskDAO">
+	
+	<select id="selectTaskCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+		SELECT COUNT(*)
+		FROM TASK
+		WHERE lEC_CODE = #{searchDetail.lecCode}
+	</select>
+	<select id="selectTaskList" parameterType="kr.or.ddit.vo.PagingVO" resultType="kr.or.ddit.myclassroom.task.vo.TaskVO">
+		SELECT B.*
+       FROM (
+           SELECT ROW_NUMBER() OVER(ORDER BY A.TASK_NO) AS RNUM, A.*
+           FROM (
+               SELECT 
+                   A.TASK_NO, 
+                   A.LEC_CODE,    
+                   A.TASK_TITLE,
+                   A.TASK_CONTENT,
+                   A.TASK_CREDIT,
+                   TO_CHAR(A.TASK_SDAY, 'YYYY-MM-DD') AS TASK_SDAY,    
+                   TO_CHAR(A.TASK_DDAY, 'YYYY-MM-DD') AS TASK_DDAY
+               FROM TASK A 
+               WHERE LEC_CODE = #{searchDetail.lecCode}
+               ORDER BY 1 DESC
+           ) A
+       ) B
+       WHERE RNUM BETWEEN #{startRow} AND #{endRow}
+       ORDER BY RNUM DESC
+	</select>
+	
+	<select id="selectTaskSubmit" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="int">
+		
+	</select>
+	
+	<insert id="insertTask" parameterType="kr.or.ddit.myclassroom.task.vo.TaskVO">
+		<selectKey order="BEFORE" keyProperty="taskNo" resultType="int">
+			SELECT NVL(MAX(TASK_NO), 0)+1
+			FROM TASK
+		</selectKey>
+			INSERT INTO task (
+			    TASK_NO,
+			    LEC_CODE,
+			    TASK_TITLE,
+			    TASK_CONTENT,
+			    TASK_CREDIT,
+			   	TASK_SDAY,
+			   	TASK_DDAY
+			) VALUES (
+			    #{taskNo,jdbcType=NUMERIC},
+			    #{lecCode,jdbcType=VARCHAR},
+			    #{taskTitle,jdbcType=VARCHAR},
+			    #{taskContent,jdbcType=VARCHAR},
+			    #{taskCredit,jdbcType=NUMERIC},
+			    #{taskSday,jdbcType=TIMESTAMP},
+			    #{taskDday,jdbcType=TIMESTAMP}
+			)
+	</insert>
+	
+	<select id="selectTask" parameterType="kr.or.ddit.myclassroom.task.vo.TaskVO" resultType="kr.or.ddit.myclassroom.task.vo.TaskVO">
+		SELECT 
+           A.TASK_NO, 
+           A.LEC_CODE,    
+           A.TASK_TITLE,
+           A.TASK_CONTENT,
+           A.TASK_CREDIT,
+           TO_CHAR(A.TASK_SDAY, 'YYYY-MM-DD') AS TASK_SDAY,    
+           TO_CHAR(A.TASK_DDAY, 'YYYY-MM-DD') AS TASK_DDAY
+       FROM TASK A 
+       WHERE LEC_CODE = #{lecCode}
+       AND A.TASK_NO = #{taskNo}
+	</select>
+	
+	<update id="updateTask" parameterType="kr.or.ddit.myclassroom.task.vo.TaskVO">
+		UPDATE TASK
+			SET
+			 	TASK_TITLE= #{taskTitle,jdbcType=VARCHAR},
+				TASK_SDAY = #{taskSday,jdbcType=TIMESTAMP},
+				TASK_DDAY = #{taskDday,jdbcType=TIMESTAMP},
+				TASK_CREDIT = #{taskCredit,jdbcType=NUMERIC},
+				TASK_CONTENT = #{taskContent,jdbcType=VARCHAR}
+			WHERE TASK_NO = #{taskNo}
+	</update>
+	
+	<delete id="deleteTask" parameterType="kr.or.ddit.myclassroom.task.vo.TaskVO">
+		DELETE FROM TASK
+		WHERE TASK_NO = #{taskNo}
+	</delete>
+	
+	<select id="retrieveTaskSb" parameterType="kr.or.ddit.myclassroom.task.vo.TaskVO" resultType="kr.or.ddit.myclassroom.task.vo.TaskVO">
+			SELECT
+			    TASK_NO
+			FROM 
+			    TASKSUBMIT
+			WHERE TASK_NO IN 
+			<foreach item="item" index="index" collection="list"
+			      open="(" separator="," close=")">
+			       #{item.taskNo}
+		  	</foreach>
+		  	AND MEM_ID IN
+			<foreach item="item" index="index" collection="list"
+			      open="(" separator="," close=")">
+			       #{item.memId}
+		  	</foreach>
+	</select>
+	
+	<select id="retrieveRecentTask" parameterType="kr.or.ddit.myclassroom.task.vo.TaskVO" resultType="kr.or.ddit.myclassroom.task.vo.TaskVO">
+		SELECT 
+			TASK_NO,
+			TASK_TITLE,
+			TASK_CREDIT,
+			TASK_CONTENT,
+			TASK_SDAY,
+			TASK_DDAY
+		FROM 
+		( SELECT 
+		    TASK_NO,
+		    TASK_TITLE,
+		    TASK_CONTENT,
+		    TASK_CREDIT,
+		    TASK_SDAY,
+		    TASK_DDAY
+		    FROM TASK
+		    WHERE LEC_CODE = #{lecCode}
+		    ORDER BY TASK_NO DESC )
+		      <![CDATA[
+			WHERE ROWNUM < 4
+			]]> 
+	</select>
+	
+	<select id="retrieveNoSbList" parameterType="kr.or.ddit.myclassroom.task.vo.TaskVO" resultType="kr.or.ddit.myclassroom.task.vo.TaskVO">
+		 SELECT 
+			TASK_NO,
+			LEC_CODE, 
+			TASK_TITLE, 
+			TASK_CONTENT, 
+			TASK_CREDIT, 
+			TASK_SDAY, 
+			TASK_DDAY 
+	   FROM TASK
+	   WHERE TASK_NO NOT IN
+	   (SELECT
+	        A.TASK_NO
+	        FROM TASKSUBMIT A, TASK B
+	        WHERE A.TASK_NO=B.TASK_NO
+	        AND A.MEM_ID= #{memId}
+	        AND B.LEC_CODE=#{lecCode})
+	</select>
+</mapper>

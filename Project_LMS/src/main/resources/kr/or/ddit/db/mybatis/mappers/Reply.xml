@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.commons.dao.IReplyDAO">
+<resultMap id="replyMap" type="kr.or.ddit.vo.ReplyVO" autoMapping="true">
+	<id property="repNo" column="REP_NO"/>
+	<association property="member" javaType="kr.or.ddit.member.vo.MemberVO"  autoMapping="true">
+		<id property="memId" column="MEM_ID"/>
+	</association>
+</resultMap>
+
+<select id="selectReplyCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+		SELECT COUNT(*) 
+		FROM REPLY
+		WHERE BO_NO = #{searchDetail.boNo}
+</select>
+<select id="selectReplyList" parameterType="kr.or.ddit.vo.PagingVO" resultMap="replyMap">
+	SELECT B.*
+		FROM (
+			SELECT A.*, ROWNUM RNUM 
+			FROM (
+				SELECT REP_NO
+         			 , REP_CONTENT
+         			 , TO_CHAR(REP_DATE, 'YYYY.MM.DD HH24:MI:SS') REP_DATE
+         			 , BO_NO
+         			 , A.MEM_ID
+         			 , MEM_NAME
+				FROM REPLY A
+				LEFT OUTER JOIN MEMBER B
+				ON A.MEM_ID = B.MEM_ID  
+				WHERE BO_NO = #{searchDetail.boNo}
+				ORDER BY 1 DESC
+				)  A
+		)  B
+		WHERE RNUM BETWEEN #{startRow} AND #{endRow}
+</select>
+
+<select id="selectReplyAll" parameterType="kr.or.ddit.vo.ReplyVO" resultMap="replyMap">
+	SELECT REP_NO
+		 , REP_CONTENT
+		 , TO_CHAR(REP_DATE, 'YYYY.MM.DD HH24:MI:SS') REP_DATE
+		 , BO_NO
+		 , A.MEM_ID
+		 , MEM_NAME
+	FROM REPLY A
+	LEFT OUTER JOIN MEMBER B
+	ON A.MEM_ID = B.MEM_ID  
+	WHERE BO_NO = #{boNo}
+	ORDER BY 1 DESC
+</select>
+
+<insert id="insertReply" parameterType="kr.or.ddit.vo.ReplyVO">
+	<selectKey order="BEFORE" keyProperty="repNo" resultType="int">
+		SELECT NVL(MAX(REP_NO), 0)+1
+		FROM REPLY
+	</selectKey>
+	INSERT INTO REPLY
+	(REP_NO, REP_CONTENT, REP_DATE, BO_NO, MEM_ID)
+	VALUES
+	(#{repNo}, #{repContent}, SYSDATE, #{boNo}, #{memId})
+</insert>
+
+
+<delete id="deleteReply" parameterType="kr.or.ddit.vo.ReplyVO">
+	DELETE FROM REPLY WHERE REP_NO = #{repNo}
+</delete>
+</mapper>

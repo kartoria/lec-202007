@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.admin.lecture.dao.AdminLectureDAO">
+<sql id="searchFrag">
+	<if test="searchDetail!=null">
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchDetail.code)">
+				AND C.DEP_NO LIKE SUBSTR(#{searchDetail.code},1,1)||'%'
+			</if>
+			<if test="searchDetail.depNo!=null and searchDetail.depNo gt 0">
+				AND C.DEP_NO = #{searchDetail.depNo}
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchDetail.memId)">
+				AND A.MEM_ID = #{searchDetail.memId}
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchDetail.lecSmst)">
+				AND A.LEC_SMST = #{searchDetail.lecSmst}
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchDetail.lecDelete)">
+				AND A.LEC_DELETE = #{searchDetail.lecDelete}
+			</if>
+	</if>			
+	<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+		<choose>
+			<when test="'lecSmst'.equals(searchVO.searchType)">
+			AND INSTR(A.LEC_SMST, #{searchVO.searchWord}) > 0
+			</when>
+			<when test="'subCode'.equals(searchVO.searchType)">
+			AND INSTR(A.SUB_CODE, #{searchVO.searchWord}) > 0
+			</when>
+			<when test="'subName'.equals(searchVO.searchType)">
+			AND	INSTR(B.SUB_NAME, #{searchVO.searchWord}) > 0
+			</when>
+			<otherwise>
+				AND INSTR(A.LEC_SMST, #{searchVO.searchWord}) > 0
+				OR INSTR(A.SUB_CODE, #{searchVO.searchWord}) > 0
+				OR INSTR(B.SUB_NAME, #{searchVO.searchWord}) > 0
+			</otherwise>
+		</choose>
+	</if>
+</sql>
+
+<select id="selectCurrentSmst" resultType="kr.or.ddit.vo.CodeVO">
+SELECT
+CODE,
+CODE_NAME
+FROM CODE
+WHERE GROUP_CODE=#{groupCode}
+</select>
+<select id="selectCollegeList" resultType="kr.or.ddit.vo.CodeVO">
+SELECT
+CODE,
+CODE_NAME
+FROM CODE
+WHERE GROUP_CODE='A01'
+</select>
+
+<select id="selectLecSmstList" resultType="kr.or.ddit.vo.LectureVO">
+SELECT
+DISTINCT(LEC_SMST)
+FROM LECTURE
+ORDER BY LEC_SMST DESC
+</select>
+
+<select id="selectDepartmentList" parameterType="String" resultType="kr.or.ddit.vo.DepartmentVO">
+SELECT
+DEP_NO,
+DEP_NAME,
+COL_CODE
+FROM DEPARTMENT A, CODE B
+WHERE A.COL_CODE=B.CODE
+AND A.COL_CODE=#{college}
+ORDER BY DEP_NO
+</select>
+
+<select id="selectProfessorList" parameterType="String" resultType="kr.or.ddit.member.vo.MemberVO">
+SELECT 
+MEM_ID,
+MEM_NAME
+FROM MEMBER 
+WHERE MEM_TYPE='ROLE_PROFESSOR'
+AND DEP_NO=#{depNo}
+</select>
+
+<select id="selectRoomList" parameterType="String" resultType="kr.or.ddit.vo.CodeVO">
+SELECT
+GROUP_CODE,
+CODE,
+GROUP_CODE_NAME,
+CODE_NAME,
+DESCRIPTION
+FROM CODE
+WHERE DESCRIPTION=#{college}
+</select>
+
+<select id="selectSubjectList" parameterType="String" resultType="kr.or.ddit.vo.SubjectVO">
+SELECT 
+SUB_CODE,
+SUB_NAME,
+SUB_CREDIT,
+SUB_DETAIL,
+SUB_DATE,
+DEP_NO
+FROM SUBJECT
+WHERE DEP_NO=#{depNo}
+</select>
+
+<resultMap type="kr.or.ddit.vo.LectureVO" id="TimeMap">
+	<id property="lecCode" column="LEC_CODE"/>
+	<collection property="lecTimeList"  javaType="java.util.List" ofType="kr.or.ddit.vo.LectureTimeVO" autoMapping="true">
+		<id property="lecCode" column="LEC_CODE"/>
+		<id property="roomCode" column="ROOM_CODE"/>
+		<id property="ltimeStart" column="LTIME_START"/>
+		<id property="ltimeEnd" column="LTIME_END"/>
+		<id property="ltimeDay" column="LTIME_DAY"/>
+	</collection>
+</resultMap>
+<select id="selectAvaliableDays" parameterType="kr.or.ddit.admin.lecture.vo.AdminLectureVO" resultMap="TimeMap">
+SELECT
+A.ROOM_CODE,
+B.LEC_CODE,
+A.LTIME_START,
+A.LTIME_END,
+A.LTIME_DAY         
+FROM LECTURE_TIME A , LECTURE B
+WHERE A.LEC_CODE = B.LEC_CODE
+AND A.ROOM_CODE=#{roomCode}
+AND B.LEC_SMST = (SELECT 
+                    CODE_NAME
+                    FROM CODE
+                    WHERE GROUP_CODE='A00')
+ORDER BY LEC_CODE
+</select>
+
+<select id="selectProfessorTimeTable" parameterType="kr.or.ddit.admin.lecture.vo.AdminLectureVO" resultMap="TimeMap">
+SELECT 
+A.LTIME_START, 
+A.LTIME_END, 
+A.LTIME_DAY,
+A.ROOM_CODE,
+D.LEC_CODE
+FROM LECTURE D ,LECTURE_TIME A , SUBJECT C 
+WHERE A.LEC_CODE = D.LEC_CODE 
+AND D.SUB_CODE = C.SUB_CODE 
+AND D.MEM_ID = #{memId} 
+AND D.LEC_SMST = (SELECT CODE_NAME 
+                    FROM CODE 
+                   WHERE GROUP_CODE = 'A00')
+</select>
+
+<insert id="insertLecture" parameterType="kr.or.ddit.vo.LectureVO" >
+<selectKey order="BEFORE" keyProperty="lecCode" resultType="String">
+SELECT NVL(MAX(LEC_CODE),CONCAT(#{subCode},'00'))+1 AS LEC_CODE
+FROM LECTURE
+WHERE SUB_CODE=#{subCode}
+</selectKey>
+INSERT INTO LECTURE(
+LEC_CODE,
+SUB_CODE,
+MEM_ID,
+LEC_FULL,
+LEC_GRD,
+LEC_DAYS,
+LEC_SMST
+)VALUES
+(
+	#{lecCode},
+	#{subCode},
+	#{memId},
+	#{lecFull},
+	${lecGrd},
+	${lecDays},
+	${lecSmst}
+)
+
+</insert>
+
+<select id="selectLecCode" parameterType="kr.or.ddit.vo.LectureVO" resultType="String">
+SELECT MAX(LEC_CODE)
+FROM LECTURE
+WHERE SUB_CODE=#{subCode}
+</select>	
+
+
+<insert id="insertLectureRoom" parameterType="kr.or.ddit.vo.LectureTimeVO">
+<selectKey order="BEFORE" keyProperty="ltimeNo" resultType="int">
+SELECT NVL(MAX(LTIME_NO), 0)+1 AS LTIME_NO
+FROM LECTURE_TIME
+</selectKey>
+INSERT ALL
+<foreach collection="list" item="item" index="idx" >
+INTO LECTURE_TIME(
+LTIME_NO,
+ROOM_CODE,
+LTIME_START,
+LTIME_END,
+LEC_CODE,
+LTIME_DAY
+)VALUES
+(
+	#{ltimeNo}+#{idx},
+	#{item.roomCode},
+	#{item.ltimeStart},
+	#{item.ltimeEnd},
+	#{item.lecCode},
+	#{item.ltimeDay}
+)
+</foreach>
+SELECT * FROM DUAL
+</insert>
+
+
+<select id="selectLectureCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+SELECT COUNT(*)
+ FROM MEMBER E, LECTURE A
+     JOIN SUBJECT B ON(A.SUB_CODE=B.SUB_CODE)
+     JOIN DEPARTMENT C ON(B.DEP_NO=C.DEP_NO)
+     JOIN CODE D ON(C.COL_CODE=D.CODE)
+     WHERE E.MEM_ID=A.MEM_ID
+ <include refid="searchFrag" />
+</select>
+
+
+<select id="selectLectureList" parameterType="kr.or.ddit.vo.PagingVO" resultType="kr.or.ddit.admin.lecture.vo.AdminLectureVO">
+SELECT E.*
+		FROM (
+			SELECT D.* , ROWNUM RNUM
+			FROM(
+            SELECT
+            A.LEC_CODE,  
+            A.SUB_CODE,  
+            B.SUB_NAME, 
+            A.MEM_ID,   
+            E.MEM_NAME, 
+            A.LEC_FULL,
+            A.LEC_NMT,  
+            A.LEC_GRD,   
+            A.LEC_SMST,  
+            A.LEC_DELETE,
+            D.CODE_NAME,  
+            C.DEP_NAME  
+            FROM MEMBER E, LECTURE A
+            JOIN SUBJECT B ON(A.SUB_CODE=B.SUB_CODE)
+            JOIN DEPARTMENT C ON(B.DEP_NO=C.DEP_NO)
+            JOIN CODE D ON(C.COL_CODE=D.CODE)
+            WHERE E.MEM_ID=A.MEM_ID
+             <include refid="searchFrag" />
+            ORDER BY LEC_SMST DESC, A.LEC_CODE
+            ) D
+         ) E
+          <![CDATA[
+		WHERE RNUM >= #{startRow} AND RNUM <= #{endRow}
+			]]> 
+</select>
+
+<resultMap type="kr.or.ddit.vo.LectureVO" id="lectureMap" autoMapping="true">
+	<association property="memberVo" javaType="kr.or.ddit.member.vo.MemberVO" >
+		<result property="memName" column="MEM_NAME"/>
+	</association>
+	<association property="subjectVo" javaType="kr.or.ddit.vo.SubjectVO">
+		<result property="subName" column="SUB_NAME"/>
+	</association>
+	<association property="departmentVo" javaType="kr.or.ddit.vo.DepartmentVO">
+		<result property="depName" column="DEP_NAME"/>
+	</association>
+	<association property="code" javaType="kr.or.ddit.vo.CodeVO">
+		<result property="codeName" column="CODE_NAME"/>
+	</association>
+</resultMap>
+<select id="selectLecture" parameterType="kr.or.ddit.vo.LectureVO" resultMap="lectureMap">
+SELECT
+A.LEC_CODE, 
+A.SUB_CODE, 
+B.SUB_NAME,  
+A.MEM_ID,  
+E.MEM_NAME,
+A.LEC_FULL, 
+A.LEC_NMT,
+A.LEC_GRD,
+A.LEC_DAYS,   
+A.LEC_SMST,
+A.LEC_DELETE, 
+D.CODE_NAME,  
+C.DEP_NAME   
+FROM LECTURE A,SUBJECT B,DEPARTMENT C,CODE D, MEMBER E 
+WHERE E.MEM_ID=A.MEM_ID 
+AND A.SUB_CODE=B.SUB_CODE
+AND B.DEP_NO=C.DEP_NO
+AND C.COL_CODE=D.CODE
+AND A.LEC_CODE=#{lecCode}
+</select>
+
+<select id="selectLectureTimeList" parameterType="kr.or.ddit.vo.LectureVO" resultType="kr.or.ddit.vo.LectureTimeVO">
+SELECT
+ROOM_CODE,
+LTIME_START,
+LTIME_END,
+LTIME_DAY
+FROM LECTURE_TIME 
+WHERE LEC_CODE=#{lecCode}
+</select>
+
+<update id="updateLecture" parameterType="kr.or.ddit.vo.LectureVO">
+UPDATE LECTURE SET
+LEC_FULL = #{lecFull},
+LEC_GRD = #{lecGrd},
+LEC_DAYS = #{lecDays}
+WHERE LEC_CODE=#{lecCode}
+</update>
+
+<update id="deleteLecture" parameterType="kr.or.ddit.vo.LectureVO">
+UPDATE LECTURE SET
+LEC_DELETE = #{lecDelete}
+WHERE LEC_CODE=#{lecCode}
+</update>
+
+<delete id="deleteLectureRoom" parameterType="kr.or.ddit.vo.LectureVO">
+DELETE FROM LECTURE_TIME
+     WHERE LEC_CODE=#{lecCode}
+</delete>
+
+</mapper>

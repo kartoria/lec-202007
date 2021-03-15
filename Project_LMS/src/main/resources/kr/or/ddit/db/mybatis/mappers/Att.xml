@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.myclassroom.att.dao.IAttDao">
+
+
+<select id="selectLecMember" parameterType="kr.or.ddit.vo.LectureVO" resultType="kr.or.ddit.myclassroom.att.AttVO">
+      SELECT B.MEM_ID ,B.MEM_NAME
+      FROM TAKE_LEC A, MEMBER B
+      WHERE A.LEC_CODE=#{lecCode}
+      AND A.MEM_ID = B.MEM_ID
+</select>
+<select id="selectAttendCode" parameterType="kr.or.ddit.myclassroom.att.AttVO" resultType="kr.or.ddit.myclassroom.att.AttVO">
+    SELECT WEEK, ATTEN_CODE, TO_CHAR(ATTEN_DATE,'YYYY-MM-DD HH24:MM') AS ATTEN_DATE
+    FROM ATTENDANCE
+    WHERE LEC_CODE=#{lecCode}
+    AND MEM_ID =#{memId}
+    ORDER BY 1
+</select>
+<update id="updateAtt" parameterType="kr.or.ddit.myclassroom.att.AttVO">
+UPDATE ATTENDANCE
+    SET
+       ATTEN_CODE =#{attenCode}
+WHERE
+		  LEC_CODE = #{lecCode}
+    AND   MEM_ID = #{memId}
+    AND   WEEK =#{week}
+
+</update>
+<select id="selectSubName" parameterType="kr.or.ddit.myclassroom.att.AttVO" resultType="kr.or.ddit.vo.SubjectVO">
+SELECT B.SUB_NAME
+FROM LECTURE A, SUBJECT B
+WHERE A.SUB_CODE = B.SUB_CODE
+AND A.LEC_CODE=#{lecCode}
+</select>
+
+<select id="selectViewRecordList" parameterType="kr.or.ddit.myclassroom.att.AttVO" resultType="kr.or.ddit.myclassroom.video.vo.ViewRecordVO">
+SELECT
+A.VIDEO_NO,
+A.MEM_ID,
+A.WEEK,
+A.VIEW_TIME,
+TO_CHAR(A.VIEW_LAST,'YYYY-MM-DD HH24:MM') VIEW_LAST,
+A.VIEW_SESSION,
+A.VIDEO_LEN,
+B.LEC_CODE
+FROM VIEW_RECORD A, VIDEO B
+WHERE A.MEM_ID=#{memId}
+AND A.VIDEO_NO=B.VIDEO_NO
+AND B.LEC_CODE=#{lecCode}
+ORDER BY WEEK
+</select>
+
+<select id="selectTakeLecNo" parameterType="kr.or.ddit.myclassroom.att.AttVO" resultType="kr.or.ddit.vo.TakeLecVO">
+SELECT 
+TLEC_NO,
+MEM_ID,
+LEC_CODE
+FROM TAKE_LEC 
+WHERE MEM_ID=#{memId}
+AND LEC_CODE=#{lecCode}
+</select>
+
+<insert id="insertAttScore" parameterType="kr.or.ddit.myclassroom.test.vo.StudentScoreVO">
+MERGE INTO STUDENT_SCORE A
+			USING DUAL
+			ON (TLEC_NO = #{tlecNo})
+			WHEN MATCHED THEN
+			UPDATE SET
+				A.SCR_ATTEND = #{scrAttend},
+				A.TOTAL_SCORE = NVL(A.TOTAL_SCORE,0)+#{scrAttend}
+				WHERE TLEC_NO = #{tlecNo}
+			WHEN NOT MATCHED THEN
+				INSERT (
+				    TLEC_NO,
+				    SCR_ATTEND,
+				    TOTAL_SCORE
+				    
+				) VALUES (
+				    #{tlecNo,jdbcType=NUMERIC},
+				    #{scrAttend,jdbcType=NUMERIC},
+				    #{scrAttend,jdbcType=NUMERIC}
+				)
+
+</insert>
+
+<select id="selectScrAttend" parameterType="kr.or.ddit.vo.TakeLecVO" resultType="kr.or.ddit.myclassroom.test.vo.StudentScoreVO">
+SELECT
+TLEC_NO,
+SCR_ATTEND
+FROM STUDENT_SCORE
+WHERE TLEC_NO=#{tlecNo}
+</select>
+</mapper>

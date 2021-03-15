@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.myclassroom.video.dao.IVideoDAO">
+	
+	<resultMap type="kr.or.ddit.vo.LectureVO" id="lecMap" autoMapping="true">
+		<id property="lecCode" column="LEC_CODE"/>
+		<collection property="memberVo" ofType="kr.or.ddit.member.vo.MemberVO" javaType="kr.or.ddit.member.vo.MemberVO">
+			<result property="memName" column="MEM_NAME"/>
+		</collection>
+		<collection property="lecPlanList" ofType="kr.or.ddit.myclassroom.video.vo.LecPlanVO" autoMapping="true">
+			<id property="lecCode" column="LEC_CODE"/>
+			<id property="lecWeek" column="LEC_WEEK"/>
+			<id property="lecContent" column="LEC_CONTENT"/>
+		</collection>
+		<collection property="subjectVo" ofType="kr.or.ddit.vo.SubjectVO" autoMapping="true" javaType="kr.or.ddit.myclassroom.video.vo.LecPlanVO">
+			<id property="subCode" column="SUB_CODE"/>
+		</collection>
+	</resultMap>
+	
+	<select id="selectLec" parameterType="String" resultMap="lecMap">
+				SELECT
+		    A.LEC_CODE 
+            ,D.SUB_CODE
+            ,A.MEM_ID
+            ,LTIME_NO
+            ,ROOM_CODE
+            ,LTIME_START
+            ,LTIME_END
+            ,LEC_CODE
+            ,LTIME_DAY
+            ,LEC_FULL 
+            ,LEC_NMT
+		    ,ROOM_CODE 
+            ,LEC_GRD 
+            ,LEC_DAYS
+		    ,LEC_MBK 
+            ,LEC_SBK 
+            ,MEM_NAME 
+            ,LEC_WEEK 
+            ,LEC_CONTENT
+		    ,SUB_NAME 
+            ,SUB_CREDIT 
+            ,SUB_DETAIL
+		    ,SUB_DATE
+		FROM lecture A LEFT OUTER JOIN MEMBER B ON A.MEM_ID = B.MEM_ID
+		             LEFT OUTER JOIN LEC_PLAN C ON A.LEC_CODE = C.LEC_CODE
+		             LEFT OUTER JOIN SUBJECT D ON A.SUB_CODE = D.SUB_CODE
+                    LEFT OUTER JOIN LECTURE_TIME F ON A.LEC_CODE = F.LEC_CODE
+		WHERE A.LEC_CODE = #{lecCode}
+	</select>
+	
+	<!-- 비디오 목록조회-->
+	<select id="selectVideoList" parameterType="kr.or.ddit.myclassroom.video.vo.VideoVO" resultType="kr.or.ddit.myclassroom.video.vo.VideoVO">
+		SELECT
+		    VIDEO_NO, WEEK, MEM_ID, LEC_CODE, 
+		    VIDEO_CONTENT, VIDEO_TITLE, VIDEO_URL,
+		    VIDEO_DATE, VIDEO_HIT, VIDEO_ATTSTART,
+		    VIDEO_ATTEND, VIDEO_LEN
+		FROM VIDEO
+		WHERE LEC_CODE = #{lecCode}
+		ORDER BY WEEK DESC
+	</select>
+	
+	<select id="selectLecPlanList" parameterType="String" resultType="kr.or.ddit.myclassroom.video.vo.LecPlanVO">
+	SELECT 
+	LEC_CODE,
+	LEC_WEEK,
+	LEC_CONTENT
+	FROM LEC_PLAN 
+	WHERE LEC_CODE=#{lecCode}
+	AND LEC_WEEK NOT IN (
+	    SELECT 
+	    WEEK
+	    FROM VIDEO
+	    WHERE LEC_CODE= #{lecCode} )
+	ORDER BY LEC_WEEK
+	</select>
+	
+	<insert id="videoInsert" parameterType="kr.or.ddit.myclassroom.video.vo.VideoVO">
+		<selectKey order="BEFORE" keyProperty="videoNo" resultType="int">
+			SELECT NVL(MAX(VIDEO_NO), 0)+1
+			FROM VIDEO
+		</selectKey>
+		INSERT INTO video (
+		    VIDEO_NO,
+		    WEEK,
+		    MEM_ID,
+		    LEC_CODE,
+		    VIDEO_CONTENT,
+		    VIDEO_TITLE,
+		    VIDEO_URL,
+		    VIDEO_DATE,
+		    VIDEO_ATTSTART,
+		    VIDEO_ATTEND,
+		    VIDEO_LEN
+		) VALUES (
+		    #{videoNo,jdbcType=NUMERIC},
+		    #{week,jdbcType=NUMERIC},
+		    #{memId,jdbcType=VARCHAR},
+		    #{lecCode,jdbcType=VARCHAR},
+		    #{videoContent,jdbcType=VARCHAR},
+		    #{videoTitle,jdbcType=VARCHAR},
+		    #{videoUrl,jdbcType=VARCHAR},
+		   	SYSDATE,
+		    #{videoAttstart,jdbcType=TIMESTAMP},
+		    #{videoAttend,jdbcType=TIMESTAMP},
+		    #{videoLen,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<select id="selectVideo" parameterType="kr.or.ddit.myclassroom.video.vo.VideoVO" resultType="kr.or.ddit.myclassroom.video.vo.VideoVO">
+		SELECT
+		    VIDEO_NO,
+		    WEEK,
+		    MEM_ID,
+		    LEC_CODE,
+		    VIDEO_CONTENT,
+		    VIDEO_TITLE,
+		    VIDEO_URL,
+		    VIDEO_DATE,
+		    VIDEO_HIT,
+		    TO_CHAR(VIDEO_ATTSTART,'YYYY-MM-DD') VIDEO_ATTSTART,
+		    TO_CHAR(VIDEO_ATTEND,'YYYY-MM-DD') VIDEO_ATTEND,
+		    VIDEO_LEN
+		FROM VIDEO
+		WHERE VIDEO_NO = #{videoNo}
+	</select>
+	
+	<insert id="insertViewRecord" parameterType="kr.or.ddit.myclassroom.video.vo.ViewRecordVO">
+	MERGE INTO VIEW_RECORD A
+	    USING(
+	     SELECT 
+	            #{videoNo}     AS SVIDEO_NO ,
+	            #{memId}       AS SSTU_ID   ,
+	            #{week}        AS SWEEK     ,
+	            #{viewTime}    AS SVIEW_TIME ,
+	            SYSDATE        AS SVIEW_LAST  ,
+	          	#{viewSession} AS SVIEW_SESSION
+	    FROM SYS.DUAL 
+	    )B ON (A.VIDEO_NO = B.SVIDEO_NO AND A.MEM_ID=B.SSTU_ID AND A.WEEK=B.SWEEK)
+	    WHEN MATCHED THEN 
+	        UPDATE SET
+	               VIEW_TIME = TO_NUMBER(A.VIEW_TIME)+TO_NUMBER(#{viewTime}),
+	               VIEW_LAST = SYSDATE,
+	               VIEW_SESSION = TO_NUMBER(A.VIEW_SESSION)+TO_NUMBER(#{viewSession})
+	         WHEN NOT MATCHED THEN
+	            INSERT (
+	            VIDEO_NO,
+				MEM_ID,
+				WEEK,
+				VIEW_TIME,
+				VIEW_LAST,
+				VIEW_SESSION,
+				VIDEO_LEN
+	            )
+	            VALUES (
+	             #{videoNo,jdbcType=NUMERIC},    
+	             #{memId,jdbcType=VARCHAR},      
+			     #{week,jdbcType=NUMERIC},       
+			     #{viewTime,jdbcType=VARCHAR},   
+			    SYSDATE,                         
+		    	#{viewSession,jdbcType=VARCHAR},
+		    	#{videoLen,jdbcType=VARCHAR}    
+	                 )
+
+	</insert>
+	
+	<select id="selectViewRecord" parameterType="kr.or.ddit.myclassroom.video.vo.ViewRecordVO" resultType="kr.or.ddit.myclassroom.video.vo.ViewRecordVO">
+	SELECT
+	VIDEO_NO,
+	MEM_ID,
+	WEEK,
+	VIEW_TIME,
+	VIEW_LAST,
+	VIEW_SESSION,
+	VIDEO_LEN
+	FROM VIEW_RECORD
+	WHERE VIDEO_NO = #{videoNo}
+	AND MEM_ID = #{memId}
+	AND WEEK = #{week}
+	</select>
+	
+	<insert id="insertVideoAttendance" parameterType="kr.or.ddit.myclassroom.video.vo.VideoAttendanceVO">
+	<selectKey order="BEFORE" keyProperty="attenNo" resultType="int">
+			SELECT NVL(MAX(ATTEN_NO), 0)+1
+			FROM ATTENDANCE
+	</selectKey>
+	INSERT INTO ATTENDANCE(
+	ATTEN_DATE,
+	LEC_CODE,
+	MEM_ID,
+	WEEK,
+	ATTEN_NO,
+	ATTEN_CODE
+	) VALUES (
+	SYSDATE,
+	#{lecCode},
+	#{memId},
+	#{week},
+	#{attenNo},
+	#{attenCode}
+	)
+	</insert>
+	
+	<update id="updateVideo" parameterType="kr.or.ddit.myclassroom.video.vo.VideoVO">
+	UPDATE VIDEO SET
+	    VIDEO_CONTENT = #{videoContent,jdbcType=VARCHAR},
+	    VIDEO_TITLE = #{videoTitle,jdbcType=VARCHAR},
+	    VIDEO_URL = #{videoUrl,jdbcType=VARCHAR},
+	    VIDEO_ATTSTART = #{videoAttstart,jdbcType=TIMESTAMP},
+	    VIDEO_ATTEND = #{videoAttend,jdbcType=TIMESTAMP},
+	    VIDEO_LEN = #{videoLen,jdbcType=VARCHAR}
+	WHERE VIDEO_NO = #{videoNo,jdbcType=NUMERIC} 
+	</update>
+	
+	<select id="selectCheckAttendance" parameterType="kr.or.ddit.myclassroom.video.vo.ViewRecordVO" resultType="kr.or.ddit.myclassroom.video.vo.VideoAttendanceVO">
+	SELECT 
+		ATTEN_DATE,
+		LEC_CODE,
+		MEM_ID,
+		WEEK,
+		ATTEN_NOTE,
+		ATTEN_NO,
+		ATTEN_CODE
+		LTIME_NO
+	FROM ATTENDANCE
+	WHERE LEC_CODE = #{lecCode}
+	AND MEM_ID = #{memId}
+	AND WEEK = #{week}	
+	
+	</select>
+	
+	<delete id="deleteVideo" parameterType="kr.or.ddit.myclassroom.video.vo.ViewRecordVO">
+	 DELETE FROM VIDEO
+     WHERE VIDEO_NO=#{videoNo}
+	</delete>
+</mapper>

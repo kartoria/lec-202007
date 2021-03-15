@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.lms.student.tuition.dao.ITuitionDAO">
+
+
+<select id="selectVirtualAcoountTuitionCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+SELECT COUNT(*)
+FROM PAY_TUITION
+WHERE PAY_AMOUNT NOT IN ('0')
+  AND MEM_ID = #{searchDetail.memId}
+</select>
+
+<select id="selectVirtualAcoountTuitionDoneList" parameterType="kr.or.ddit.vo.PagingVO" resultMap="vatuitionMap" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+		SELECT Y.*
+		    FROM (    
+		        SELECT  ROWNUM RNUM
+		            , X.*
+		        FROM(
+						SELECT B.PAY_NO
+							   , B.SMST
+						       , B.PAY_EXCPECT
+						       , B.PAY_AMOUNT
+						       , B.PAY_NUMBER
+						       , TO_CHAR(B.PAY_DATE, 'YYYY/MM/DD') AS PAY_DATE
+						  FROM MEMBER A INNER JOIN PAY_TUITION B ON (A.MEM_ID = B.MEM_ID)
+						  WHERE A.MEM_ID = #{searchDetail.memId}
+						    AND B.PAY_AMOUNT NOT IN ('0')
+						    ORDER BY B.PAY_DATE
+						 ) X ) Y
+		   WHERE RNUM BETWEEN #{startRow} AND #{endRow}
+		   ORDER BY RNUM DESC
+</select>
+
+<select id="selectTuitionList" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.vo.TuitionVO">
+SELECT B.DEP_FEE
+       , C.PAY_CHECK
+       , C.PAY_DIVISION
+       , TO_CHAR(TO_DATE(C.PAY_START, 'YYYY/MM/DD'), 'YYYY/MM/DD') AS PAY_START
+       , TO_CHAR(TO_DATE(C.PAY_END, 'YYYY/MM/DD'),'YYYY/MM/DD') AS PAY_END
+  FROM MEMBER A INNER JOIN DEPARTMENT B ON(A.DEP_NO = B.DEP_NO)
+        INNER JOIN PAY_TUITION C ON (A.MEM_ID = C.MEM_ID)
+        WHERE A.MEM_ID = #{memId}
+        AND PAY_NUMBER = '0'
+        AND SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+</select>
+
+
+<select id="selectSfundValue" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.vo.TuitionVO">
+          SELECT SFUND_VALUE
+          FROM SCHAR_FUND
+          WHERE SFUND_STUDENT=#{memId} 
+          AND CODE_RESULT ='ACCEPT'
+          AND SFUND_SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+</select>
+
+<select id="selectPayCountDivisionCheck" resultType="int" parameterType="kr.or.ddit.member.vo.MemberVO">
+SELECT COUNT(*)
+  FROM PAY_TUITION
+  WHERE MEM_ID = #{memId}
+  AND PAY_IMP IS NULL
+</select>
+
+<update id="tuitionUpdate" parameterType="kr.or.ddit.member.vo.MemberVO">
+	UPDATE PAY_TUITION
+	SET PAY_DIVISION = 'Y',
+        PAY_CHECK = 'A'
+	WHERE MEM_ID = #{memId}
+	  AND SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+</update>
+<select id="selectTuitionPayList" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.vo.TuitionVO">
+	SELECT 
+		PAY_NO,
+		PAY_EXCPECT,
+		PAY_AMOUNT,
+		PAY_NUMBER,
+		TO_CHAR(TO_DATE(PAY_START, 'YYYY/MM/DD'), 'YYYY/MM/DD') AS PAY_START,
+		TO_CHAR(TO_DATE(PAY_END, 'YYYY/MM/DD'),'YYYY/MM/DD') AS PAY_END,
+		PAY_ACN,
+		PAY_BANK,
+		PAY_NUMBER
+	FROM PAY_TUITION
+	WHERE MEM_ID = #{memId}
+	  AND SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+	  AND PAY_NUMBER NOT IN ('0')
+	  ORDER BY PAY_NO
+</select>
+
+<select id="selectEmailDivisionList" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+	SELECT 
+		PAY_EXCPECT
+	FROM PAY_TUITION
+	WHERE MEM_ID = #{memId}
+	  AND SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+	  AND PAY_NUMBER NOT IN ('0')
+</select>
+
+<select id="selectBank" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.vo.TuitionVO">
+
+SELECT PAY_ACN,PAY_BANK
+FROM PAY_TUITION
+WHERE MEM_ID= #{memId}
+ AND SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+ AND PAY_NUMBER = '0'
+
+</select>
+<select id="selectDepName" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.vo.DepartmentVO">
+
+SELECT DEP_NAME
+FROM DEPARTMENT
+WHERE DEP_NO=#{depNo}
+
+
+</select>
+
+<resultMap type="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO" id="vatuitionMap" autoMapping="true">
+	<id property="payNo" column="PAY_NO"/>
+</resultMap>
+
+<update id="virtualAccounUpdate" parameterType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+	 UPDATE PAY_TUITION
+  	    SET
+		    PAY_ACN = #{payAcn}
+		    , PAY_BANK = #{payBank}
+		    , PAY_EXCPECT = #{payExcpect}
+		    , PAY_IMP = #{payImp}
+		    , PAY_END = #{payEnd}
+<!-- 		    , PAY_START = SYSDATE -->
+      WHERE MEM_ID = #{memId}
+      AND SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+      AND PAY_NUMBER = '0'
+</update>
+
+<select id="selectPayAcn" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+SELECT PAY_ACN
+       , PAY_BANK
+  FROM PAY_TUITION
+ WHERE MEM_ID = #{memId, jdbcType=VARCHAR}
+   AND SMST  = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+   AND PAY_NUMBER = '0'
+   AND SYSDATE BETWEEN PAY_START AND PAY_END
+</select>
+
+<select id="selectPayImp" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+SELECT PAY_IMP
+  FROM PAY_TUITION
+  WHERE MEM_ID = #{memId, jdbcType=VARCHAR}
+  	AND PAY_IMP IS NOT NULL
+  	AND PAY_NUMBER = '0'
+  	AND SYSDATE BETWEEN PAY_START AND PAY_END
+</select>
+
+<select id="selectDepFee" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+	 SELECT SUM(B.DEP_FEE - NVL(D.SFUND_VALUE,0)) AS DEP_FEE
+	  FROM MEMBER A INNER JOIN DEPARTMENT B ON (A.DEP_NO = B.DEP_NO)
+                    LEFT OUTER JOIN (
+                                        SELECT B.SCH_NAME
+                                               , C.SFUND_VALUE
+	                                           , C.SFUND_STUDENT
+	                                           , C.CODE_RESULT
+	                                           , C.SFUND_SMST
+	                                      FROM SCHOLARSHIP B, SCHAR_FUND C
+	                                     WHERE B.SCH_CODE = C.SCHAR_CODE
+                                          AND C.SFUND_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+                                          AND C.CODE_RESULT = 'ACCEPT'
+                   ) D ON (A.MEM_ID = D.SFUND_STUDENT)
+	  WHERE A.MEM_ID = #{memId, jdbcType=VARCHAR}
+</select>
+
+<select id="selectSfundCount" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="int">
+ SELECT COUNT(*)
+          FROM SCHAR_FUND
+          WHERE SFUND_STUDENT=#{memId, jdbcType=VARCHAR}
+          AND CODE_RESULT ='ACCEPT'
+          AND SFUND_SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+</select>
+
+<select id="selectPayStartDate" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+ SELECT TO_CHAR(SPLAN_END, 'YYYYMMDD') AS SPLAN_END
+   FROM SCHEDULE_PLAN
+  WHERE SPLAN_CODE = 'PAY'
+</select>
+
+<select id="selectCountSchedule" resultType="int">
+SELECT count(*)
+   FROM SCHEDULE_PLAN
+  WHERE SYSDATE between to_CHAR(SPLAN_START, 'YYYYMMDD') and to_CHAR(SPLAN_END, 'YYYYMMDD')
+    AND SPLAN_CODE LIKE '%DIV%'
+</select>
+
+<select id="tuitionDivisionDateCheck" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO" parameterType="kr.or.ddit.member.vo.MemberVO">
+  SELECT TO_NUMBER(PAY_NUMBER) AS PAY_NUMBER
+         ,TO_NUMBER(TO_CHAR(SYSDATE,'YYYYMMDD')-PAY_START) AS PAY_START
+         ,TO_NUMBER(PAY_END-TO_CHAR(SYSDATE,'YYYYMMDD'))  AS PAY_END
+   FROM PAY_TUITION
+  WHERE MEM_ID = #{memId}
+   AND PAY_IMP IS NULL
+</select>
+
+
+<update id="piadVirtualAccountUpdate" parameterType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+	UPDATE PAY_TUITION
+	SET  
+		PAY_AMOUNT = #{payAmount}
+		, PAY_DATE = #{payDate}
+	WHERE MEM_ID = #{memId}
+	 AND PAY_NUMBER = '0'
+	 AND SYSDATE BETWEEN PAY_START AND PAY_END
+</update>
+
+<update id="paidDivisionUpdate" parameterType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+UPDATE PAY_TUITION
+	SET  
+		PAY_AMOUNT = #{payAmount}
+		, PAY_DATE = #{payDate}
+	WHERE MEM_ID = #{memId}
+	  AND (  SELECT SPLAN_CODE
+          FROM SCHEDULE_PLAN
+         WHERE SYSDATE BETWEEN TO_CHAR(SPLAN_START, 'YYYYMMDD') AND TO_CHAR(SPLAN_END, 'YYYYMMDD')
+         AND SPLAN_CODE LIKE '%DIV%'
+     ) = (
+                 SELECT SPLAN_CODE
+                   FROM SCHEDULE_PLAN
+                  WHERE SYSDATE between to_CHAR(SPLAN_START, 'YYYYMMDD') and to_CHAR(SPLAN_END, 'YYYYMMDD')
+                    AND SPLAN_CODE LIKE '%DIV%' 
+     )
+    AND PAY_NUMBER = 
+                        (  SELECT DISTINCT PAY_NUMBER
+                           FROM PAY_TUITION 
+                          WHERE MEM_ID = #{memId}
+                             AND PAY_NUMBER = ( SELECT MIN(PAY_NUMBER)
+                                                 FROM PAY_TUITION 
+                                                WHERE MEM_ID = #{memId}
+                                                  AND PAY_AMOUNT = '0'
+                                                  AND PAY_NUMBER NOT IN('0') 
+                                                  )
+                             )
+    AND PAY_IMP IS NOT NULL
+    AND PAY_BANK IS NOT NULL
+    AND PAY_ACN IS NOT NULL
+    AND SYSDATE BETWEEN PAY_START AND PAY_END
+</update>
+
+<select id="tuitionDivisionSelectPayExpect" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+SELECT PAY_EXCPECT
+  FROM PAY_TUITION
+  WHERE MEM_ID = #{memId}
+   AND (  SELECT SPLAN_CODE
+          FROM SCHEDULE_PLAN
+         WHERE SYSDATE BETWEEN TO_CHAR(SPLAN_START, 'YYYYMMDD') AND TO_CHAR(SPLAN_END, 'YYYYMMDD')
+         AND SPLAN_CODE LIKE '%DIV%'
+     ) = (
+                 SELECT SPLAN_CODE
+                   FROM SCHEDULE_PLAN
+                  WHERE SYSDATE between to_CHAR(SPLAN_START, 'YYYYMMDD') and to_CHAR(SPLAN_END, 'YYYYMMDD')
+                    AND SPLAN_CODE LIKE '%DIV%' 
+     )
+    AND PAY_NUMBER = 
+                        (SELECT MIN(PAY_NUMBER)
+                           FROM PAY_TUITION 
+                          WHERE MEM_ID = #{memId}
+                            AND PAY_IMP IS NULL
+                            AND SYSDATE BETWEEN PAY_START AND PAY_END
+                         )
+      AND SYSDATE BETWEEN PAY_START AND PAY_END
+</select>
+
+<update id="tuitionDivisionUpdate" parameterType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+UPDATE PAY_TUITION
+   SET  
+		PAY_IMP = #{payImp}
+		, PAY_ACN  = #{payAcn}
+		, PAY_BANK = #{payBank}
+WHERE MEM_ID = #{memId}
+ AND (  SELECT SPLAN_CODE
+          FROM SCHEDULE_PLAN
+         WHERE SYSDATE BETWEEN TO_CHAR(SPLAN_START, 'YYYYMMDD') AND TO_CHAR(SPLAN_END, 'YYYYMMDD')
+         AND SPLAN_CODE LIKE '%DIV%'
+     ) = (
+                 SELECT SPLAN_CODE
+                   FROM SCHEDULE_PLAN
+                  WHERE SYSDATE between to_CHAR(SPLAN_START, 'YYYYMMDD') and to_CHAR(SPLAN_END, 'YYYYMMDD')
+                    AND SPLAN_CODE LIKE '%DIV%' 
+     )
+    AND PAY_NUMBER = 
+                        (SELECT MIN(PAY_NUMBER)
+                           FROM PAY_TUITION 
+                          WHERE MEM_ID = #{memId}
+                            AND PAY_IMP IS NULL
+                            AND PAY_NUMBER NOT IN ('0')
+                             AND SYSDATE BETWEEN PAY_START AND PAY_END)
+   AND SYSDATE BETWEEN PAY_START AND PAY_END
+</update>
+
+<select id="selectDivisionPayImp" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+SELECT PAY_IMP
+  FROM PAY_TUITION
+ WHERE MEM_ID = #{memId}
+   AND (
+         SELECT SPLAN_CODE 
+           FROM SCHEDULE_PLAN
+          WHERE SYSDATE BETWEEN TO_CHAR(SPLAN_START, 'YYYYMMDD') AND TO_CHAR(SPLAN_END, 'YYYYMMDD') 
+            AND SPLAN_CODE LIKE '%DIV%'
+       ) = (
+          SELECT SPLAN_CODE
+            FROM SCHEDULE_PLAN
+           WHERE SYSDATE between to_CHAR(SPLAN_START, 'YYYYMMDD') and to_CHAR(SPLAN_END, 'YYYYMMDD')
+             AND SPLAN_CODE LIKE '%DIV%' )
+  AND PAY_NUMBER = (SELECT  MAX(PAY_NUMBER)
+                      FROM PAY_TUITION
+                     WHERE MEM_ID = #{memId}
+                       AND PAY_IMP IS NOT NULL
+                        AND SYSDATE BETWEEN PAY_START AND PAY_END
+        )
+  AND SYSDATE BETWEEN PAY_START AND PAY_END
+</select>
+
+<select id="selectFirstPay" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+SELECT PAY_AMOUNT, PAY_CHECK, PAY_DIVISION
+  FROM PAY_TUITION
+  WHERE MEM_ID = #{memId}
+   AND PAY_NUMBER = '0'
+   AND SYSDATE BETWEEN PAY_START AND PAY_END
+</select>
+
+<select id="selectDivisionAmount" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+SELECT PAY_AMOUNT
+  FROM PAY_TUITION
+  WHERE MEM_ID = #{memId}
+   AND PAY_NUMBER = (SELECT max(PAY_NUMBER) FROM PAY_TUITION WHERE MEM_ID = #{memId} AND PAY_IMP IS not  NULL AND PAY_NUMBER NOT IN ('0'))
+   AND SYSDATE BETWEEN PAY_START AND PAY_END
+</select>
+
+<select id="selectTuitionBillDateCheckCount" resultType="int" parameterType="kr.or.ddit.member.vo.MemberVO">
+	SELECT COUNT(*)
+  FROM PAY_TUITION
+  WHERE MEM_ID =  #{memId}
+  AND SYSDATE  BETWEEN PAY_START AND PAY_END
+  AND PAY_NUMBER = '0'
+</select>
+
+<select id="selectEmail" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO" parameterType="kr.or.ddit.member.vo.MemberVO">
+	SELECT A.MEM_NAME
+      , B.PAY_ACN
+      , B.PAY_BANK
+      , TO_CHAR(TO_DATE(B.PAY_START, 'YYYY/MM/DD'), 'YYYY/MM/DD') AS PAY_START
+      , TO_CHAR(TO_DATE(B.PAY_END, 'YYYY/MM/DD'), 'YYYY/MM/DD') AS PAY_END
+      , A.MEM_MAIL
+  FROM MEMBER A INNER JOIN PAY_TUITION B ON (A.MEM_ID = B.MEM_ID)
+  WHERE A.MEM_ID = #{memId}
+  AND B.PAY_NUMBER = '0'
+  AND SYSDATE BETWEEN PAY_START AND PAY_END
+</select>
+
+<select id="selectEmailDivision" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO" parameterType="kr.or.ddit.member.vo.MemberVO">
+	SELECT 	A.MEM_NAME
+      , B.PAY_ACN
+      , B.PAY_BANK
+      , TO_CHAR(TO_DATE(B.PAY_START, 'YYYY/MM/DD'), 'YYYY/MM/DD') AS PAY_START
+      , TO_CHAR(TO_DATE(B.PAY_END, 'YYYY/MM/DD'), 'YYYY/MM/DD') AS PAY_END
+      , A.MEM_MAIL
+      , B.PAY_NUMBER
+      , B.PAY_EXCPECT
+      , B.PAY_AMOUNT
+   FROM MEMBER A INNER JOIN PAY_TUITION B ON (A.MEM_ID = B.MEM_ID)
+WHERE A.MEM_ID = #{memId}
+ AND (  SELECT SPLAN_CODE
+          FROM SCHEDULE_PLAN
+         WHERE SYSDATE BETWEEN TO_CHAR(SPLAN_START, 'YYYYMMDD') AND TO_CHAR(SPLAN_END, 'YYYYMMDD')
+         AND SPLAN_CODE LIKE '%DIV%'
+     ) = (
+                 SELECT SPLAN_CODE
+                   FROM SCHEDULE_PLAN
+                  WHERE SYSDATE between to_CHAR(SPLAN_START, 'YYYYMMDD') and to_CHAR(SPLAN_END, 'YYYYMMDD')
+                    AND SPLAN_CODE LIKE '%DIV%' 
+     )
+    AND B.PAY_NUMBER = 
+                        (SELECT MAX(PAY_NUMBER)
+                           FROM PAY_TUITION 
+                          WHERE MEM_ID = #{memId}
+                            AND PAY_IMP IS NOT NULL
+                             AND SYSDATE BETWEEN PAY_START AND PAY_END)
+    AND SYSDATE BETWEEN PAY_START AND PAY_END
+</select>
+
+<select id="selectDivisionPDF" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO" parameterType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+	SELECT A.MEM_ID
+       , A.MEM_NAME
+       , C.DEP_NAME
+       , B.PAY_EXCPECT
+       , B.PAY_DATE
+       , B.PAY_AMOUNT
+       , B.PAY_NUMBER
+       , TO_CHAR(TO_DATE(B.PAY_START, 'YYYY/MM/DD'), 'YYYY/MM/DD') AS PAY_START
+       , TO_CHAR(TO_DATE(B.PAY_END, 'YYYY/MM/DD'), 'YYYY/MM/DD') AS PAY_END
+       , B.PAY_IMP
+       , B.PAY_BANK
+       , B.SMST
+       , B.PAY_ACN
+  FROM MEMBER A INNER JOIN PAY_TUITION B ON (A.MEM_ID = B.MEM_ID)
+                INNER JOIN DEPARTMENT C ON (A.DEP_NO = C.DEP_NO)
+ WHERE A.MEM_ID = #{memId}
+   AND B.SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+   AND B.PAY_NUMBER = #{payNumber}
+</select>
+
+</mapper>

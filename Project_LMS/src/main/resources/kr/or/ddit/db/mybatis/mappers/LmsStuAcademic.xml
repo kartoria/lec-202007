@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.lms.student.academic.dao.IAcademicDAO">
+
+	<resultMap type="kr.or.ddit.member.vo.MemberVO" id="memberMap" autoMapping="true">
+	</resultMap>
+
+	<select id="selectLeaveAcademic" parameterType="kr.or.ddit.member.vo.MemberVO" resultMap="memberMap">
+			SELECT A.MEM_ID
+		       , A.MEM_NAME
+		       , A.MEM_TEL
+		       , A.MEM_REG1
+		       , A.MEM_REG2
+		       , A.MEM_GRD
+		       , B.DEP_NAME
+		  FROM MEMBER A INNER JOIN DEPARTMENT B ON(A.DEP_NO = B.DEP_NO)
+		  WHERE A.MEM_ID = #{memId, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="selectTuidionAcademic" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO">
+		SELECT A.MEM_ID
+		       , A.MEM_NAME
+		       , B.DEP_NAME
+		       , C.SMST
+		       , TO_CHAR((SELECT SPLAN_START FROM SCHEDULE_PLAN WHERE SPLAN_CODE = 'PAY'),'YYYY/MM/DD') AS PAY_START
+		       , TO_CHAR((SELECT SPLAN_END FROM SCHEDULE_PLAN WHERE SPLAN_CODE = 'PAY'), 'YYYY/MM/DD') AS PAY_END
+		       , C.PAY_BANK
+		       , C.PAY_ACN
+		       , B.DEP_FEE
+		  FROM MEMBER A INNER JOIN DEPARTMENT B ON (A.DEP_NO = B.DEP_NO)
+		  INNER JOIN PAY_TUITION C ON (A.MEM_ID = C.MEM_ID)
+		  WHERE A.MEM_ID = #{memId, jdbcType=VARCHAR}
+		    AND C.PAY_NUMBER = '0'
+		    AND C.PAY_ACN IS NOT NULL
+		    AND C.PAY_BANK IS NOT NULL
+		    AND SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+	</select>
+	
+	<resultMap type="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO" id="vatuitionMap" autoMapping="true">
+		<id property="payNo" column="PAY_NO"/>
+	</resultMap>
+
+	<select id="selectScholarship" parameterType="kr.or.ddit.member.vo.MemberVO" resultMap="vatuitionMap">
+		 SELECT D.SCH_NAME
+	            , D.SFUND_VALUE
+	       FROM MEMBER A LEFT OUTER JOIN (
+	            SELECT B.SCH_NAME
+	                   , C.SFUND_VALUE
+	                   , C.SFUND_STUDENT
+	                   , C.CODE_RESULT
+	                   , C.SFUND_SMST
+	              FROM SCHOLARSHIP B, SCHAR_FUND C
+	             WHERE B.SCH_CODE = C.SCHAR_CODE
+    	  ) D ON (A.MEM_ID = D.SFUND_STUDENT)
+	    WHERE A.MEM_ID = #{memId, jdbcType=VARCHAR}
+	     AND D.SFUND_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+         AND D.CODE_RESULT = 'ACCEPT'
+	</select>
+</mapper>

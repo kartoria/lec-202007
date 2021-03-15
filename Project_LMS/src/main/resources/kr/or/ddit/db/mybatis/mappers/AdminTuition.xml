@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.admin.tuition.dao.IAdminTuitionDAO">
+
+<sql id="searchFrag">
+	<if test="searchVO!=null and @org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+		<choose>
+			<when test="'name'.equals(searchVO.searchType)">
+				AND INSTR(MEM_NAME, #{searchVO.searchWord}) > 0
+			</when>
+			<when test="'date'.equals(searchVO.searchType)">
+			    AND INSTR(PAY_DATE, #{searchVO.searchWord}) > 0
+			</when>
+			<otherwise>
+				AND (INSTR(MEM_NAME, #{searchVO.searchWord}) > 0
+				OR INSTR(PAY_DATE,  #{searchVO.searchWord}) > 0)
+			</otherwise>
+		</choose>
+	</if>
+</sql>
+
+
+<select id="selectCodeName" resultType="kr.or.ddit.vo.CodeVO">
+SELECT DISTINCT(B.CODE_NAME)
+  FROM DEPARTMENT A, CODE B 
+ WHERE A.COL_CODE = B.CODE
+</select>
+<select id="memberCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+SELECT COUNT(DISTINCT(MEM_NAME))
+  FROM MEMBER A, PAY_TUITION B
+ WHERE A.MEM_TYPE = 'ROLE_STUDENT'
+   AND A.MEM_ID = B.MEM_ID
+   AND B.PAY_CHECK ='A'
+   AND B.PAY_DIVISION ='Y'	
+
+</select>
+<select id="selectMember" resultType="kr.or.ddit.member.vo.MemberVO" parameterType="kr.or.ddit.vo.PagingVO">
+SELECT Y.*
+  FROM (
+         SELECT ROWNUM AS RNUM,
+                X.*
+           FROM (        
+              SELECT DISTINCT(A.MEM_NAME),
+                     A.MEM_ID,
+                     B.PAY_NO
+                FROM MEMBER A, PAY_TUITION B
+               WHERE A.MEM_TYPE = 'ROLE_STUDENT'
+                 AND A.MEM_ID = B.MEM_ID
+                 AND B.PAY_CHECK ='A'
+                 AND B.PAY_DIVISION ='Y'
+                 ORDER BY B.PAY_NO DESC		
+              )X
+      )Y
+	WHERE RNUM  BETWEEN #{startRow} AND #{endRow}
+    ORDER BY RNUM 
+</select>
+<select id="selectDepName" parameterType="kr.or.ddit.vo.CodeVO" resultType="kr.or.ddit.vo.DepartmentVO">
+SELECT DISTINCT(A.DEP_NAME)
+  FROM DEPARTMENT A, CODE B
+ WHERE A.COL_CODE = B.CODE   
+   AND B.CODE_NAME=#{codeName}
+</select >
+<select id="memberDepCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+  SELECT COUNT(DISTINCT(MEM_NAME))
+    FROM MEMBER A, PAY_TUITION B, DEPARTMENT C
+   WHERE A.MEM_TYPE = 'ROLE_STUDENT'
+     AND A.MEM_ID = B.MEM_ID
+     AND B.PAY_CHECK ='A' 
+     AND B.PAY_DIVISION ='Y'
+     AND C.DEP_NO = A.DEP_NO
+     AND C.DEP_NAME=#{searchVO.searchType} 
+</select>
+<select id="selectDepStuList" parameterType="kr.or.ddit.vo.PagingVO" resultType="kr.or.ddit.member.vo.MemberVO">
+SELECT Y.*
+  FROM (
+         SELECT ROWNUM RNUM,
+                X.*
+           FROM (        
+                  SELECT DISTINCT(A.MEM_NAME),
+                         A.MEM_ID 
+                    FROM MEMBER A, PAY_TUITION B, DEPARTMENT C
+                   WHERE A.MEM_TYPE = 'ROLE_STUDENT'
+                     AND A.MEM_ID = B.MEM_ID
+                     AND B.PAY_CHECK ='A'	
+                     AND C.DEP_NO = A.DEP_NO
+                     AND C.DEP_NAME=#{searchVO.searchType}
+                 )X
+         )Y
+ WHERE RNUM  BETWEEN #{startRow} AND #{endRow}
+</select>
+
+<update id="adminTuitionUpdateSucess" parameterType="kr.or.ddit.member.vo.MemberVO">
+UPDATE PAY_TUITION
+   SET PAY_CHECK = 'Y'
+ WHERE MEM_ID =#{memId}
+</update>
+<update id="adminTuitionUpdateFail" parameterType="kr.or.ddit.member.vo.MemberVO">
+UPDATE PAY_TUITION
+   SET PAY_CHECK = 'N'
+ WHERE MEM_ID =#{memId}
+</update>
+<select id="selectSmst"  resultType="kr.or.ddit.vo.CodeVO">
+SELECT SUBSTR(CODE_NAME,3,2) AS CODE_NAME
+  FROM CODE 
+ WHERE GROUP_CODE = 'A00' 
+</select>
+
+<insert id="insertPayDiv1" parameterType="kr.or.ddit.member.vo.MemberVO">
+
+INSERT INTO PAY_TUITION (
+    PAY_NO,
+    MEM_ID,
+    SMST,
+    PAY_START,
+    PAY_END,
+    PAY_EXCPECT,
+    PAY_NUMBER,
+    PAY_DIVISION,
+    PAY_CHECK
+) VALUES (
+    (SELECT NVL(MAX(PAY_NO),1)+1 FROM PAY_TUITION)
+  ,#{memId}
+  ,(SELECT SMST FROM PAY_TUITION WHERE MEM_ID=#{memId} AND PAY_NUMBER='0' AND SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00'))
+  ,( SELECT TO_CHAR(SPLAN_START, 'YYYYMMDD') FROM SCHEDULE_PLAN WHERE SPLAN_CODE='DIV1')   
+  ,( SELECT TO_CHAR(SPLAN_END, 'YYYYMMDD') FROM SCHEDULE_PLAN WHERE SPLAN_CODE='DIV1')    
+  ,( SELECT TRUNC(SUM((
+                       (SELECT PAY_EXCPECT 
+                       FROM PAY_TUITION
+                           WHERE MEM_ID=#{memId}
+                                 AND SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+                                   AND PAY_NUMBER = '0'
+                                   ) - (
+                                        SELECT NVL(SUM(NVL2(SFUND_VALUE, SUM(SFUND_VALUE), 0)),0)
+                                          FROM SCHAR_FUND 
+                                              WHERE SFUND_STUDENT=#{memId}
+                                              AND CODE_RESULT ='ACCEPT'
+                                             AND SFUND_SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+                                                GROUP BY SFUND_VALUE)
+                                     )/3),-5)
+                     FROM PAY_TUITION 
+                     WHERE MEM_ID=#{memId}
+                     AND PAY_NUMBER = '0'
+                     AND SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00'))
+  ,'1'
+  ,'Y'
+  ,'Y'
+)
+</insert>
+<insert id="insertPayDiv2" parameterType="kr.or.ddit.member.vo.MemberVO">
+
+INSERT INTO PAY_TUITION (
+    PAY_NO,
+    MEM_ID,
+    SMST,
+    PAY_START,
+    PAY_END,
+    PAY_EXCPECT,
+    PAY_NUMBER,
+    PAY_DIVISION,
+    PAY_CHECK
+) VALUES (
+    (SELECT NVL(MAX(PAY_NO),1)+1 FROM PAY_TUITION)
+  ,#{memId}
+  ,(SELECT SMST FROM PAY_TUITION WHERE MEM_ID=#{memId} AND PAY_NUMBER='0'AND SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00'))
+  ,( SELECT TO_CHAR(SPLAN_START, 'YYYYMMDD') FROM SCHEDULE_PLAN WHERE SPLAN_CODE='DIV2')   
+  ,( SELECT TO_CHAR(SPLAN_END, 'YYYYMMDD') FROM SCHEDULE_PLAN WHERE SPLAN_CODE='DIV2')    
+  ,( SELECT TRUNC(SUM((
+                                (SELECT PAY_EXCPECT 
+                                FROM PAY_TUITION
+                                    WHERE MEM_ID=#{memId}
+                                          AND SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+                                            AND PAY_NUMBER = '0'
+                                            ) - (
+                                                        SELECT NVL(SUM(NVL2(SFUND_VALUE, SUM(SFUND_VALUE), 0)),0)
+                                                          FROM SCHAR_FUND 
+                                                              WHERE SFUND_STUDENT=#{memId}
+                                                              AND CODE_RESULT ='ACCEPT'
+                                                             AND SFUND_SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+                                                                GROUP BY SFUND_VALUE)
+                                                     )/3),-5)
+                              FROM PAY_TUITION 
+                              WHERE MEM_ID=#{memId}
+                              AND PAY_NUMBER = '0'
+                              AND SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00'))
+  ,'2'
+  ,'Y'
+  ,'Y'
+)
+
+</insert>
+<insert id="insertPayDiv3" parameterType="kr.or.ddit.member.vo.MemberVO">
+
+insert into pay_tuition (
+    PAY_NO,
+    MEM_ID,
+    SMST,
+    PAY_START,
+    PAY_END,
+    PAY_EXCPECT,
+    PAY_NUMBER,
+    PAY_DIVISION,
+    PAY_CHECK
+) VALUES (
+    (SELECT NVL(MAX(PAY_NO),1)+1 FROM PAY_TUITION)
+  ,#{memId}
+  ,( SELECT SMST FROM PAY_TUITION WHERE MEM_ID=#{memId} AND PAY_NUMBER='0' AND SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00'))
+  ,( SELECT TO_CHAR(SPLAN_START, 'YYYYMMDD') FROM SCHEDULE_PLAN WHERE SPLAN_CODE='DIV3')   
+  ,( SELECT TO_CHAR(SPLAN_END, 'YYYYMMDD') FROM SCHEDULE_PLAN WHERE SPLAN_CODE='DIV3')    
+  ,( SELECT GREATEST(SUM((
+                          (SELECT PAY_EXCPECT 
+                          FROM PAY_TUITION
+                              WHERE MEM_ID=#{memId}
+                                    AND SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+                                      AND PAY_NUMBER = '0'
+                                      ) - (
+                                    SELECT NVL(SUM(NVL2(SFUND_VALUE, SUM(SFUND_VALUE), 0)),0)
+                                      FROM SCHAR_FUND 
+                                          WHERE SFUND_STUDENT=#{memId}
+                                          AND CODE_RESULT ='ACCEPT'
+                                         AND SFUND_SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+                                            GROUP BY SFUND_VALUE)
+		 					 ) -(SELECT PAY_EXCPECT
+                                    FROM PAY_TUITION
+                                    WHERE MEM_ID=#{memId}
+                                    AND PAY_NUMBER ='1'
+                                    AND SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+                                    )
+                                 -   (SELECT PAY_EXCPECT
+                                    FROM PAY_TUITION
+                                    WHERE MEM_ID=#{memId}
+                                    AND PAY_NUMBER ='2'
+                                    AND SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00'))
+                                    ),0)
+         FROM PAY_TUITION
+          WHERE MEM_ID=#{memId}
+          AND PAY_NUMBER ='0'
+          AND SMST =(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+          )
+  ,'3'
+  ,'Y'
+  ,'Y'
+)
+</insert>
+
+<select id="selectVirtualAccountTuition" resultType="kr.or.ddit.lms.student.tuition.vo.VirtualAccountTuitionVO" parameterType="kr.or.ddit.vo.PagingVO">
+SELECT Y.*
+  FROM (
+	     SELECT ROWNUM AS RNUM,
+	            X.*
+	       FROM ( 
+				  SELECT A.MEM_NAME
+						 , A.MEM_ID
+						 , B.PAY_EXCPECT
+						 , B.PAY_AMOUNT
+						 , B.PAY_NUMBER
+						 , TO_CHAR(B.PAY_DATE, 'YYYY/MM/DD') AS PAY_DATE
+						 , B.PAY_CHECK
+       					 , B.PAY_DIVISION
+       					 , B.PAY_NO
+				    FROM MEMBER A INNER JOIN PAY_TUITION B ON (A.MEM_ID = B.MEM_ID)
+				   WHERE A.MEM_TYPE = 'ROLE_STUDENT'
+				     AND B.PAY_AMOUNT NOT IN ('0')
+				     <include refid="searchFrag" />
+				    ORDER BY B.PAY_NO DESC, B.PAY_DATE DESC
+	       )X)Y
+ WHERE RNUM BETWEEN #{startRow} AND #{endRow}
+ ORDER BY RNUM 
+</select>
+
+<select id="selectVirttualCount" resultType="int">
+ SELECT COUNT(*)
+  FROM MEMBER A INNER JOIN PAY_TUITION B ON (A.MEM_ID = B.MEM_ID)
+  WHERE A.MEM_TYPE = 'ROLE_STUDENT'
+    AND B.PAY_AMOUNT NOT IN ('0')
+    <include refid="searchFrag" />
+</select>
+
+</mapper>

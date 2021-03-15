@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.admin.professor.dao.IAdminProfessorDAO">
+
+<insert id="insertProfessor" parameterType="kr.or.ddit.admin.student.vo.AdminMemVO">
+<selectKey order="BEFORE" keyProperty="memId" resultType="String">
+SELECT NVL(MAX(MEM_ID),CONCAT(#{depNo},'000'))+1 AS MEM_ID
+FROM MEMBER
+WHERE MEM_TYPE='ROLE_PROFESSOR'
+AND DEP_NO=#{depNo}
+</selectKey>
+INSERT INTO MEMBER(
+MEM_ID   , 
+DEP_NO   ,
+MEM_TYPE ,
+MEM_PASS ,
+MEM_NAME , 
+MEM_REG1 ,
+MEM_TEL  , 
+MEM_MAIL , 
+MEM_ADDR1, 
+MEM_ADDR2, 
+MEM_ACN  , 
+MEM_BANK , 
+MEM_STATE,
+MEM_ADMISSION,
+MEM_IMG   
+)VALUES(
+	#{memId,jdbcType=VARCHAR},      
+	#{depNo,jdbcType=NUMERIC},     
+	#{memType,jdbcType=NUMERIC},     
+	'{bcrypt}$2a$10$ye1N978NzPnbQkqStYf1KOIrAxOls4zQFhdYQ.35Y35F8RaYBgXEO',
+	#{memName,jdbcType=NUMERIC},    
+	#{memReg1,jdbcType=VARCHAR},    
+	#{memTel,jdbcType=VARCHAR},     
+	#{memMail,jdbcType=VARCHAR},    
+	#{memAddr1,jdbcType=VARCHAR},   
+	#{memAddr2,jdbcType=VARCHAR},   
+    #{memAcn,jdbcType=VARCHAR},     
+    #{memBank,jdbcType=VARCHAR},    
+    #{memState,jdbcType=VARCHAR},    
+    #{memAdmission,jdbcType=VARCHAR},
+    #{memImg,jdbcType=VARCHAR}      
+)
+</insert>
+
+<select id="selectProfessor" parameterType="kr.or.ddit.admin.student.vo.AdminMemVO" resultType="kr.or.ddit.admin.student.vo.AdminMemVO">
+SELECT  A.MEM_ID ,
+        A.MEM_NAME ,
+        B.DEP_NAME ,
+        A.MEM_GRD ,
+        A.MEM_REG1  ,
+        A.MEM_TEL ,
+        A.MEM_MAIL ,
+        A.MEM_ADDR1 ,
+        A.MEM_ADDR2 ,
+        A.MEM_BANK ,
+        A.MEM_ACN,
+        A.MEM_POSITION,
+        A.MEM_STATE,
+        A.MEM_ADMISSION,
+        A.MEM_GRADUATION,
+        A.MEM_IMG,
+        C.DESCRIPTION
+FROM   DEPARTMENT B, MEMBER A
+LEFT OUTER JOIN CODE C ON (A.MEM_STATE=C.CODE)
+WHERE A.MEM_ID = #{memId}
+AND A.DEP_NO = B.DEP_NO
+</select>
+
+<update id="updateProfessor" parameterType="kr.or.ddit.admin.student.vo.AdminMemVO">
+UPDATE MEMBER
+	    SET
+	        MEM_REG1 = #{memReg1,jdbcType=VARCHAR},
+	        MEM_TEL = #{memTel,jdbcType=VARCHAR},
+	        MEM_MAIL = #{memMail,jdbcType=VARCHAR},
+	        MEM_ADDR1 = #{memAddr1,jdbcType=VARCHAR},
+	        MEM_ADDR2 = #{memAddr2,jdbcType=VARCHAR},
+	        MEM_ACN = #{memAcn,jdbcType=VARCHAR},
+	        MEM_BANK = #{memBank,jdbcType=VARCHAR},
+	        MEM_STATE = #{memState,jdbcType=VARCHAR},
+	        MEM_GRADUATION = #{memGraduation,jdbcType=VARCHAR},
+	        MEM_IMG = #{memImg,jdbcType=VARCHAR}
+		WHERE
+	   		 MEM_ID = #{memId,jdbcType=VARCHAR}
+</update>
+
+</mapper>

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.lms.professor.counseling.dao.IProfessorCounselingDAO">
+
+<sql id="searchFrag">
+	<if test="searchVO!=null and @org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+		<choose>
+			<when test="'name'.equals(searchVO.searchType)">
+				AND INSTR(MEM_NAME, #{searchVO.searchWord}) > 0
+			</when>
+			<when test="'id'.equals(searchVO.searchType)">
+			    AND INSTR(CST_STUDENT, #{searchVO.searchWord}) > 0
+			</when>
+			<otherwise>
+				AND ( INSTR(MEM_NAME, #{searchVO.searchWord}) > 0
+				OR  INSTR(CST_STUDENT, #{searchVO.searchWord}) > 0 )
+			</otherwise>
+		</choose>
+	</if>
+</sql>
+
+<sql id="stunamesearchFrag">
+	<if test="searchVO!=null and @org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+		<choose>
+			<when test="'name'.equals(searchVO.searchType)">
+				AND INSTR(MEM_NAME, #{searchVO.searchWord}) > 0
+			</when>
+		</choose>
+	</if>
+</sql>
+	
+<select id="selectChooseCounselingDate" parameterType="string" resultMap="counMap">
+SELECT CST_DATE, CST_CONTENT, CST_TIME, CST_NO, CST_APPTM
+  FROM CONSULT
+ WHERE CST_PROFESSOR = #{cstProfessor, jdbcType=VARCHAR}
+   AND CST_STUDENT = #{cstStudent, jdbcType=VARCHAR}
+   AND CST_ACCPT = '승인'
+</select>
+	
+<select id="selectDetailCounseling" parameterType="string" resultMap="counMap">
+SELECT DISTINCT (A.MEM_GRD)
+       , A.MEM_NAME
+       , B.DEP_NAME
+       , A.MEM_ID
+       , REGEXP_REPLACE(REGEXP_REPLACE(A.MEM_TEL, '[^[:digit:]]')
+       , '(^02|050[[:digit:]]{1}|[[:digit:]]{3})([[:digit:]]{3,4})([[:digit:]]{4})',
+		 '\1-\2-\3') AS MEM_TEL
+       , A.MEM_IMG
+  FROM MEMBER A INNER JOIN DEPARTMENT B ON (A.DEP_NO = B.DEP_NO)
+                INNER JOIN CONSULT C ON (A.MEM_ID = C.CST_STUDENT)
+ WHERE A.MEM_ID = #{cstStudent}
+   AND C.CST_ACCPT NOT IN('접수','반려')
+</select>
+	
+<resultMap type="kr.or.ddit.vo.CounselingVO" id="counMap" autoMapping="true">
+	<id property="cstNo" column="CST_NO"/>
+	<association property="memberVO" javaType="kr.or.ddit.member.vo.MemberVO" autoMapping="true" />
+	<association property="departVO" javaType="kr.or.ddit.vo.DepartmentVO" autoMapping="true"/>
+</resultMap>
+	
+	
+<select id="selectCounselingApplyCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+SELECT COUNT(DISTINCT C.CST_STUDENT)
+      FROM MEMBER A, CONSULT C
+       WHERE A.DEP_NO =  ( SELECT DEP_NO FROM MEMBER WHERE MEM_ID = #{searchDetail.cstProfessor, jdbcType=VARCHAR} )
+		  <include refid="searchFrag" />
+          AND A.MEM_ID = C.CST_PROFESSOR
+          AND C.CST_ACCPT NOT IN('승인', '반려')
+</select>
+	
+	
+<select id="selectCounselingDoneCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+	SELECT COUNT(DISTINCT A.MEM_ID)
+      FROM MEMBER A INNER JOIN DEPARTMENT B ON(A.DEP_NO = B.DEP_NO)
+                       INNER JOIN CONSULT C ON (A.MEM_ID = C.CST_STUDENT)
+     WHERE B.DEP_NO =  ( SELECT DEP_NO FROM MEMBER WHERE MEM_ID = #{searchDetail.cstProfessor, jdbcType=VARCHAR} )
+       AND A.MEM_TYPE =  'ROLE_STUDENT'
+       AND C.CST_ACCPT NOT IN ('반려','접수')
+       <include refid="stunamesearchFrag" />
+</select>
+	
+	
+<select id="selectCounselingApplyList" resultMap="counMap" resultType="kr.or.ddit.vo.CounselingVO">
+     SELECT Y.*
+       FROM (    
+              SELECT  ROWNUM RNUM
+                      , X.*
+                FROM (                      
+                        SELECT CST_NO
+                               , CST_DATE
+                               , CST_APPTM
+                               , CST_ACCPT
+                               , MEM_ID
+                               , MEM_NAME
+                               , MEM_TEL
+                               , DEP_NAME
+                               , CST_PROFESSOR
+               		           , CST_STUDENT
+                          FROM CONSULT A
+                          JOIN MEMBER B
+                            ON A.CST_STUDENT = B.MEM_ID
+                          JOIN DEPARTMENT C
+                            ON B.DEP_NO = C.DEP_NO
+                         WHERE CST_PROFESSOR = #{searchDetail.cstProfessor, jdbcType=VARCHAR}
+                           AND A.CST_ACCPT NOT IN ('반려','승인')
+                           <include refid="searchFrag" />
+                      ORDER BY A.CST_DATE DESC
+               )X
+           )Y
+     WHERE RNUM BETWEEN #{startRow} AND #{endRow}
+	 ORDER BY RNUM
+</select>
+	
+<update id="updateCounselingCstNote" parameterType="kr.or.ddit.vo.CounselingVO">
+UPDATE CONSULT
+   SET CST_NOTE = #{cstNote, jdbcType=VARCHAR}
+	   , CST_ACCPT = #{cstAccpt, jdbcType=CHAR}
+ WHERE CST_NO = #{cstNo, jdbcType=NUMERIC}
+</update>
+	
+<update id="updateCounseling" parameterType="kr.or.ddit.vo.CounselingVO">
+UPDATE CONSULT
+   SET CST_NOTE = '상담완료'
+	   , CST_CONTENT = #{cstContent, jdbcType=VARCHAR}
+	   , CST_TIME = #{cstTime, jdbcType=NUMERIC}
+ WHERE CST_STUDENT = #{cstStudent, jdbcType=VARCHAR}
+   AND CST_NO = #{cstNo, jdbcType=NUMERIC}
+</update>
+
+<select id="selectCounselingDoneList" resultMap="counMap" resultType="kr.or.ddit.vo.CounselingVO">
+SELECT Y.*
+  FROM (    
+       SELECT  ROWNUM RNUM
+              , X.*
+        FROM(  
+                  SELECT DISTINCT A.MEM_NAME
+                                  , A.MEM_ID
+                                  , A.MEM_IMG
+<!--                                   , B.CST_NO -->
+                    FROM MEMBER A, CONSULT B, DEPARTMENT C
+                   WHERE A.MEM_TYPE = 'ROLE_STUDENT'
+            		 AND A.MEM_ID = B.CST_STUDENT
+                     AND A.DEP_NO = C.DEP_NO
+                     AND C.DEP_NO = (
+                                      SELECT DEP_NO 
+                                        FROM MEMBER 
+                                       WHERE MEM_ID = #{searchDetail.cstProfessor, jdbcType=VARCHAR} )
+                     AND B.CST_ACCPT NOT IN ('반려','접수') 
+            		 <include refid="stunamesearchFrag" />
+            		 ORDER BY A.MEM_ID 
+              )X
+         )Y
+ WHERE RNUM BETWEEN #{startRow} AND #{endRow}
+ ORDER BY RNUM
+</select>
+
+<select id="chooseDateCounseling" parameterType="kr.or.ddit.vo.CounselingVO" resultType="kr.or.ddit.vo.CounselingVO">
+SELECT <![CDATA[REPLACE(CST_CONTENT, '&nbsp;', '<br/>')]]> AS CST_CONTENT
+       , CST_TIME
+       , CST_DATE
+       , CST_NO
+       , CST_APPTM
+  FROM CONSULT
+ WHERE CST_STUDENT = #{cstStudent, jdbcType=VARCHAR}
+   AND CST_PROFESSOR = #{cstProfessor, jdbcType=VARCHAR}
+   AND CST_ACCPT = '승인'
+   AND CST_NO = #{cstNo, jdbcType=NUMERIC}
+</select>
+	
+</mapper>

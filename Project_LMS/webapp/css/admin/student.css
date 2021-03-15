@@ -1,0 +1,108 @@
+@charset "UTF-8";
+
+/**studentView.jsp**/
+.imgSize{
+	width: 150px; 
+ 	height: 200px; 
+}
+.box {
+    width: 200px;
+    height: 200px; 
+    border-radius: 10%;
+    overflow: hidden;
+    margin: auto;
+}
+
+/**professorView.jsp**/
+
+#alertArea{
+	width: 70%;
+	margin: auto;
+}
+.proViewTable{
+	text-align: center;
+	table-layout: fixed;
+}
+.imgSize{
+	width: 150px; 
+ 	height: 200px; 
+}
+.box {
+    width: 200px;
+    height: 200px; 
+    border-radius: 10%;
+    overflow: hidden;
+    margin: auto;
+}
+/**professorList.jsp/studentList.jsp**/
+.selectDiv{
+	padding-top: 1%;
+	padding-left: 2%;
+	margin-left :4px;
+	padding-bottom : 1%;
+	height: 6%;
+	border-radius :20px 20px;
+	background-color: #e8eef3;
+}
+div select {
+	margin-left: 20px;
+	margin-right: 20px;
+}
+#department{width: 150px;}
+.listTable{width:80%;height:400px;overflow: auto;}
+.fixedHeader {
+	position: sticky;
+	top: 0;
+}
+#total{color: red;}
+.totalTable{width: 100%;text-align: center;border: 1px solid lightgray;}
+.totalTable thead{background-color: #c6c8ca;color: white;}
+.totalTable th{border: 1px solid lightgray;}
+.totalTable td{border: 1px solid lightgray;}
+
+/**collegeTreeStructure.jsp**/
+.back{
+ 		background: #f9fbfd !important;  
+}
+.tmpImage{width: 100%;padding-left: 50px;}
+#departmentDiv{margin-left: 100px;}
+#tmpImage{padding-left: 50px;}
+.treeTable{border: 2px solid darkgray; height:700px; overflow:auto; }
+#departmentTable td{border: 1px solid darkgray;}
+#departmentTable th{color:white;font-weight:bold !important;}
+.lectureRoomTable{overflow:auto;height: 300px;}
+
+/**professorForm.jsp**/
+#zero_config {
+	text-align: center;
+}
+#inputSearch {
+	width: 200px;
+}
+#searchArea{
+	float : right;
+}
+.proInsertTable{
+	text-align: center;
+	table-layout: fixed;
+	border: darkgray !important;
+}
+caption{
+	caption-side: top;
+	text-align: right;
+}
+.proInsertTable input[type="text"]{
+	width: 100%;
+}
+#telText{
+	color: red;
+}
+.imgSize{
+	width: 150px; 
+ 	height: 200px; 
+}
+.importantText{
+	color: red;
+}
+
+

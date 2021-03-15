@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.member.dao.IMemberDAO">
+	<sql id="searchFrag">
+		<where>
+			<if test="searchVO!=null and @org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+				<choose>
+					<when test="'searchMemId'.equals(searchVO.searchType)">
+						INSTR(MEM_ID, #{searchVO.searchWord}) > 0
+					</when>
+					<when test="'searchMemName'.equals(searchVO.searchType)">
+						INSTR(MEM_NAME, #{searchVO.searchWord}) > 0
+					</when>
+					<when test="'searchMemType'.equals(searchVO.searchType)">
+						INSTR(MEM_TYPE, #{searchVO.searchWord}) > 0
+					</when>
+					<when test="'searchDepName'.equals(searchVO.searchType)">
+						INSTR(DEP_NAME, #{searchVO.searchWord}) > 0
+					</when>
+					<otherwise>
+						INSTR(MEM_ID, #{searchVO.searchWord}) > 0
+						OR INSTR(MEM_NAME, #{searchVO.searchWord}) > 0
+						OR INSTR(MEM_TYPE, #{searchVO.searchWord}) > 0
+						OR INSTR(DEP_NAME, #{searchVO.searchWord}) > 0
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+	</sql>
+	
+	
+	<select id="selectMemberCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+		SELECT COUNT(*)
+		FROM MEMBER
+		<include refid="searchFrag" />	
+	</select>
+	
+	<select id="selectMember" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.member.vo.MemberVO">
+		SELECT MEM_ID   
+			 , DEP_NO      
+			 , MEM_TYPE
+			 , MEM_PASS 
+			 , MEM_NAME    
+			 , MEM_REG1
+			 , MEM_REG2 
+			 , MEM_TEL     
+			 , MEM_MAIL
+			 , MEM_ZIP  
+			 , MEM_ADDR1   
+			 , MEM_ADDR2
+			 , MEM_ACN
+			 , MEM_BANK    
+			 , MEM_GRD
+			 , MEM_STATE
+			 , MEM_POSITION
+			 , MEM_ADMISSION
+			 , MEM_GRADUATION
+			 , MEM_IMG
+		FROM MEMBER
+		WHERE MEM_ID = #{memId, jdbcType=VARCHAR}
+	</select>
+	
+	<resultMap id="memberMap" type="kr.or.ddit.member.vo.MemberVO" autoMapping="true">
+		<id property="memId" column="MEM_ID" />
+		<association property="departmentVO" javaType="kr.or.ddit.vo.DepartmentVO" autoMapping="true" />
+	</resultMap>
+	
+	
+	<select id="inquiryId" parameterType="kr.or.ddit.member.vo.MemberVO" resultMap="memberMap">
+		SELECT MEM_ID 
+		     , MEM_NAME 
+		     , DEP_NAME
+		FROM MEMBER A
+		JOIN DEPARTMENT B
+		ON A.DEP_NO = B.DEP_NO
+		WHERE MEM_NAME = #{memName, jdbcType=VARCHAR}
+		AND MEM_REG1 = #{memReg1, jdbcType=VARCHAR}
+	</select>
+<update id="firstLoginInsert" parameterType="kr.or.ddit.member.vo.FirstLoginVO">
+	UPDATE MEMBER 
+		SET 
+			 MEM_REG1 = #{memReg1,jdbcType=VARCHAR},
+			 MEM_REG2 = #{memReg2,jdbcType=VARCHAR},
+	         MEM_TEL = #{memTel,jdbcType=VARCHAR}
+		WHERE
+	   		 MEM_ID = #{memId,jdbcType=VARCHAR}
+
+</update>	
+</mapper>

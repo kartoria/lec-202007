@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.lms.student.scholarship.dao.StudentSchaolarshipMapper">
+<!-- <sql id="fromClause"> -->
+<!-- FROM SCHAR_FUND A, SCHOLARSHIP B -->
+<!-- WHERE SFUND_STUDENT=#{searchDetail.sfundStudent, jdbcType=VARCHAR} -->
+<!-- AND CODE_RESULT=#{searchDetail.codeResult, jdbcType=VARCHAR} -->
+<!-- </sql> -->
+
+<select id="selectStuScholarshipSmstList" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.lms.student.scholarship.vo.StuScholarshipVO">
+SELECT 
+DISTINCT(SFUND_SMST) AS SFUND_SMST
+FROM SCHAR_FUND
+WHERE SFUND_STUDENT=#{memId}
+AND CODE_RESULT='PAYED'
+</select>
+
+<select id="selectStuScholarshipCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+SELECT COUNT(*)
+FROM SCHAR_FUND
+WHERE SFUND_STUDENT=#{searchDetail.sfundStudent, jdbcType=VARCHAR}
+AND CODE_RESULT='PAYED'
+</select>
+
+<!-- <select id="selectStuScholarshipApplyCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int"> -->
+<!-- SELECT COUNT(*) -->
+<!-- FROM SCHAR_FUND A, SCHOLARSHIP B  -->
+<!-- WHERE A.SCHAR_CODE=B.SCH_CODE -->
+<!-- AND SFUND_STUDENT=#{searchDetail.sfundStudent, jdbcType=VARCHAR} -->
+<!-- AND B.SCH_TYPE = 'APPLY' -->
+<!-- </select> -->
+
+
+<resultMap type="kr.or.ddit.vo.ScholarshipFundVO" id="schMap" autoMapping="true">
+<collection property="schVO" ofType="kr.or.ddit.vo.ScholarshipVO" javaType="kr.or.ddit.vo.ScholarshipVO">
+		<result property="schName" column="SCH_NAME"/>
+</collection>
+<collection property="codeVO" ofType="kr.or.ddit.vo.CodeVO" javaType="kr.or.ddit.vo.CodeVO">
+		<result property="code" column="CODE"/>
+		<result property="codeName" column="CODE_NAME"/>
+</collection>
+</resultMap>
+<select id="selectStuScholarshipList" parameterType="kr.or.ddit.vo.PagingVO" resultType="kr.or.ddit.lms.student.scholarship.vo.StuScholarshipVO">
+SELECT E.*
+		FROM (
+			SELECT D.* , ROWNUM RNUM
+			FROM(
+            SELECT
+            SFUND_NO,
+            SCHAR_CODE,
+            CODE_RESULT,
+            CODE_NAME,
+            SFUND_VALUE,
+            SFUND_SMST,
+            TO_CHAR(SFUND_RESDATE,'YYYY-MM-DD')AS SFUND_RESDATE ,
+            TO_CHAR(SFUND_GETDATE,'YYYY-MM-DD')AS SFUND_GETDATE,
+            SFUND_STUDENT,
+            SFUND_PROFESSOR,
+            SFUND_REASON,
+            SCH_NAME
+            FROM SCHOLARSHIP B, SCHAR_FUND A 
+			LEFT OUTER JOIN CODE C ON(A.CODE_RESULT =C.CODE ) 
+			WHERE A.SCHAR_CODE = B.SCH_CODE
+			AND SFUND_STUDENT=#{searchDetail.sfundStudent, jdbcType=VARCHAR}
+			AND CODE_RESULT='PAYED'
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+				AND SFUND_SMST = #{searchVO.searchWord}
+			</if>
+            	) D
+		) E
+     <![CDATA[ 
+ 	    WHERE RNUM >= #{startRow} AND RNUM <= #{endRow}
+     ]]> 
+
+</select>
+
+<select id="selectScholarshipType" parameterType="kr.or.ddit.vo.ScholarshipFundVO" resultType="kr.or.ddit.vo.ScholarshipVO">
+SELECT SCH_CODE,
+       SCH_NAME,
+       SCH_DETAIL,
+       SCH_AMOUNT
+  FROM SCHOLARSHIP 
+  WHERE NOT EXISTS(
+              SELECT SCHAR_CODE 
+              FROM SCHAR_FUND A, SCHOLARSHIP B 
+              WHERE A.SCHAR_CODE=B.SCH_CODE
+              AND SCH_TYPE ='APPLY'
+              AND SFUND_SMST=#{sfundSmst}
+              AND SFUND_STUDENT=#{sfundStudent})
+  AND SCH_TYPE ='APPLY'
+</select>
+
+<insert id="insertScholarshipApply" parameterType="kr.or.ddit.vo.ScholarshipFundVO" >
+<selectKey order="BEFORE" keyProperty="sfundNo" resultType="int">
+		SELECT NVL(MAX(SFUND_NO), 0)+1 AS SFUND_NO
+		FROM SCHAR_FUND
+</selectKey>
+INSERT INTO 
+SCHAR_FUND(
+SFUND_NO,
+SCHAR_CODE,
+CODE_RESULT,
+SFUND_VALUE,
+SFUND_SMST,
+SFUND_RESDATE,
+SFUND_STUDENT,
+SFUND_REASON
+)VALUES
+(
+	#{sfundNo,jdbcType=NUMERIC},
+	#{scharCode,jdbcType=VARCHAR},
+	#{codeResult,jdbcType=VARCHAR},
+	#{sfundValue,jdbcType=NUMERIC},
+	#{sfundSmst,jdbcType=VARCHAR},
+	TO_CHAR(SYSDATE,'YYYY-MM-DD'),
+	#{sfundStudent,jdbcType=VARCHAR},
+	#{sfundReason,jdbcType=VARCHAR}
+)
+</insert>
+
+<select id="selectStuScholarshipApplySmst" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.vo.ScholarshipFundVO">
+SELECT 
+DISTINCT(SFUND_SMST) AS SFUND_SMST
+FROM SCHAR_FUND A, SCHOLARSHIP B
+WHERE B.SCH_TYPE = 'APPLY'
+AND A.SCHAR_CODE=B.SCH_CODE
+AND SFUND_STUDENT=#{memId}
+</select>
+
+<select id="selectStuScholarshipApplyCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+SELECT COUNT(*)
+FROM SCHAR_FUND A, SCHOLARSHIP B 
+WHERE A.SCHAR_CODE=B.SCH_CODE
+AND SFUND_STUDENT=#{searchDetail.sfundStudent, jdbcType=VARCHAR}
+AND B.SCH_TYPE = 'APPLY'
+</select>
+
+<select id="selectStuScholarshipApplyList" parameterType="kr.or.ddit.vo.PagingVO" resultMap="schMap">
+SELECT E.*
+		FROM (
+			SELECT D.* , ROWNUM RNUM
+			FROM(
+            SELECT
+            SFUND_NO,
+            SCHAR_CODE,
+            CODE_RESULT,
+            CODE_NAME,
+            SFUND_VALUE,
+            SFUND_SMST,
+            TO_CHAR(SFUND_RESDATE,'YYYY-MM-DD')AS SFUND_RESDATE ,
+            TO_CHAR(SFUND_GETDATE,'YYYY-MM-DD')AS SFUND_GETDATE,
+            SFUND_STUDENT,
+            SFUND_PROFESSOR,
+            SFUND_REASON,
+            SCH_NAME
+            FROM SCHOLARSHIP B, SCHAR_FUND A 
+			LEFT OUTER JOIN CODE C ON(A.CODE_RESULT =C.CODE ) 
+			WHERE A.SCHAR_CODE = B.SCH_CODE
+            AND B.SCH_TYPE = 'APPLY'
+			AND SFUND_STUDENT=#{searchDetail.sfundStudent, jdbcType=VARCHAR}
+         	<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchVO.searchWord)">
+				AND SFUND_SMST = #{searchVO.searchWord}
+			</if>
+            	) D
+		) E
+     <![CDATA[ 
+ 	    WHERE RNUM >= #{startRow} AND RNUM <= #{endRow}
+     ]]> 
+</select>
+
+<select id="selectStuScholarshipApply" parameterType="int" resultType="kr.or.ddit.lms.student.scholarship.vo.StuScholarshipVO">
+SELECT
+SFUND_NO,
+SCHAR_CODE,
+CODE_RESULT,
+SFUND_VALUE,
+SFUND_SMST,
+TO_CHAR(SFUND_RESDATE,'YYYY-MM-DD')SFUND_RESDATE,
+TO_CHAR(SFUND_GETDATE,'YYYY-MM-DD')SFUND_GETDATE,
+SFUND_STUDENT,
+SFUND_PROFESSOR,
+SFUND_REASON,
+SCH_NAME,
+CODE_NAME
+FROM SCHOLARSHIP B, SCHAR_FUND A 
+LEFT OUTER JOIN CODE C ON(A.CODE_RESULT =C.CODE )
+WHERE A.SCHAR_CODE=B.SCH_CODE
+AND SFUND_NO=#{sfundNo}
+</select>
+
+</mapper>

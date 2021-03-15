@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.commons.dao.IAttachDAO">
+	<!-- 첨부파일 등록 -->
+	<insert id="insertAttaches" parameterType="kr.or.ddit.vo.BoardVO">
+		<!-- attno 미리 생성  keyProperty: 키값 파라미터-->
+		<selectKey order="BEFORE" keyProperty="startAttNo" resultType="int">
+			SELECT NVL(MAX(ATT_NO), 0)+1
+			FROM ATTACH		
+		</selectKey>
+		INSERT ALL
+		<!-- foreach문 -->
+		<foreach collection="attachList" item="attach" index="idx">
+			INTO attach (
+			    ATT_NO,
+			    ATT_SAVENAME,
+			    ATT_FILENAME,
+			    FILE_ATT_MIME,
+			    BO_NO,
+			    ATT_FILESIZE,
+			    ATT_FANCY
+			) VALUES (
+			   #{startAttNo,jdbcType=NUMERIC}+#{idx},
+			   #{attach.attSavename,jdbcType=VARCHAR},
+		       #{attach.attFilename,jdbcType=VARCHAR},
+		       #{attach.fileAttMime,jdbcType=VARCHAR},
+		       #{boNo,jdbcType=NUMERIC},
+		       #{attach.attFilesize,jdbcType=NUMERIC},
+		       #{attach.attFancy,jdbcType=VARCHAR}
+			)
+		</foreach>
+		SELECT * FROM DUAL
+	</insert>
+	
+	<select id="selectAttach" parameterType="int" resultType="kr.or.ddit.vo.AttachVO">
+		SELECT
+		    ATT_NO,
+		    ATT_SAVENAME,
+		    ATT_FILENAME,
+		    FILE_ATT_MIME,
+		    BO_NO,ATT_FILESIZE,
+		    ATT_FANCY, 
+		    ATT_DOWNCOUNT
+		FROM ATTACH
+		WHERE ATT_NO = ${attNo}
+	</select>
+	
+	<delete id="deleteAttach" parameterType="kr.or.ddit.vo.BoardVO">
+		DELETE FROM ATTACH
+		<where>
+			<if test="delAttNos!=null and delAttNos.length gt 0">
+				ATT_NO IN 
+				<foreach collection="delAttNos" item="attNo" open="(" close=")" separator=",">
+					#{attNo}
+				</foreach>	
+			</if>
+			<if test="delAttNos==null or delAttNos.length eq 0">
+				BO_NO = #{boNo}
+			</if>	
+		</where>
+	</delete>
+</mapper>

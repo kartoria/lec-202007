@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.myclassroom.dao.MyclassDAO">
+	<select id="myclassAuthorization" parameterType="kr.or.ddit.myclassroom.vo.MyclassVO" resultType="int">
+		<if test="'ROLE_STUDENT'.equals(memberVO.memType)">
+			SELECT COUNT(*)
+			FROM TAKE_LEC
+			WHERE LEC_CODE = #{lecCode}
+			AND MEM_ID = #{memberVO.memId}
+		</if>
+		<if test="'ROLE_PROFESSOR'.equals(memberVO.memType)">
+			SELECT COUNT(*)
+			FROM LECTURE
+			WHERE LEC_CODE = #{lecCode}
+			AND MEM_ID = #{memberVO.memId}
+		</if>
+	</select>
+	
+	<select id="lectureCheck" parameterType="kr.or.ddit.myclassroom.vo.MyclassVO" resultType="int">
+		SELECT COUNT(*)
+		FROM LECTURE
+		WHERE LEC_CODE = #{lecCode}
+	</select>
+	
+	<select id="getSubName" parameterType="kr.or.ddit.myclassroom.vo.MyclassVO" resultType="kr.or.ddit.myclassroom.vo.MyclassVO">
+		SELECT SUB_NAME, LECTURE.MEM_ID
+		FROM SUBJECT
+		JOIN LECTURE ON LECTURE.SUB_CODE = SUBJECT.SUB_CODE
+		WHERE LEC_CODE = #{lecCode} 
+	</select>
+	
+	<select id="getMylectureList" parameterType="kr.or.ddit.myclassroom.vo.MyclassVO" resultType="kr.or.ddit.myclassroom.vo.MyclassVO">
+		SELECT L.LEC_CODE 
+			<if test="!'ROLE_PROFESSOR'.equals(memberVO.memType)">
+		     , M.MEM_NAME 
+			</if>
+		     , S.SUB_NAME
+		FROM LECTURE L
+		JOIN MEMBER M ON L.MEM_ID = M.MEM_ID
+		JOIN SUBJECT S ON L.SUB_CODE = S.SUB_CODE
+		<if test="'ROLE_STUDENT'.equals(memberVO.memType)">
+		JOIN TAKE_LEC T ON T.LEC_CODE = L.LEC_CODE
+		</if>
+		WHERE L.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+		<if test="'ROLE_PROFESSOR'.equals(memberVO.memType)">
+		AND L.MEM_ID = #{memberVO.memId}
+		</if>
+		<if test="'ROLE_STUDENT'.equals(memberVO.memType)">
+		AND T.MEM_ID = #{memberVO.memId}
+		</if>
+		ORDER BY L.LEC_CODE
+	</select>
+	
+</mapper>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans
+	xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+
+
+	<beans:bean id="passwordEncoder"
+		class="org.springframework.security.crypto.factory.PasswordEncoderFactories"
+		factory-method="createDelegatingPasswordEncoder" />
+
+	<beans:bean id="authenticationProvider"
+		class="org.springframework.security.authentication.dao.DaoAuthenticationProvider"
+		p:userDetailsService-ref="customUserService"
+		p:passwordEncoder-ref="passwordEncoder"
+		p:hideUserNotFoundExceptions="false" />
+
+	<authentication-manager id="authenticationManager">
+		<authentication-provider ref="authenticationProvider" />
+	</authentication-manager>
+	
+	<beans:bean id="customAuthenticationSuccessHandler"
+		class="kr.or.ddit.security.CustomAuthenticationSuccessHandler"
+		p:defaultTargetUrl="/" p:alwaysUseDefaultTargetUrl="true" />
+	
+		
+	<beans:bean id="loginFailHandler" class="kr.or.ddit.security.LoginFailHandler" />
+	
+	<beans:bean id="i18nSupportFilter" class="kr.or.ddit.filter.I18nSupportFilter" />
+
+	<!-- 밑의 경로들은 시큐리티가 돌지않음 -->
+	<http pattern="/common/**" security="none"/>
+	<http pattern="/resource/**" security="none"/>
+	<http pattern="/resources/**" security="none"/>
+	<http pattern="/selectResources/**" security="none"/>
+	<http pattern="/images/**" security="none"/>
+	<http pattern="/js/**" security="none"/>
+	<http pattern="**/*.css" security="none"/>
+	<http pattern="**/*.js" security="none"/>
+	
+	
+	<http auto-config="true" authentication-manager-ref="authenticationManager" use-expressions="true">
+		<!-- iframe 사용을 위해 필요함 -->
+		<headers>
+			<frame-options disabled="true"/>
+		</headers>
+		
+		<intercept-url pattern="/login/**" access="isAnonymous()" />
+<!-- 		<intercept-url pattern="/lms/lmsmain.do" access="hasRole('ROLE_STUDENT', 'ROLE_PROFESSOR')" /> -->
+		<intercept-url pattern="/lms/student/**" access="hasRole('ROLE_STUDENT')" />
+		<intercept-url pattern="/lms/professor/**" access="hasRole('ROLE_PROFESSOR')" />
+		<intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
+		<intercept-url pattern="/enrolment/*" access="hasRole('ROLE_STUDENT')" />
+		<intercept-url pattern="/" access="isAuthenticated()" />
+		<intercept-url pattern="/**" access="isAuthenticated()" />
+
+		<!-- 로그인 처리 -->
+		<form-login login-page="/login/loginform.do"
+			username-parameter="memId" 
+			password-parameter="memPass"
+			login-processing-url="/login/loginProcess.do"
+			authentication-success-handler-ref="customAuthenticationSuccessHandler"
+			authentication-failure-handler-ref="loginFailHandler" />
+		
+		<!-- invalid-session-url : 세션이 끊겼을때 이동할 url설정 (이거 해놓으면 밑에 url설정은 안먹힘) -->
+		<!-- concurrency max-session : 최대 세션수 설정 (중복로그인 불가) -->
+		<session-management>
+			<!-- expired-url : 중복로그인때문에 로그인이 풀렸을때 이동할페이지 -->
+			<!-- error-if-maximum-exceeded="true" : 기존사람을 로그아웃시키는게아니라 로그인하는사람을 막음 우리는 안 썼음-->
+			<concurrency-control max-sessions="1" expired-url="/login/loginform.do?msg=duplicated"/>
+		</session-management>
+		
+		<access-denied-handler error-page="/access-denied.do"/>
+		
+		<anonymous enabled="true" username="anonymous"/>
+
+		<logout logout-url="/logout.do" invalidate-session="true" logout-success-url="/login/loginform.do" />
+
+		<csrf disabled="true" />
+
+		<remember-me remember-me-parameter="rememberMe" remember-me-cookie="rememberMeCookie" user-service-ref="customUserService" />
+
+		<custom-filter ref="i18nSupportFilter" before="FIRST" />
+		
+		<headers>
+			<frame-options policy="SAMEORIGIN"/>
+		</headers>
+	</http>
+	<global-method-security pre-post-annotations="enabled" />
+	
+</beans:beans>

@@ -1,0 +1,44 @@
+@charset "UTF-8";
+
+/**selectByApply.jsp**/
+#searchBody {
+	margin-left :4px;
+	padding-bottom : 1%;
+	height: 6%;
+	border-radius :20px 20px;
+	background-color: #e8eef3;
+}
+div select {
+	margin-left: 20px;
+	margin-right: 20px;
+}
+#rejectBtn{
+	float: right;
+	margin-top: 2%;
+}
+.mainTable{width:100%;height:700px;overflow: auto;}
+.scholarGradeTable{width:100%;height:400px;overflow: auto;}
+.fixedHeader {
+	position: sticky;
+	top: 0;
+}
+#scharCode{
+	width: 200px;
+}
+
+/**scholarshipForm**/
+.exampleTable{height:500px;}
+
+/**scholarshipList.jsp**/
+
+/**scholarshipType.jsp**/
+.modalbodyBtn{
+	margin-left: 140px;
+}
+.pTag{
+	font-size :0.75em;
+	color: graytext;
+}
+
+
+/**selectByGrade.jsp**/

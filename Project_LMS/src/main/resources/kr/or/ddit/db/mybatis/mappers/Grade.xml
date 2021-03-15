@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.lms.student.grade.dao.IGradeDAO">
+	<select id="getSMSTGradeList" parameterType="kr.or.ddit.lms.student.grade.vo.GradeVO" resultType="kr.or.ddit.lms.student.grade.vo.GradeVO">
+		SELECT A.TLEC_NO, SUB_NAME, SUB_CREDIT, SUB_DETAIL, A.LEC_CODE, CODE, CODE_NAME, LEC_SMST
+		FROM TAKE_LEC A
+		JOIN LECTURE B       ON A.LEC_CODE = B.LEC_CODE
+		JOIN SUBJECT C       ON B.SUB_CODE = C.SUB_CODE
+		JOIN STUDENT_SCORE D ON A.TLEC_NO = D.TLEC_NO
+		JOIN CODE E          ON D.SLIST_CODE = E.CODE
+		WHERE A.MEM_ID = #{memId}
+		AND B.LEC_SMST = #{lecSmst}
+		AND E.GROUP_CODE = 'A04'
+		ORDER BY 1
+	</select>
+	
+	<select id="getRank" parameterType="kr.or.ddit.lms.student.grade.vo.GradeVO" resultType="String">
+		SELECT A.RANK ||'/'|| (SELECT COUNT(*) FROM SEMESTER_SCORE WHERE SCR_SMST = '202001') AS RANK
+		FROM (SELECT MEM_ID, RANK() OVER (ORDER BY SCR_AGV DESC NULLS LAST) AS RANK
+		       FROM SEMESTER_SCORE
+		       WHERE SCR_SMST = #{lecSmst} ) A
+		WHERE MEM_ID = #{memId}
+	</select>
+	
+	<select id="getSMSTList" parameterType="kr.or.ddit.lms.student.grade.vo.GradeVO" resultType="kr.or.ddit.lms.student.grade.vo.GradeVO">
+		SELECT DISTINCT LEC_SMST, B.TLEC_GRD 
+		FROM LECTURE A
+		JOIN TAKE_LEC B
+		ON A.LEC_CODE = B.LEC_CODE
+		JOIN MEMBER C
+		ON B.MEM_ID = C.MEM_ID
+		JOIN STUDENT_SCORE D
+        ON B.TLEC_NO = D.TLEC_NO
+		WHERE B.MEM_ID = #{memId}
+        AND SLIST_CODE IS NOT NULL
+        AND A.LEC_SMST != (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+        ORDER BY 2
+	</select>
+	
+	<select id="getTotalGrade" parameterType="kr.or.ddit.lms.student.grade.vo.GradeVO" resultType="kr.or.ddit.lms.student.grade.vo.GradeVO">
+		SELECT A.TLEC_NO, SUB_NAME, SUB_CREDIT, SUB_DETAIL, A.LEC_CODE, CODE_NAME, LEC_SMST
+		FROM TAKE_LEC A
+		JOIN LECTURE B       ON A.LEC_CODE = B.LEC_CODE
+		JOIN SUBJECT C       ON B.SUB_CODE = C.SUB_CODE
+		JOIN STUDENT_SCORE D ON A.TLEC_NO = D.TLEC_NO
+		JOIN CODE E          ON D.SLIST_CODE = E.CODE
+		WHERE A.MEM_ID = #{memId}
+		AND E.GROUP_CODE = 'A04'
+		AND B.LEC_SMST != (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+		ORDER BY 1
+	</select>
+	
+	<select id="getNowSMSTGrade" parameterType="kr.or.ddit.lms.student.grade.vo.GradeVO" resultType="kr.or.ddit.lms.student.grade.vo.GradeVO">
+		SELECT A.TLEC_NO, TLEC_SCORE, SUB_NAME, SUB_CREDIT, SUB_DETAIL, A.LEC_CODE, CODE, LEC_SMST
+		FROM TAKE_LEC A
+		JOIN LECTURE B       ON A.LEC_CODE = B.LEC_CODE
+		JOIN SUBJECT C       ON B.SUB_CODE = C.SUB_CODE
+		JOIN STUDENT_SCORE D ON A.TLEC_NO = D.TLEC_NO
+		JOIN CODE E          ON D.SLIST_CODE = E.CODE
+		WHERE A.MEM_ID = #{memId}
+		AND B.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+		AND E.GROUP_CODE = 'A04'
+		ORDER BY A.LEC_CODE
+	</select>
+	
+	<update id="updateTlecScore" parameterType="kr.or.ddit.lms.student.grade.vo.GradeVO">
+		 UPDATE TAKE_LEC
+		 SET TLEC_SCORE = #{tlecScore}
+		 WHERE TLEC_NO = #{tlecNo}
+	</update>
+	
+	<select id="getNowSMSTLectureList" parameterType="kr.or.ddit.lms.student.grade.vo.GradeVO" resultType="kr.or.ddit.lms.student.grade.vo.GradeVO">
+		SELECT TLEC_NO, B.LEC_CODE, SUB_NAME
+		FROM TAKE_LEC A
+		JOIN LECTURE B ON A.LEC_CODE = B.LEC_CODE
+		JOIN SUBJECT C ON B.SUB_CODE = C.SUB_CODE
+		WHERE A.MEM_ID = #{memId}
+		AND B.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+		ORDER BY 2
+	</select>
+	
+	
+	<select id="getAttendance" parameterType="kr.or.ddit.lms.student.grade.vo.GradeVO" resultType="kr.or.ddit.lms.student.grade.vo.AttendanceVO">
+		 SELECT TO_CHAR(A.ATTEN_DATE, 'YYYY-MM-DD') AS ATTEN_DATE
+     		 , A.LEC_CODE
+             , A.MEM_ID
+		     , WEEK
+		     , LTIME_DAY||' '||LTIME_START||'~'||LTIME_END as LTIME
+		     , ATTEN_NOTE
+		     , DECODE(C.CODE_NAME, '출석', '○', '결석', '／', '지각','△', '조퇴','△') CODE_NAME
+		FROM ATTENDANCE A
+		JOIN LECTURE_TIME B ON A.LEC_CODE= B.LEC_CODE
+		JOIN CODE C         ON A.ATTEN_CODE = C.CODE
+		WHERE MEM_ID = #{memId}
+		AND B.LEC_CODE = #{lecCode}
+		ORDER BY WEEK
+	</select>
+	
+	<sql id="countAtten">
+		SELECT COUNT(*) AS RESULT
+		FROM ATTENDANCE
+		WHERE MEM_ID = #{memId}
+		AND LEC_CODE = #{lecCode}
+	</sql>
+	
+	<select id="getTotalAttendance" parameterType="kr.or.ddit.lms.student.grade.vo.GradeVO" resultType="kr.or.ddit.lms.student.grade.vo.AttendanceVO">
+		SELECT A.RESULT AS TOTAL_TIME
+			 , B.RESULT AS COUNT_ATTEND
+			 , C.RESULT AS COUNT_LATE
+			 , D.RESULT AS COUNT_EARLY
+			 , E.RESULT AS COUNT_ABSENT
+			 , ROUND(((A.RESULT-(E.RESULT+C.RESULT/3+D.RESULT/3))/A.RESULT)*100,1) AS AVG_ATTEN 
+		FROM (<include refid="countAtten"/>) A
+		   , (<include refid="countAtten"/> AND ATTEN_CODE = 'ATTEND') B
+		   , (<include refid="countAtten"/> AND ATTEN_CODE = 'LATE') C
+		   , (<include refid="countAtten"/> AND ATTEN_CODE = 'EARLY') D
+		   , (<include refid="countAtten"/> AND ATTEN_CODE = 'ABSENT') E
+	</select>
+	
+</mapper>

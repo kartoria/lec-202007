@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.commons.dao.IIssuedNumberDAO">
+<select id="selectIssuedNumber" parameterType="kr.or.ddit.commons.vo.IssuedVO" resultType="kr.or.ddit.commons.vo.IssuedVO">
+SELECT CODE 
+FROM CODE
+WHERE CODE_NAME = #{issName}
+</select>
+
+<select id="selectIssuedMaxNumber"  resultType="int">
+SELECT NVL(MAX(ISS_NO),0)
+FROM ISSUED
+</select>
+
+
+</mapper>

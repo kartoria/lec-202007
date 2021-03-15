@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.commons.dao.ILeftMenuDAO">
+	
+	<select id="getMenuList" parameterType="kr.or.ddit.commons.vo.LeftMenuVO" resultType="kr.or.ddit.commons.vo.LeftMenuVO">
+		SELECT MENU_NO
+			 , MENU_ICON
+			 , MENU_URI || MENU_PATH AS MENU_PATH
+			 , MENU_TEXT
+			 , MENU_URI
+			 , MENU_ORDER
+			 , MENU_PERENT
+			 , (SELECT COUNT(MENU_NO) FROM MENU WHERE MENU_PERENT = A.MENU_NO) AS CHILD_COUNT
+		FROM MENU A
+		WHERE MENU_URI = #{menuUri}
+	<if test="menuPerent == null">
+		AND MENU_PERENT IS NULL
+	</if>
+		ORDER BY MENU_ORDER
+	</select>
+	
+	
+</mapper>

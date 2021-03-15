@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+		http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+	
+    <!-- 	스키마 종류 : beans, c, p, context, mybatis-spring -->
+    <!-- jasypt 를 사용하기 위해선 주석처리 해야됨 -->
+<!-- 	<context:property-placeholder location="classpath:kr/or/ddit/db/dbInfo.properties" /> -->
+	
+<!-- 	jasypt  사용 하기 위한 곳-->
+	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
+	    <property name="algorithm" value="PBEWithMD5AndDES"/>
+	    <property name="passwordEnvName" value="APP_ENCRYPTION_PASSWORD"/>
+	</bean>
+	    
+	<bean id="configurationEncryptor" class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">
+	    <property name="config" ref="environmentVariablesConfiguration"/>
+	    <property name="password" value="java"/>
+	</bean>
+	<bean id="propertyConfig" class="org.jasypt.spring31.properties.EncryptablePropertyPlaceholderConfigurer">
+	    <constructor-arg ref="configurationEncryptor"/>
+	    <property name="locations">
+	        <list>
+	            <value>classpath:kr/or/ddit/db/dbInfo.properties</value>
+	        </list>
+	    </property>
+	</bean>
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	    <property name="driverClassName" value="${maindb.driverClassName}" /> 
+	    <property name="url" value="${maindb.url}" />
+	    <property name="username" value="${maindb.user}" />
+	    <property name="password" value="${maindb.password}" />
+	</bean>
+	
+<!-- 	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"  -->
+<!-- 		p:driverClassName="${maindb.driverClassName}" -->
+<!-- 		p:url="${maindb.url}" -->
+<!-- 		p:username="${maindb.user}" -->
+<!-- 		p:password="${maindb.password}" -->
+<!-- 		p:initialSize="${maindb.initialSize}" -->
+<!-- 		p:maxTotal="${maindb.maxActive}" -->
+<!-- 		p:maxWaitMillis="${maindb.maxWait}" -->
+<!-- 	/> -->
+	
+	<!-- 3. transaction 관리  -->
+   <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" 
+      p:dataSource-ref="dataSource"
+   />
+   
+	<!-- 4. configuration.xml의 위치를 지정해준다.-->
+	<!-- p:configLocation-ref="classpath:kr/or/ddit/db/mybatis/Configuration.xml" 없어도됨 -->
+	<!-- 빈을 등록한 것은 아님 -->
+   <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" 
+   		p:dataSource-ref="dataSource"
+   		p:mapperLocations="classpath:kr/or/ddit/db/mybatis/mappers/*.xml"
+   		p:typeAliasesPackage="kr.or.ddit.**.vo"
+   />
+   
+   <!-- 5. 반복적으로 열고 닫는 작업을 templateMethod로 한다. -->
+   <!--  기본 생성자가 없어서 생성자 주입을 해줘야 한다 -->
+   <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate"
+   		c:sqlSessionFactory-ref="sqlSessionFactory"
+   />
+   
+   <!-- 6. DAO 중복 코드 -->
+   <!-- 먼저 얘를 뒤진 후에 proxy가 만들어지는데,ㅡ 무조건 만들어진는 것은 아니다. -->
+   <!-- 선별하기 위해서 마커 어노테이션을 사용한다. -->
+   <mybatis-spring:scan base-package="kr.or.ddit.**.dao"
+   		annotation="org.springframework.stereotype.Repository"
+    />
+</beans>

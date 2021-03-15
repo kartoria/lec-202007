@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.myclassroom.live.dao.LiveDAO">
+<insert id="insertBroadcast" parameterType="kr.or.ddit.myclassroom.live.vo.LiveVO">
+	<selectKey keyProperty="liveNo" resultType="int" order="BEFORE">
+		SELECT NVL(MAX(LIVE_NO), 0)+1
+		FROM LIVE
+	</selectKey>
+	
+	INSERT INTO LIVE 
+	(LIVE_NO, LEC_CODE, MEM_ID, BROADCAST_ID, LIVE_CHAT_ID, LIVE_WEEK, BROADCAST_TITLE, BROADCAST_DESCRIPTION, SCHEDULED_START_TIME) 
+	VALUES
+	(#{liveNo}, #{lecCode}, #{memId}, #{broadcastId}, #{liveChatId}, #{liveWeek}, #{broadcastTitle}, #{broadcastDescription}, #{scheduledStartTime})
+</insert>
+
+<select id="selectTotalWeek" parameterType="kr.or.ddit.myclassroom.live.vo.LiveVO" resultType="kr.or.ddit.myclassroom.live.vo.LiveVO">
+	SELECT LEC_DAYS
+	FROM LECTURE
+	WHERE LEC_CODE = #{lecCode}
+</select>
+
+<select id="selectLiveList" parameterType="kr.or.ddit.myclassroom.live.vo.LiveVO" resultType="kr.or.ddit.myclassroom.live.vo.LiveVO">
+	SELECT LIVE_NO
+		 , LEC_CODE
+		 , B.MEM_ID
+		 , MEM_NAME
+		 , LIVE_WEEK
+		 , BROADCAST_TITLE
+		 , TO_CHAR(SCHEDULED_START_TIME, 'YYYY-MM-DD HH24:MI') AS UPLOAD_TIME
+	FROM LIVE A
+	JOIN MEMBER B ON A.MEM_ID = B.MEM_ID 
+	WHERE LEC_CODE = #{lecCode}
+	ORDER BY LIVE_WEEK DESC, SCHEDULED_START_TIME DESC
+</select>
+
+<select id="selectLive" parameterType="kr.or.ddit.myclassroom.live.vo.LiveVO" resultType="kr.or.ddit.myclassroom.live.vo.LiveVO">
+	SELECT LIVE_NO
+		 , LEC_CODE
+		 , B.MEM_ID
+		 , MEM_NAME
+		 , BROADCAST_ID
+		 , LIVE_CHAT_ID
+		 , LIVE_WEEK
+		 , BROADCAST_TITLE
+		 , BROADCAST_DESCRIPTION
+		 , TO_CHAR(SCHEDULED_START_TIME, 'YYYY-MM-DD HH24:MI:SS') AS UPLOAD_TIME
+	FROM LIVE A
+	JOIN MEMBER B ON A.MEM_ID = B.MEM_ID
+	WHERE LIVE_NO = #{liveNo}
+</select>
+
+<delete id="deleteLive" parameterType="kr.or.ddit.myclassroom.live.vo.LiveVO">
+	DELETE FROM LIVE 
+	WHERE LIVE_NO = #{liveNo}
+</delete>
+
+
+<select id="selectStudentAttendanceList" parameterType="kr.or.ddit.myclassroom.live.vo.LiveVO" resultType="kr.or.ddit.myclassroom.live.vo.LiveVO">
+	SELECT A.MEM_ID
+	     , MEM_NAME
+	     , TO_CHAR(ATTEN_DATE, 'HH24:MI') AS ATTEN_TIME
+	     , ATTEN_CODE
+	     , CODE_NAME
+	FROM (
+			SELECT A.MEM_ID, C.MEM_NAME, A.LEC_CODE
+		  	FROM TAKE_LEC A
+		  	JOIN LECTURE B ON A.LEC_CODE = B.LEC_CODE
+		  	JOIN MEMBER C ON A.MEM_ID = C.MEM_ID
+		  	WHERE A.LEC_CODE = #{lecCode}
+		 ) A
+		 LEFT OUTER JOIN ATTENDANCE E ON   A.MEM_ID = E.MEM_ID 
+					                  AND  A.LEC_CODE = E.LEC_CODE 
+					                  AND  E.WEEK = #{liveWeek}
+		 LEFT OUTER JOIN CODE ON CODE = ATTEN_CODE
+	ORDER BY A.MEM_ID
+</select>
+
+<select id="selectStudentAttendance" parameterType="kr.or.ddit.myclassroom.live.vo.LiveVO" resultType="kr.or.ddit.myclassroom.live.vo.LiveVO">
+	SELECT ATTEN_DATE
+	     , LEC_CODE
+	     , MEM_ID
+	     , WEEK AS LIVE_WEEK
+	     , ATTEN_NO
+	     , ATTEN_CODE
+	FROM ATTENDANCE
+	WHERE LEC_CODE = #{lecCode}
+	AND   MEM_ID = #{memId}
+	AND   WEEK = #{liveWeek}
+</select>
+
+<insert id="insertAttendance" parameterType="kr.or.ddit.myclassroom.live.vo.LiveVO">
+	<selectKey keyProperty="attenNo" resultType="int" order="BEFORE">
+		SELECT NVL(MAX(ATTEN_NO), 0)+1
+		FROM ATTENDANCE
+	</selectKey>
+	INSERT INTO ATTENDANCE 
+	(ATTEN_NO, ATTEN_DATE, LEC_CODE, MEM_ID, WEEK, ATTEN_CODE)
+	VALUES 
+	(#{attenNo}, SYSDATE, #{lecCode}, #{memId}, #{liveWeek}, #{attenCode})
+</insert>
+
+<update id="updateAttendance" parameterType="kr.or.ddit.myclassroom.live.vo.LiveVO">
+<selectKey keyProperty="attenNo" resultType="int" order="BEFORE">
+	SELECT NVL(MAX(ATTEN_NO), 0)+1
+	FROM ATTENDANCE
+</selectKey>
+MERGE INTO ATTENDANCE ATT
+USING(
+	SELECT #{liveWeek} AS WEEK
+		,  #{memId} AS MEM_ID
+		,  #{lecCode} AS LEC_CODE
+	FROM SYS.DUAL
+	) TMP ON (ATT.WEEK = TMP.WEEK 
+		  AND ATT.MEM_ID = TMP.MEM_ID 
+		  AND ATT.LEC_CODE = TMP.LEC_CODE)
+	WHEN MATCHED THEN
+		UPDATE SET ATTEN_CODE = #{attenCode}
+		WHERE LEC_CODE = #{lecCode}
+		AND   WEEK = #{liveWeek}
+		AND   MEM_ID = #{memId}
+	WHEN NOT MATCHED THEN
+	INSERT (
+		LEC_CODE
+	  , MEM_ID
+	  , WEEK
+	  , ATTEN_NO
+	  , ATTEN_CODE
+	<if test="!attenCode.equals('ABSENT')">
+	  , ATTEN_DATE
+	</if>
+	)
+	VALUES (
+		#{lecCode}
+	  , #{memId}
+	  , #{liveWeek}
+	  , #{attenNo}
+	  , #{attenCode}
+	<if test="!attenCode.equals('ABSENT')">
+	  , SYSDATE
+	</if>
+	)
+</update>
+
+<select id="selectAttendanceCodeList" resultType="kr.or.ddit.myclassroom.live.vo.LiveVO">
+	SELECT CODE AS ATTEN_CODE, CODE_NAME
+	FROM CODE
+	WHERE GROUP_CODE = 'A03'
+</select>
+
+</mapper>

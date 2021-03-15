@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.cyber.dao.ICyberDAO">
+
+	<resultMap id="lectureMap" type="kr.or.ddit.vo.LectureVO" autoMapping="true">
+		<id property="lecCode" column="LEC_CODE" />
+		<association property="subjectVo" javaType="kr.or.ddit.vo.SubjectVO" autoMapping="true" />
+		<association property="memberVo" javaType="kr.or.ddit.member.vo.MemberVO" autoMapping="true" />
+		<collection property="ltimeDayStartEndList" javaType="java.util.List" ofType="java.lang.String">
+			<result column="LTIME_DAY_START_END"/>
+		</collection>
+	</resultMap>
+	
+	<select id="professorMyLectureList" parameterType="kr.or.ddit.member.vo.MemberVO" resultMap="lectureMap">
+		SELECT A.LEC_CODE
+			 , SUB_NAME
+			 , (LTIME_DAY || ' ' || LTIME_START || '~' || LTIME_END) AS LTIME_DAY_START_END
+			 , LEC_GRD
+			 , LEC_NMT
+		FROM LECTURE A 
+		JOIN SUBJECT B ON A.SUB_CODE = B.SUB_CODE
+		JOIN LECTURE_TIME C ON A.LEC_CODE = C.LEC_CODE
+		WHERE MEM_ID = #{memId, jdbcType=VARCHAR}
+		AND A.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+		ORDER BY A.LEC_CODE
+	</select>
+	
+	<select id="studentMyLectureList" parameterType="kr.or.ddit.member.vo.MemberVO" resultMap="lectureMap">
+		SELECT A.LEC_CODE 
+		     , (SELECT MEM_NAME FROM MEMBER WHERE MEM_ID = C.MEM_ID) AS MEM_NAME 
+		     , SUB_NAME
+		     , (LTIME_DAY || ' ' || LTIME_START || '~' || LTIME_END) AS LTIME_DAY_START_END
+		     , LEC_GRD
+		     , LEC_NMT
+		FROM TAKE_LEC A
+		JOIN MEMBER B ON A.MEM_ID = B.MEM_ID
+		JOIN LECTURE C ON A.LEC_CODE = C.LEC_CODE
+		JOIN SUBJECT D ON C.SUB_CODE = D.SUB_CODE
+		JOIN LECTURE_TIME F ON A.LEC_CODE = F.LEC_CODE
+		WHERE A.MEM_ID = #{memId}
+		AND C.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+		ORDER BY A.LEC_CODE
+	</select>
+	
+	<select id="adminLectureList" resultMap="lectureMap">
+		SELECT A.LEC_CODE
+		     , (SELECT MEM_NAME FROM MEMBER WHERE MEM_ID = A.MEM_ID) AS MEM_NAME
+		     , SUB_NAME
+		     , (LTIME_DAY || ' ' || LTIME_START || '~' || LTIME_END) AS LTIME_DAY_START_END
+		     , LEC_GRD
+		     , LEC_NMT
+		FROM LECTURE A
+		JOIN SUBJECT B ON A.SUB_CODE = B.SUB_CODE
+		JOIN LECTURE_TIME C ON A.LEC_CODE = C.LEC_CODE
+		WHERE A.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00')
+		ORDER BY A.LEC_CODE
+	</select>
+	
+<!-- 	<select id="lectureTimeList" parameterType="kr.or.ddit.member.vo.MemberVO" resultMap="lectureMap"> -->
+<!-- 		SELECT C.LEC_CODE -->
+<!-- 			 , (LTIME_DAY || ' ' || LTIME_START || '~' || LTIME_END) AS LTIME_DAY_START_END -->
+<!-- 		FROM LECTURE A -->
+<!-- 		<if test="memType.eqauls('ROLE_STUDENT')"> -->
+<!-- 		JOIN TAKE_LEC B ON A.LEC_CODE = B.LEC_CODE -->
+<!-- 		</if> -->
+<!-- 		JOIN LECTURE_TIME C ON A.LEC_CODE = C.LEC_CODE -->
+<!-- 		WHERE A.LEC_SMST = (SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00') -->
+<!-- 		<if test="memType.equals('ROLE_PROFESSOR')"> -->
+<!-- 		AND MEM_ID = #{memId} -->
+<!-- 		</if> -->
+<!-- 		<if test="memType.equals('ROLE_STUDENT')"> -->
+<!-- 		AND B.MEM_ID = #{memId} -->
+<!-- 		</if> -->
+<!-- 	</select> -->
+	
+</mapper>

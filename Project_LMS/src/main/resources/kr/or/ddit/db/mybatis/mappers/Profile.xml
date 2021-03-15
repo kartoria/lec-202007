@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.lms.student.profile.dao.IProfileDAO">
+<select id="profileView" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.lms.student.profile.VO.ProfileVO">
+			SELECT  A.MEM_ID ,
+			            A.MEM_NAME ,
+			            B.DEP_NAME ,
+			            A.MEM_GRD ,
+			            A.MEM_REG1  ,
+			            REGEXP_REPLACE(REGEXP_REPLACE(A.MEM_TEL, '[^[:digit:]]'),
+							  '(^02|050[[:digit:]]{1}|[[:digit:]]{3})([[:digit:]]{3,4})([[:digit:]]{4})',
+							  '\1-\2-\3') AS MEM_TEL,
+			            A.MEM_MAIL ,
+			            A.MEM_ADDR1 ,
+			            A.MEM_ADDR2 ,
+			            A.MEM_BANK ,
+			            A.MEM_ACN,
+			            A.MEM_IMG,
+			            A.MEM_POSITION
+			FROM  MEMBER A, DEPARTMENT B
+			WHERE A.MEM_ID = #{memId}
+			AND A.DEP_NO = B.DEP_NO
+</select>
+<select id="profileUpdateView" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.lms.student.profile.VO.ProfileVO">
+			SELECT  A.MEM_ID ,
+			            A.MEM_NAME ,
+			            B.DEP_NAME ,
+			            A.MEM_GRD ,
+			            A.MEM_REG1  ,
+			            A.MEM_TEL,
+			            A.MEM_MAIL ,
+			            A.MEM_ADDR1 ,
+			            A.MEM_ADDR2 ,
+			            A.MEM_BANK ,
+			            A.MEM_ACN,
+			            A.MEM_IMG,
+			            A.MEM_POSITION
+			FROM  MEMBER A, DEPARTMENT B
+			WHERE A.MEM_ID = #{memId}
+			AND A.DEP_NO = B.DEP_NO
+</select>
+
+<update id="profileUpdate" parameterType="kr.or.ddit.lms.student.profile.VO.ProfileVO" >  
+	UPDATE MEMBER
+	    SET
+	        MEM_ID = #{memId,jdbcType=VARCHAR},
+	        MEM_NAME = #{memName,jdbcType=NUMERIC},
+	        MEM_REG1 = #{memReg1,jdbcType=VARCHAR},
+	        MEM_TEL = #{memTel,jdbcType=VARCHAR},
+	        MEM_MAIL = #{memMail,jdbcType=VARCHAR},
+	        MEM_ADDR1 = #{memAddr1,jdbcType=VARCHAR},
+	        MEM_ADDR2 = #{memAddr2,jdbcType=VARCHAR},
+	        MEM_ACN = #{memAcn,jdbcType=VARCHAR},
+	        MEM_BANK = #{memBank,jdbcType=VARCHAR},
+	        MEM_GRD = #{memGrd,jdbcType=VARCHAR}
+	        <if test="memImg != null">
+	        ,MEM_IMG = #{memImg,jdbcType=VARCHAR}
+	        </if>
+	        <if test="memPass != null and !memPass.equals('')">
+	        ,MEM_PASS = #{memPass,jdbcType=VARCHAR}
+	        </if>
+		WHERE
+	   		 MEM_ID = #{memId,jdbcType=VARCHAR}
+
+
+</update>
+
+</mapper>

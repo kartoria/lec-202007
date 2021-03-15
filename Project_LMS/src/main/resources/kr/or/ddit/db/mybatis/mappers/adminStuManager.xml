@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.admin.student.dao.IAdminStudentDAO">
+
+<select id="selectCollegeList" resultType="kr.or.ddit.vo.CodeVO">
+SELECT
+CODE,
+CODE_NAME
+FROM CODE
+WHERE GROUP_CODE='A01'
+</select>
+
+<select id="selectDepartmentList" parameterType="kr.or.ddit.vo.CodeVO" resultType="kr.or.ddit.vo.DepartmentVO">
+SELECT
+DEP_NO,
+DEP_NAME
+FROM DEPARTMENT A, CODE B
+WHERE A.COL_CODE=B.CODE
+AND A.COL_CODE=#{code }
+ORDER BY DEP_NO
+</select>
+
+<select id="selectStateList" resultType="kr.or.ddit.vo.CodeVO">
+SELECT
+CODE,
+CODE_NAME,
+DESCRIPTION
+FROM CODE
+WHERE GROUP_CODE='A06'
+</select>
+
+<select id="selectMemberList" parameterType="kr.or.ddit.admin.student.vo.SearchMemFormVO" resultType="kr.or.ddit.admin.student.vo.AdminMemVO">
+SELECT
+A.MEM_ID,
+A.DEP_NO,
+C.DEP_NAME,
+A.MEM_NAME,
+A.MEM_REG1,
+A.MEM_REG2,
+A.MEM_TEL,
+A.MEM_MAIL,
+A.MEM_ZIP,
+A.MEM_ADDR1,
+A.MEM_ADDR2,
+A.MEM_ACN,
+A.MEM_BANK,
+A.MEM_GRD,
+A.MEM_STATE,
+B.CODE_NAME,
+B.DESCRIPTION,
+A.MEM_ADMISSION,
+A.MEM_GRADUATION
+FROM DEPARTMENT C,MEMBER A
+LEFT OUTER JOIN CODE B ON( A.MEM_STATE=B.CODE )
+WHERE MEM_TYPE=#{memType}
+AND A.DEP_NO=C.DEP_NO
+<if test="college!=null and college gt 0">
+	AND A.DEP_NO LIKE SUBSTR(#{college},1,1)||'%'
+</if>
+<if test="department!=null and department gt 0">
+	AND A.DEP_NO = #{department}
+</if>
+<if test="state!=null and state!='' ">
+	AND A.MEM_STATE = #{state}
+</if>
+<if test="grade!=null and grade gt 0">
+	AND A.MEM_GRD = #{grade}
+</if>
+<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(searchWord)">
+	<choose>
+		<when test="'name'.equals(searchType)">
+		AND	INSTR(A.MEM_NAME, #{searchWord}) > 0
+		</when>
+		<when test="'stuCode'.equals(searchType)">
+		AND	INSTR(A.MEM_ID , #{searchWord}) > 0
+		</when>
+		<otherwise>
+		AND	INSTR(A.MEM_NAME, #{searchWord}) > 0
+			OR
+			INSTR(A.MEM_ID , #{searchWord}) > 0
+		</otherwise>
+	</choose>
+</if>
+ORDER BY A.MEM_ID
+</select>
+
+<select id="selectCollegeHierarchy" resultType="kr.or.ddit.admin.student.vo.TreeModelVO">
+SELECT
+CODE AS ID,
+CODE_NAME NAME,
+NVL(DESCRIPTION,0) AS PID 
+,CASE WHEN GROUP_CODE_NAME = '학부코드' THEN '${cPath}/js/zTree_v3-master/css/zTreeStyle/img/diy/1_open.png' END ICON
+FROM CODE
+WHERE GROUP_CODE='A01'
+</select>
+ 
+<select id="selectDepartmentHierarchy"  resultType="kr.or.ddit.admin.student.vo.TreeModelVO">
+SELECT
+DEP_NO AS ID,
+DEP_NAME AS NAME,
+COL_CODE AS PID
+, CASE WHEN DEP_NAME IS NOT NULL THEN '/js/zTree_v3-master/css/zTreeStyle/img/diy/building.png' END ICON
+FROM DEPARTMENT 
+</select>
+<select id="selectProfessorHierarchy" resultType="kr.or.ddit.admin.student.vo.TreeModelVO">
+SELECT 
+MEM_ID AS ID,
+CONCAT(MEM_NAME,' 교수') AS NAME,
+DEP_NO AS PID
+, CASE WHEN DEP_NO IS NOT NULL THEN '/js/zTree_v3-master/css/zTreeStyle/img/diy/person.png' END ICON
+FROM MEMBER
+WHERE MEM_TYPE='ROLE_PROFESSOR'
+</select>
+
+<select id="selectDepartmentInfo" parameterType="kr.or.ddit.vo.DepartmentVO" resultType="kr.or.ddit.admin.student.vo.AdminDepartmentInfoVO">
+SELECT
+A.DEP_NO,
+A.DEP_NAME,
+A.DEP_TEL,
+A.DEP_FEE,
+A.DEP_BORN,
+A.COL_CODE,
+B.COL_NAME,
+C.STU_CNT,
+C.PRO_CNT
+FROM DEPARTMENT A
+LEFT OUTER JOIN (SELECT 
+                CODE,
+                CODE_NAME AS COL_NAME
+                FROM CODE
+                WHERE GROUP_CODE='A01') B ON(B.CODE=A.COL_CODE)
+LEFT OUTER JOIN (SELECT DEP_NO,
+                COUNT(*) STU_CNT
+                FROM MEMBER 
+                WHERE DEP_NO=#{depNo}
+                AND MEM_TYPE='ROLE_STUDENT'
+                GROUP BY DEP_NO) C ON(C.DEP_NO=A.DEP_NO)
+LEFT OUTER JOIN (SELECT DEP_NO,
+                COUNT(*) PRO_CNT
+                FROM MEMBER 
+                WHERE DEP_NO=510
+                AND MEM_TYPE='ROLE_PROFESSOR'
+                GROUP BY DEP_NO) C ON(C.DEP_NO=A.DEP_NO)                
+WHERE A.DEP_NO=#{depNo}
+</select>
+
+<select id="selectLectureRoomInfo" parameterType="kr.or.ddit.vo.DepartmentVO" resultType="kr.or.ddit.vo.CodeVO">
+SELECT
+GROUP_CODE,
+CODE,
+GROUP_CODE_NAME,
+CODE_NAME,
+DESCRIPTION
+FROM CODE
+WHERE GROUP_CODE='A07'
+AND DESCRIPTION LIKE SUBSTR(#{depNo},1,1)||'%'
+</select>
+
+<select id="selectDepNo" parameterType="kr.or.ddit.vo.DepartmentVO" resultType="kr.or.ddit.vo.DepartmentVO">
+SELECT DEP_NO 
+FROM DEPARTMENT 
+WHERE DEP_NAME =#{depName}
+
+</select>
+
+<insert id="insertStudent" parameterType="java.util.List" >
+
+<foreach item="item" collection="list " separator=" " open="INSERT ALL" close=" SELECT * FROM DUAL" >
+	
+	 INTO MEMBER (
+	    MEM_ID,
+	    DEP_NO,
+	    MEM_NAME,
+	    MEM_REG1,
+	    MEM_REG2,
+	    MEM_TYPE,
+		MEM_PASS,
+		MEM_ADMISSION,
+		MEM_GRD,
+		MEM_STATE
+	) VALUES 
+		(
+		#{item.memId,jdbcType=VARCHAR },
+		#{item.depNo,jdbcType=NUMERIC},
+		#{item.memName,jdbcType=VARCHAR },
+		#{item.memReg1,jdbcType=VARCHAR },
+		#{item.memReg2,jdbcType=VARCHAR },
+		'ROLE_STUDENT',
+		#{item.memPass,jdbcType=VARCHAR },
+		(SELECT CODE_NAME FROM CODE WHERE GROUP_CODE = 'A00'),
+		'1',
+		'ING'
+	)
+</foreach>
+
+</insert>
+<select id="selectMaxMemId" parameterType="kr.or.ddit.member.vo.MemberVO" resultType="kr.or.ddit.member.vo.MemberVO">
+SELECT MAX(MEM_ID) AS MEM_ID 
+FROM MEMBER 
+WHERE REGEXP_LIKE (MEM_ID, (SELECT SUBSTR(CODE_NAME,3,2) 
+							 FROM CODE 
+							 WHERE GROUP_CODE = 'A00' )) 
+AND DEP_NO =#{depNo}
+
+</select>
+
+<update id="updateStudentState" parameterType="kr.or.ddit.admin.student.vo.StudentListVO">
+<!-- <foreach collection="stuList" item="item" index="index"  open="(" separator="," close=")"> -->
+<foreach collection="stuList" item="item" separator=";" open="DECLARE BEGIN" close="; END;">
+UPDATE MEMBER SET 
+MEM_STATE=#{item.memState} 
+WHERE MEM_ID = #{item.memId}
+</foreach>
+
+</update>
+
+<select id="selectStudent" parameterType="kr.or.ddit.admin.student.vo.AdminMemVO" resultType="kr.or.ddit.admin.student.vo.AdminMemVO">
+SELECT
+A.MEM_ID,
+A.DEP_NO,
+C.DEP_NAME,
+A.MEM_NAME,
+A.MEM_REG1,
+A.MEM_REG2,
+A.MEM_TEL,
+A.MEM_MAIL,
+A.MEM_ZIP,
+A.MEM_ADDR1,
+A.MEM_ADDR2,
+A.MEM_ACN,
+A.MEM_BANK,
+A.MEM_GRD,
+A.MEM_STATE,
+B.CODE_NAME,
+A.MEM_ADMISSION,
+A.MEM_GRADUATION
+FROM MEMBER A, CODE B, DEPARTMENT C
+WHERE MEM_TYPE='ROLE_STUDENT'
+AND A.MEM_STATE=B.CODE
+AND A.DEP_NO=C.DEP_NO
+AND MEM_ID=#{memId}
+</select>
+
+
+<update id="updateStudent" parameterType="kr.or.ddit.admin.student.vo.AdminMemVO">
+UPDATE MEMBER SET 
+DEP_NO=#{depNo,jdbcType=NUMERIC},
+MEM_NAME=#{memName,jdbcType=VARCHAR}, 
+MEM_TEL=#{memTel,jdbcType=VARCHAR}, 
+MEM_MAIL=#{memMail,jdbcType=VARCHAR}, 
+MEM_STATE=#{memState,jdbcType=VARCHAR} 
+WHERE MEM_ID = #{memId}
+</update>
+
+<select id="IssuedCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+SELECT COUNT(*) 
+FROM ISSUED
+</select>
+
+<select id="issuedList" parameterType="kr.or.ddit.vo.PagingVO" resultType="kr.or.ddit.commons.vo.IssuedVO">
+
+SELECT Y.*
+FROM(
+    SELECT ROWNUM AS RNUM,
+        X.*
+        FROM(        
+	          SELECT
+	             A.ISS_NO,
+	             A.MEM_ID,
+	             B.MEM_NAME,
+	             A.ISS_NAME,
+	             TO_CHAR(ISS_DATE,'YYYY-MM-DD') AS ISS_DATE,
+	             C.CODE 
+	            FROM ISSUED A, MEMBER B, CODE C
+	            WHERE A.MEM_ID = B.MEM_ID
+	             AND C.CODE_NAME= A.ISS_NAME
+	             ORDER BY 1 DESC
+              )X)Y
+	WHERE RNUM  BETWEEN #{startRow} AND #{endRow}
+
+
+</select>
+<select id="IssuedSearchCount" parameterType="kr.or.ddit.vo.PagingVO" resultType="int">
+SELECT COUNT(*) 
+FROM ISSUED
+ WHERE ISS_NAME LIKE '%'||#{searchVO.searchWord}||'%'
+
+</select>
+<select id="issuedSearchList" parameterType="kr.or.ddit.vo.PagingVO" resultType="kr.or.ddit.commons.vo.IssuedVO">
+SELECT Y.*
+FROM(
+    SELECT ROWNUM AS RNUM,
+        X.*
+        FROM(        
+	           SELECT
+	             A.ISS_NO,
+	             A.MEM_ID,
+	             B.MEM_NAME,
+	             A.ISS_NAME,
+	             C.CODE, 
+	             TO_CHAR(ISS_DATE,'YYYY-MM-DD') AS ISS_DATE
+	            FROM ISSUED A, MEMBER B, CODE C
+	            WHERE A.MEM_ID = B.MEM_ID
+	            AND C.CODE_NAME= A.ISS_NAME
+	            AND A.ISS_NAME LIKE '%'||#{searchVO.searchWord}||'%' 
+	            ORDER BY 1 DESC
+              )X)Y
+	WHERE RNUM  BETWEEN #{startRow} AND #{endRow}
+</select>
+</mapper>
